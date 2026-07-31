@@ -43,10 +43,7 @@
 </head>
 <body>
   <div id="container"></div>
-  <div id="controls">
-    <button id="btn-borders" class="btn active" onclick="toggleBorders()">隐藏国界</button>
-    <button id="btn-rotate" class="btn active" onclick="toggleRotate()">暂停自转</button>
-  </div>
+
 
   <script>
     
@@ -439,30 +436,257 @@
       });
 
       animate();
+
+      setTimeout(() => {
+        if (!originMarkerMesh && window.flyToLocation) {
+          window.flyToLocation(39.9042, 116.4074, '北京', 'PEK');
+        }
+      }, 400);
     }
 
-        function toggleBorders() {
+    function toggleBorders() {
       if (borderMesh) {
         borderMesh.visible = !borderMesh.visible;
         const btn = document.getElementById('btn-borders');
-        btn.innerText = borderMesh.visible ? '隐藏国界' : '显示国界';
-        btn.classList.toggle('active', borderMesh.visible);
+        if (btn) {
+          btn.innerText = borderMesh.visible ? '隐藏国界' : '显示国界';
+          btn.classList.toggle('active', borderMesh.visible);
+        }
       }
     }
+
+    let targetRotX = 0, targetRotY = 0, isFlying = false;
+    let originMarkerMesh = null;
+
+    function latLonToVector3(lat, lon, radius) {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lon + 180) * (Math.PI / 180);
+      const x = -(radius * Math.sin(phi) * Math.cos(theta));
+      const z = (radius * Math.sin(phi) * Math.sin(theta));
+      const y = (radius * Math.cos(phi));
+      return new THREE.Vector3(x, y, z);
+    }
+
+    // 动态生成清晰大气、与 3D 航标保持舒适间距、在航标正下方 100% 居中呈现的双行城市代码与名称标签
+    function createCityLabelTexture(code, cityName) {
+      const cvs = document.createElement('canvas');
+      cvs.width = 512;
+      cvs.height = 256;
+      const ctx = cvs.getContext('2d');
+
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      // 提取纯净城市名（移除 " (定位中)" 等后缀）
+      const rawName = cityName || '北京';
+      const cleanName = rawName.split(' ')[0].split('(')[0].trim();
+      const displayCode = (code || 'PEK').toUpperCase();
+
+      const centerX = 256;
+
+      // 1. 上行：英文三字码 (如 CTU / PEK) - 52px 字体，下移至 105px 留下舒适的TopPadding与航标拉开间距
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '900 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+      ctx.shadowBlur = 10;
+      ctx.fillText(displayCode, centerX, 105);
+
+      // 2. 下行：中文城市名 (如 成都 / 北京) - 56px 加粗，紧凑紧随上行 (175px)
+      ctx.font = '700 56px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+      ctx.shadowBlur = 10;
+      ctx.fillText(cleanName, centerX, 175);
+
+      const tex = new THREE.CanvasTexture(cvs);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    // 辅助生成 3D 球面贴合航标组 Group (支持起点暖橙/终点荧光绿双色)
+    function createBeaconGroup(lat, lon, label, code, isDest) {
+      const beaconGroup = new THREE.Group();
+      beaconGroup.name = 'beaconSubGroup';
+      const surfacePos = latLonToVector3(lat, lon, 1.353);
+      const normal = surfacePos.clone().normalize();
+
+      const quaternion = new THREE.Quaternion();
+      quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+      beaconGroup.quaternion.copy(quaternion);
+      beaconGroup.position.copy(surfacePos);
+
+      const mainColor = isDest ? 0x4ADE80 : 0xFF9500;
+      
+      // 1. 外层白色发光光轮
+      const outerRingGeo = new THREE.RingGeometry(0.012, 0.018, 32);
+      const outerRingMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide, transparent: true, opacity: 0.95 });
+      const outerRingMesh = new THREE.Mesh(outerRingGeo, outerRingMat);
+      outerRingMesh.rotation.x = Math.PI / 2;
+      beaconGroup.add(outerRingMesh);
+
+      // 2. 内部核心 (起点暖橙 / 终点荧光绿)
+      const innerCoreGeo = new THREE.CircleGeometry(0.011, 32);
+      const innerCoreMat = new THREE.MeshBasicMaterial({ color: mainColor, side: THREE.DoubleSide });
+      const innerCoreMesh = new THREE.Mesh(innerCoreGeo, innerCoreMat);
+      innerCoreMesh.rotation.x = Math.PI / 2;
+      beaconGroup.add(innerCoreMesh);
+
+      // 3. 中心纯白光点
+      const centerDotGeo = new THREE.CircleGeometry(0.0035, 16);
+      const centerDotMat = new THREE.MeshBasicMaterial({ color: 0xFFF7ED, side: THREE.DoubleSide });
+      const centerDotMesh = new THREE.Mesh(centerDotGeo, centerDotMat);
+      centerDotMesh.rotation.x = Math.PI / 2;
+      beaconGroup.add(centerDotMesh);
+
+      // 4. 悬浮 3D 双行城市代码与中文名标签 Sprite
+      const labelTex = createCityLabelTexture(code, label);
+      const spriteMat = new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthTest: false });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(0.22, 0.11, 1.0);
+      sprite.center.set(0.5, 1.0);
+      beaconGroup.add(sprite);
+
+      return { beaconGroup, surfacePos };
+    }
+
+    window.flyToLocation = function(lat, lon, label, code) {
+      if (!earthMesh || !scene) return;
+
+      // 精确视点旋转对齐：将目标经纬度旋转至镜头正中央
+      targetRotX = (lat * Math.PI / 180);
+      targetRotY = -(lon * Math.PI / 180) - Math.PI / 2;
+      isFlying = true;
+      isRotating = false; // 定位之后，地球彻底停止自转！稳稳悬停
+
+      if (originMarkerMesh) {
+        earthMesh.remove(originMarkerMesh);
+        originMarkerMesh = null;
+      }
+
+      const pData = createBeaconGroup(lat, lon, label, code, false);
+      pData.beaconGroup.isSingleBeacon = true; // 标记单点航标
+      earthMesh.add(pData.beaconGroup);
+      originMarkerMesh = pData.beaconGroup;
+    };
+
+    // 在 3D 数字地球上绘制高空飞跃虚线航线与双点航标
+    window.drawFlightRoute = function(lat1, lon1, label1, code1, lat2, lon2, label2, code2) {
+      if (!earthMesh || !scene) return;
+
+      if (originMarkerMesh) {
+        earthMesh.remove(originMarkerMesh);
+        originMarkerMesh = null;
+      }
+
+      const routeGroup = new THREE.Group();
+      routeGroup.isSingleBeacon = false; // 标记多节点航线组，绝不放缩球心坐标系！
+
+      // 1. 创建起点航标 (暖橙) 与终点航标 (荧光绿) - 100% 死死贴在真实地表
+      const p1Data = createBeaconGroup(lat1, lon1, label1, code1, false);
+      routeGroup.add(p1Data.beaconGroup);
+
+      const p2Data = createBeaconGroup(lat2, lon2, label2, code2, true);
+      routeGroup.add(p2Data.beaconGroup);
+
+      // 2. 计算贝塞尔三维飞跃弧线 (起点与终点死死锚定地表 surfacePos)
+      const v1 = p1Data.surfacePos;
+      const v2 = p2Data.surfacePos;
+      const mid = v1.clone().add(v2).multiplyScalar(0.5);
+      const dist = v1.distanceTo(v2);
+
+      // 根据两地球面大圆距离动态计算最高海拔拔升高度
+      const arcHeight = 1.353 + Math.min(dist * 0.28, 0.45);
+      const controlPoint = mid.clone().normalize().multiplyScalar(arcHeight);
+
+      const curve = new THREE.QuadraticBezierCurve3(v1, controlPoint, v2);
+      const points = curve.getPoints(90);
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+
+      // 3. 高光虚线航线材质 (Dashed Flow Line) - 初始精细虚线，结合视距自适应密度
+      const lineMat = new THREE.LineDashedMaterial({
+        color: 0x38BDF8,
+        dashSize: 0.018,
+        gapSize: 0.012,
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.95
+      });
+
+      const flightLine = new THREE.Line(lineGeo, lineMat);
+      flightLine.computeLineDistances(); // 计算虚线间距
+      flightLine.name = 'dashFlightLine';
+      routeGroup.add(flightLine);
+
+      earthMesh.add(routeGroup);
+      originMarkerMesh = routeGroup;
+
+      // 4. 镜头自动平滑转动聚焦至两地的球面大圆中点
+      const midLat = (lat1 + lat2) / 2;
+      const midLon = (lon1 + lon2) / 2;
+      targetRotX = (midLat * Math.PI / 180);
+      targetRotY = -(midLon * Math.PI / 180) - Math.PI / 2;
+      isFlying = true;
+      isRotating = false;
+    };
 
     function toggleRotate() {
       isRotating = !isRotating;
       const btn = document.getElementById('btn-rotate');
-      btn.innerText = isRotating ? '暂停自转' : '开启自转';
-      btn.classList.toggle('active', isRotating);
+      if (btn) {
+        btn.innerText = isRotating ? '暂停自转' : '开启自转';
+        btn.classList.toggle('active', isRotating);
+      }
     }
 
     function animate() {
       requestAnimationFrame(animate);
-      if (isRotating && !isDragging) {
+
+      if (isFlying && !isDragging) {
+        earthMesh.rotation.x += (targetRotX - earthMesh.rotation.x) * 0.05;
+        earthMesh.rotation.y += (targetRotY - earthMesh.rotation.y) * 0.05;
+        cloudMesh.rotation.x = earthMesh.rotation.x;
+        cloudMesh.rotation.y = earthMesh.rotation.y;
+
+        if (Math.abs(targetRotX - earthMesh.rotation.x) < 0.002 && Math.abs(targetRotY - earthMesh.rotation.y) < 0.002) {
+          isFlying = false;
+        }
+      } else if (isRotating && !isDragging) {
         earthMesh.rotation.y += 0.0004;
         cloudMesh.rotation.y += 0.00052;
       }
+
+      // 3D 虚线航线顺滑光速流动与视角自适应密度控制 (Dynamic Dash Density Attenuation)
+      if (originMarkerMesh && camera) {
+        const line = originMarkerMesh.getObjectByName('dashFlightLine');
+        if (line && line.material) {
+          line.material.dashOffset -= 0.0012;
+
+          // 根据相机 Z 轴视距动态计算 scale：镜头拉近 (camera.position.z 变小) 时，scale 显著提升，虚线段数动态翻倍自适应增多！
+          const cameraDist = camera.position.z;
+          const densityScale = Math.max(1.0, Math.min(5.5, 7.8 / Math.max(0.8, cameraDist - 0.5)));
+          line.material.scale = densityScale;
+        }
+      }
+
+      // 仅单点航标时才放缩航标本身，避免包含航线的 routeGroup 坐标系被放大抛入天空
+      if (originMarkerMesh && camera) {
+        const dist = camera.position.z;
+        const ratio = Math.max(0.3, Math.min(2.0, dist / 4.2));
+        const s = Math.pow(ratio, 1.85);
+
+        if (originMarkerMesh.isSingleBeacon) {
+          originMarkerMesh.scale.set(s, s, s);
+        } else {
+          // 多节点航线模式下，只对里面的子航标进行尺寸自适应，绝对不动地表坐标与航线的几何数据！
+          originMarkerMesh.scale.set(1, 1, 1);
+          originMarkerMesh.traverse((child) => {
+            if (child.name === 'beaconSubGroup') {
+              child.scale.set(s, s, s);
+            }
+          });
+        }
+      }
+
       // 银河背景极其微弱悠扬自转 + 恒星呼吸微光闪烁
       if (skyMesh) skyMesh.rotation.y += 0.00005;
       if (stars) {

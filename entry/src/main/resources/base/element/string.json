@@ -11,6 +11,10 @@
     {
       "name": "EntryAbility_label",
       "value": "label"
+    },
+    {
+      "name": "location_permission_reason",
+      "value": "获取您的位置信息以自动选择距离您最近的出发机场"
     }
   ]
 }

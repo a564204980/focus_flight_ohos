@@ -1,6 +1,7 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
+import { LocationService } from '../services/LocationService';
 
 const DOMAIN = 0x0000;
 
@@ -8,6 +9,7 @@ export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     try {
       this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+      AppStorage.setOrCreate('abilityContext', this.context);
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
     }
@@ -29,14 +31,24 @@ export default class EntryAbility extends UIAbility {
       }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
 
-      // 内容加载完成后开启窗口沉浸式全屏
+      // 内容加载完成后开启窗口沉浸式全屏与导航栏暗色沉浸
       windowStage.getMainWindow().then((windowClass) => {
         if (windowClass) {
           windowClass.setWindowLayoutFullScreen(true);
+          windowClass.setWindowBackgroundColor('#020617');
+          windowClass.setWindowSystemBarProperties({
+            statusBarColor: '#00000000',
+            navigationBarColor: '#00000000',
+            statusBarContentColor: '#FFFFFF',
+            navigationBarContentColor: '#FFFFFF'
+          });
         }
       }).catch((error: Error) => {
         hilog.error(DOMAIN, 'testTag', 'Failed to setWindowLayoutFullScreen: %{public}s', JSON.stringify(error));
       });
+
+      // 主动唤起位置权限预热申请
+      LocationService.requestLocationAndGetNearestAirport(this.context);
     });
   }
 
