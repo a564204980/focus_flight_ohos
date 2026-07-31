@@ -208,20 +208,8 @@ export struct EarthGlobe {
       ctx.arc(sx, sy, size, 0, Math.PI * 2);
       ctx.fill();
     }
+    // 3. 基础设置重置
     ctx.globalAlpha = 1.0;
-
-    // 3. 绘制外围大气发光层 (Atmosphere Glow)
-    if (this.showAtmosphere) {
-      const atmosphereGlow = ctx.createRadialGradient(cx, cy, radius * 0.95, cx, cy, radius * 1.25);
-      atmosphereGlow.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
-      atmosphereGlow.addColorStop(0.5, 'rgba(14, 165, 233, 0.2)');
-      atmosphereGlow.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
-
-      ctx.fillStyle = atmosphereGlow;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius * 1.25, 0, Math.PI * 2);
-      ctx.fill();
-    }
 
     // 4. 绘制海洋球底体与立体渐变球底
     const oceanGradient = ctx.createRadialGradient(
@@ -432,12 +420,28 @@ export struct EarthGlobe {
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.fill();
 
-    // 8. 外边缘精细弧圈
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.stroke();
+    // 8. 顶层菲涅尔大气发光散射层 (Fresnel Rim Atmosphere Glow - 完美匹配图2效果)
+    if (this.showAtmosphere) {
+      const atmosphereOverlay = ctx.createRadialGradient(
+        cx,
+        cy,
+        radius * 0.85,
+        cx,
+        cy,
+        radius * 1.15
+      );
+      atmosphereOverlay.addColorStop(0.0, 'rgba(38, 143, 255, 0.0)');      // 内部完全透明，不遮挡陆地贴图
+      atmosphereOverlay.addColorStop(0.40, 'rgba(56, 189, 248, 0.20)');    // 靠近边缘内部呈现微蓝散射
+      atmosphereOverlay.addColorStop(0.50, 'rgba(186, 230, 253, 0.70)');   // 地平线切线边缘(1.0*radius)呈最亮通透冰蓝霞光
+      atmosphereOverlay.addColorStop(0.65, 'rgba(56, 189, 248, 0.35)');    // 向外柔和扩展
+      atmosphereOverlay.addColorStop(0.85, 'rgba(14, 165, 233, 0.08)');    // 极微弱深蓝微光
+      atmosphereOverlay.addColorStop(1.0, 'rgba(2, 132, 199, 0.0)');       // 1.15*radius 处完全无缝归零融入黑夜
+
+      ctx.fillStyle = atmosphereOverlay;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 1.15, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   /**

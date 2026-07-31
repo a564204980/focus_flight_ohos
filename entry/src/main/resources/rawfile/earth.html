@@ -97,6 +97,11 @@
           float factor = smoothstep(-0.12, 0.12, sunDot);
           vec3 finalColor = mix(nightResult, dayResult, factor);
 
+          // 4. 地球地平线边缘深空薄纱霞光 (Atmosphere Inner Rim Light)
+          float rim = pow(1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.5);
+          vec3 rimGlow = vec3(0.08, 0.24, 0.50) * rim * mix(0.06, 0.28, smoothstep(-0.20, 0.20, sunDot));
+          finalColor += rimGlow;
+
           gl_FragColor = vec4(finalColor, 1.0);
         }
       `
@@ -141,6 +146,52 @@
       `
     };
 
+    const atmosphereShader = {
+      uniforms: {
+        sunDir: { value: SUN_DIR }
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vViewPosition = mvPosition.xyz;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 sunDir;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+        void main() {
+          // View vector V and Normal vector N
+          vec3 V = normalize(-vViewPosition);
+          vec3 N = normalize(vNormal);
+
+          // 在几何最外圆弧边界处，N 与 V 垂直，viewDot 精确等于 0.0！
+          float viewDot = abs(dot(N, V));
+
+          // 核心修复：最外边界 (viewDot -> 0) alpha 必须严格降为 0.0！
+          // 向内靠近地球表面时，平滑无级过渡上升 (Smoothstep & Power falloff)
+          float intensity = pow(smoothstep(0.0, 0.60, viewDot), 2.0);
+
+          // 太阳受光控制 (Sun direction factor)
+          float sunDot = dot(N, sunDir);
+          float sunFactor = smoothstep(-0.35, 0.35, sunDot);
+
+          // 高质感深空色调：暗靛蓝与石青色
+          vec3 dayAtmosphere   = vec3(0.08, 0.26, 0.56);
+          vec3 nightAtmosphere = vec3(0.02, 0.06, 0.18);
+          vec3 atmosphereColor = mix(nightAtmosphere, dayAtmosphere, sunFactor);
+
+          // 最外边界透明度为 0.0，向内自然过渡，绝对零硬框！
+          float alpha = intensity * mix(0.06, 0.24, sunFactor);
+          gl_FragColor = vec4(atmosphereColor, alpha);
+        }
+      `
+    };
+
     function loadTex(dataUrl) {
       const img = new Image();
       const tex = new THREE.Texture(img);
@@ -155,7 +206,7 @@
     function init() {
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 1000);
-      camera.position.z = 4.8;
+      camera.position.z = 5.2;
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(innerWidth, innerHeight);
@@ -166,7 +217,7 @@
       nightTex = loadTex(NIGHT_B64);
       cloudTex = loadTex(CLOUD_B64);
 
-      // 1. 地球主体
+      // 1. 地球主体 (基础半径 1.35，支持缩放到极精致微型模式)
       earthMat = new THREE.ShaderMaterial({
         uniforms: THREE.UniformsUtils.clone(shader.uniforms),
         vertexShader: shader.vertexShader,
@@ -175,14 +226,14 @@
       earthMat.uniforms.dayTex.value   = dayTex;
       earthMat.uniforms.nightTex.value = nightTex;
 
-      const radius = 1.6;
+      const radius = 1.35;
       const geo = new THREE.SphereGeometry(radius, 64, 64);
       earthMesh = new THREE.Mesh(geo, earthMat);
       earthMesh.rotation.x = 0.2;
       earthMesh.rotation.y = -1.2;
       scene.add(earthMesh);
 
-      // 2. 3D 浮动云层 (半径 1.018 倍)
+      // 2. 3D 浮动云层
       const cloudMat = new THREE.ShaderMaterial({
         uniforms: { cloudTex: { value: cloudTex }, sunDir: { value: SUN_DIR } },
         vertexShader: cloudShader.vertexShader,
@@ -195,17 +246,17 @@
       cloudMesh.rotation.y = -1.2;
       scene.add(cloudMesh);
 
-      // 3. 大气微光发光层
-      glowMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(radius * 1.05, 32, 32),
-        new THREE.MeshBasicMaterial({
-          color: 0x38BDF8,
-          transparent: true,
-          opacity: 0.22,
-          blending: THREE.AdditiveBlending,
-          side: THREE.BackSide
-        })
-      );
+      // 3. 高质感深空羽化大气气雾层
+      const atmosphereMat = new THREE.ShaderMaterial({
+        uniforms: { sunDir: { value: SUN_DIR } },
+        vertexShader: atmosphereShader.vertexShader,
+        fragmentShader: atmosphereShader.fragmentShader,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide,
+        transparent: true,
+        depthWrite: false
+      });
+      glowMesh = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.15, 64, 64), atmosphereMat);
       scene.add(glowMesh);
 
       // 4. 背景深空星野
@@ -218,8 +269,14 @@
       }));
       scene.add(stars);
 
-      // 5. 触控与手势交互
+      // 5. 触控、鼠标滚轮与双指缩放交互
       const el = renderer.domElement;
+
+      el.addEventListener('wheel', e => {
+        const factor = e.deltaY > 0 ? 1.08 : 0.92;
+        camera.position.z = Math.max(1.8, Math.min(16.0, camera.position.z * factor));
+      }, { passive: true });
+
       el.addEventListener('touchstart', e => {
         if (e.touches.length === 1) {
           isDragging = true;
@@ -238,9 +295,10 @@
           earthMesh.rotation.x += dy;
           cloudMesh.rotation.x += dy;
           prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        } else if (e.touches.length === 2) {
+        } else if (e.touches.length === 2 && pinchStart > 0) {
           const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-          camera.position.z = Math.max(2.5, Math.min(10, camera.position.z * (pinchStart / d > 1 ? 1.02 : 0.98)));
+          const ratio = pinchStart / d;
+          camera.position.z = Math.max(1.8, Math.min(16.0, camera.position.z * Math.pow(ratio, 0.85)));
           pinchStart = d;
         }
       }, { passive: true });
