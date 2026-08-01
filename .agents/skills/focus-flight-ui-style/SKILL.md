@@ -8,8 +8,15 @@ description: >
 
 # Focus Flight UI Design System & Glassmorphism Guidelines
 
-## Overview
-Focus Flight 是一款基于 3D 地球视界的高端「专注/番茄钟」应用。UI 设计风格统一采用 **深空暗黑玻璃拟态 (Dark Glassmorphic Cyber HUD Style)**，在保持极简沉浸专注体验的同时，兼具现代航空与科幻 UI 的重研质感。
+## 核心产品定位与理念 (Core App Essence & Metaphor)
+- **软件本质**: Focus Flight 本质是一款**个人专注与番茄钟高效生产力应用 (Focus & Pomodoro Productivity Application)**。
+- **飞行包装**: “飞行”是该专注软件外层具象化的沉浸式体验包装与意象隐喻：
+  - **航线规划 (Route)** = 制定专注目标与计划
+  - **起飞 (Takeoff)** = 启动专注计时
+  - **平稳巡航 (Cruising)** = 维持沉浸专注状态
+  - **安全降落 (Landing)** = 成功完成专注任务并结算积分/打卡
+  - **机舱选座与机体 (Cabin Seat & Aircraft Overlay)** = 提高专注仪式感与战术沉浸感的交互载体
+- **最高准则**: 所有的 UI 设计、组件交互、文字话术与视觉特效，均必须紧密围绕“助推用户提升专注效率”展开，切勿偏离专注本质。
 
 ---
 

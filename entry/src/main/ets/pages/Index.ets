@@ -1,12 +1,14 @@
 import { webview } from '@kit.ArkWeb';
 import { FocusCheckInCard } from '../components/FocusCheckInCard';
 import { BottomNavBar } from '../components/BottomNavBar';
+import { GiantAircraftOverlay } from '../components/GiantAircraftOverlay';
 import { Airport } from '../models/AirportModel';
 
 /**
  * Index.ets
  * Focus Flight 专注飞行 - 主界面
  * 极简全屏沉浸 3D 地球视界 + 底部中央 FocusCheckInCard 悬浮于 BottomNavBar 正上方
+ * 包含最高层级从屏幕最底部升起覆盖所有 UI 的【巨型飞机阴影选座舱 GiantAircraftOverlay】
  */
 
 @Entry
@@ -15,9 +17,30 @@ struct Index {
   private controller: webview.WebviewController = new webview.WebviewController();
   @State activeTab: number = 0;
   @State isDayMode: boolean = false;
+  @State isGiantAircraftVisible: boolean = false;
+  @State giantAircraftY: string = '100%';
+  @State giantAircraftBackdropOpacity: number = 0;
+  @State bottomPanelOpacity: number = 1;
+  @State bottomPanelOffsetY: string = '0%';
+
   private isWebReady: boolean = false;
   private pendingOrigin: Airport | null = null;
   private pendingDest: Airport | null = null;
+
+  private closeGiantAircraft(): void {
+    this.getUIContext()?.animateTo({
+      duration: 400,
+      curve: Curve.FastOutSlowIn,
+      onFinish: () => {
+        this.isGiantAircraftVisible = false;
+      }
+    }, () => {
+      this.giantAircraftY = '150%';
+      this.giantAircraftBackdropOpacity = 0;
+      this.bottomPanelOpacity = 1;
+      this.bottomPanelOffsetY = '0%';
+    });
+  }
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
@@ -102,6 +125,26 @@ struct Index {
               this.pendingOrigin = origin;
               this.pendingDest = dest;
             }
+          },
+          onRequestSeatSelection: () => {
+            // 触发最高层级：1. 全屏高斯模糊背景优雅淡入
+            this.isGiantAircraftVisible = true;
+            this.getUIContext()?.animateTo({
+              duration: 400,
+              curve: Curve.FastOutSlowIn
+            }, () => {
+              this.giantAircraftBackdropOpacity = 1;
+              this.bottomPanelOpacity = 0;
+              this.bottomPanelOffsetY = '80vp';
+            });
+
+            // 2. 战术机体以顺滑自然曲线(500ms)升起出场
+            this.getUIContext()?.animateTo({
+              duration: 500,
+              curve: Curve.FastOutSlowIn
+            }, () => {
+              this.giantAircraftY = '0%';
+            });
           }
         })
         BottomNavBar({ activeIndex: $activeTab })
@@ -109,6 +152,24 @@ struct Index {
       .width('100%')
       .alignItems(HorizontalAlign.Center)
       .margin({ bottom: 20 })
+      .opacity(this.bottomPanelOpacity)
+      .translate({ y: this.bottomPanelOffsetY })
+
+      // 4. 最高层级 zIndex(9999)：解耦型全屏高斯模糊 + 缓慢移动机体组件
+      if (this.isGiantAircraftVisible) {
+        GiantAircraftOverlay({
+          isVisible: this.isGiantAircraftVisible,
+          backdropOpacity: this.giantAircraftBackdropOpacity,
+          bodyOffsetY: this.giantAircraftY,
+          onConfirmSeat: (seatId: string) => {
+            this.closeGiantAircraft();
+          },
+          onClose: () => {
+            this.closeGiantAircraft();
+          }
+        })
+        .zIndex(9999)
+      }
     }
     .width('100%')
     .height('100%')

@@ -8,4 +8,4 @@
   - Accent Color: `#38BDF8` (Cyber Cyan)
   - Success Color: `#4ADE80`
   - Text: Primary `#F8FAFC`, Secondary `#94A3B8`
-- **Domain Purpose**: Focus Flight is a gamified focus/pomodoro productivity application. Do NOT insert unrelated commercial airline elements (such as money `$83,049K`, ticket sales, or seat classes). Keep the interface pure, immersive, and focus-centered.
+- **Domain Purpose & Metaphor**: Focus Flight fundamentally is a gamified focus/pomodoro productivity application. The "flight" element is an immersive experiential packaging (Route = Focus Goal, Takeoff/Cruising = Focus Session, Landing = Completion, Cabin/Seats = Immersion Ritual). Do NOT insert unrelated commercial airline elements (such as ticket sales or money `$83,049K`). Keep the interface pure, immersive, and focus-centered.
