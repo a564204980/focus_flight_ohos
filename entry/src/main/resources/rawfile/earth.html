@@ -5,8 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Focus Flight 3D Earth</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background-color: #030712; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      -khtml-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #030712;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }
     #container { width: 100%; height: 100%; display: block; }
     #controls {
       position: absolute;
@@ -45,6 +64,7 @@
   <div id="container"></div>
 
 
+
   <script>
     
     
@@ -53,9 +73,29 @@
     let scene, camera, renderer, earthMesh, cloudMesh, glowMesh, stars, borderMesh, skyMesh;
     let dayTex, nightTex, cloudTex, earthMat;
     let isRotating = true, isDragging = false;
+    let beaconSprites = []; // 追踪所有城市标签 Sprite 与其球面法线，用于每帧可见度渐隐
+    let isPositionDragging = false, longPressTimer = null, touchStartPos = { x: 0, y: 0 };
     let prevTouch = { x: 0, y: 0 }, pinchStart = 0;
 
-    const SUN_DIR = new THREE.Vector3(-1.2, 0.2, -0.6).normalize();
+    const NIGHT_SUN_DIR = new THREE.Vector3(-1.0, 0.45, -0.6).normalize();
+    const DAY_SUN_DIR = new THREE.Vector3(0.72, 0.35, 0.38).normalize();
+    const SUN_DIR = NIGHT_SUN_DIR.clone();
+    let currentDayNightMode = 'night';
+
+    window.setDayNightMode = function(mode) {
+      currentDayNightMode = mode;
+      const targetDir = (mode === 'day') ? DAY_SUN_DIR : NIGHT_SUN_DIR;
+      SUN_DIR.copy(targetDir);
+      if (typeof earthMat !== 'undefined' && earthMat && earthMat.uniforms && earthMat.uniforms.sunDir) {
+        earthMat.uniforms.sunDir.value.copy(targetDir);
+      }
+      if (typeof cloudMat !== 'undefined' && cloudMat && cloudMat.uniforms && cloudMat.uniforms.sunDir) {
+        cloudMat.uniforms.sunDir.value.copy(targetDir);
+      }
+      if (typeof atmosphereMat !== 'undefined' && atmosphereMat && atmosphereMat.uniforms && atmosphereMat.uniforms.sunDir) {
+        atmosphereMat.uniforms.sunDir.value.copy(targetDir);
+      }
+    };
 
     const shader = {
       uniforms: {
@@ -107,8 +147,11 @@
           float dayLight = max(0.0, sunDot) * 0.90 + 0.30;
           vec3 dayResult = dayColorSharp * dayLight * 1.18;
 
-          // 2. 黑夜侧: 璀璨星罗城市流光
+          // 2. 黑夜侧: 璀璨星罗城市流光 (暖琥珀橙黄色 - 真实城市灯光色温)
           vec3 cityLights = pow(nightColor, vec3(2.05)) * (6.8 + detail16k * 0.8);
+          // 真实城市灯光色温调制：偏暖橙黄色 (1.0, 0.82, 0.48) - 路灯/钠灯暖色
+          vec3 warmTint = vec3(1.0, 0.80, 0.42);
+          cityLights *= warmTint;
           vec3 nightAmbient = dayColorSharp * vec3(0.18, 0.14, 0.12);
           vec3 nightResult = cityLights + nightAmbient;
 
@@ -235,6 +278,7 @@
 
     function init() {
       scene = new THREE.Scene();
+      scene.position.y = 0.85; // 将 3D 地球在屏幕视角中整体垂直向上平移，留出底部卡片空间
       camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 1000);
       camera.position.z = 5.2;
 
@@ -387,48 +431,142 @@
       }));
       scene.add(stars);
 
-      // 5. 触控、鼠标滚轮与双指缩放交互
+      // 5. 触控、鼠标与长按平移拖动交互
       const el = renderer.domElement;
+
+      function onPointerStart(clientX, clientY) {
+        touchStartPos = { x: clientX, y: clientY };
+        prevTouch = { x: clientX, y: clientY };
+        isPositionDragging = false;
+        if (longPressTimer) clearTimeout(longPressTimer);
+        longPressTimer = setTimeout(() => {
+          isPositionDragging = true;
+          isDragging = false;
+          if (navigator.vibrate) {
+            try { navigator.vibrate(50); } catch(err) {}
+          }
+        }, 350);
+      }
+
+      function onPointerMove(clientX, clientY) {
+        const dist = Math.hypot(clientX - touchStartPos.x, clientY - touchStartPos.y);
+        if (!isPositionDragging && dist > 10) {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+        }
+
+        if (isPositionDragging) {
+          const factor = 0.0035 * (camera.position.z / 5.2);
+          const dx = (clientX - prevTouch.x) * factor;
+          const dy = (clientY - prevTouch.y) * factor;
+
+          scene.position.x = Math.max(-1.8, Math.min(1.8, scene.position.x + dx));
+          scene.position.y = Math.max(-0.2, Math.min(1.6, scene.position.y - dy));
+
+          prevTouch = { x: clientX, y: clientY };
+          return true;
+        }
+        return false;
+      }
+
+      function onPointerEnd() {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        if (isPositionDragging) {
+          isPositionDragging = false;
+        }
+        isDragging = false;
+      }
+
+      // 全局禁止右键上下文菜单与文本选中框弹出
+      window.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
+      window.addEventListener('selectstart', e => { e.preventDefault(); return false; });
+      document.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
+      document.addEventListener('selectstart', e => { e.preventDefault(); return false; });
 
       el.addEventListener('wheel', e => {
         const factor = e.deltaY > 0 ? 1.08 : 0.92;
         camera.position.z = Math.max(1.8, Math.min(16.0, camera.position.z * factor));
       }, { passive: true });
 
+      // Touch 事件
       el.addEventListener('touchstart', e => {
+        if (e.cancelable) e.preventDefault();
         if (e.touches.length === 1) {
           isDragging = true;
-          prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          onPointerStart(e.touches[0].clientX, e.touches[0].clientY);
         } else if (e.touches.length === 2) {
+          onPointerEnd();
           pinchStart = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         }
-      }, { passive: true });
+      }, { passive: false });
 
       el.addEventListener('touchmove', e => {
-        if (e.touches.length === 1 && isDragging) {
-          // 视距自适应手势阻尼系数：放大拉近时自动放慢旋转速度，手感极其细腻跟手
-          const factor = 0.0016 * (camera.position.z / 5.2);
-          const dx = (e.touches[0].clientX - prevTouch.x) * factor;
-          const dy = (e.touches[0].clientY - prevTouch.y) * factor;
-          
-          earthMesh.rotation.y += dx;
-          cloudMesh.rotation.y += dx;
+        if (e.cancelable) e.preventDefault();
+        if (e.touches.length === 1) {
+          const handled = onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+          if (handled) return;
 
-          // 限制 X 轴俯仰角，防止倒扣
-          const newX = Math.max(-0.85, Math.min(0.85, earthMesh.rotation.x + dy));
-          earthMesh.rotation.x = newX;
-          cloudMesh.rotation.x = newX;
-          
-          prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          if (isDragging) {
+            const factor = 0.0016 * (camera.position.z / 5.2);
+            const dx = (e.touches[0].clientX - prevTouch.x) * factor;
+            const dy = (e.touches[0].clientY - prevTouch.y) * factor;
+            
+            earthMesh.rotation.y += dx;
+            cloudMesh.rotation.y += dx;
+
+            earthMesh.rotation.x += dy;
+            cloudMesh.rotation.x += dy;
+            
+            prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }
         } else if (e.touches.length === 2 && pinchStart > 0) {
           const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
           const ratio = pinchStart / d;
           camera.position.z = Math.max(1.8, Math.min(16.0, camera.position.z * Math.pow(ratio, 0.85)));
           pinchStart = d;
         }
-      }, { passive: true });
+      }, { passive: false });
 
-      el.addEventListener('touchend', () => { isDragging = false; });
+      el.addEventListener('touchend', onPointerEnd);
+      el.addEventListener('touchcancel', onPointerEnd);
+
+      // Mouse 事件 (兼容模拟器与 Desktop 拖拽测试)
+      let isMouseDown = false;
+      el.addEventListener('mousedown', e => {
+        isMouseDown = true;
+        isDragging = true;
+        onPointerStart(e.clientX, e.clientY);
+      });
+      window.addEventListener('mousemove', e => {
+        if (!isMouseDown) return;
+        const handled = onPointerMove(e.clientX, e.clientY);
+        if (handled) return;
+
+        if (isDragging) {
+          const factor = 0.0016 * (camera.position.z / 5.2);
+          const dx = (e.clientX - prevTouch.x) * factor;
+          const dy = (e.clientY - prevTouch.y) * factor;
+          
+          earthMesh.rotation.y += dx;
+          cloudMesh.rotation.y += dx;
+
+          earthMesh.rotation.x += dy;
+          cloudMesh.rotation.x += dy;
+          
+          prevTouch = { x: e.clientX, y: e.clientY };
+        }
+      });
+      window.addEventListener('mouseup', () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          onPointerEnd();
+        }
+      });
       window.addEventListener('resize', () => {
         camera.aspect = innerWidth / innerHeight;
         camera.updateProjectionMatrix();
@@ -483,20 +621,20 @@
 
       const centerX = 256;
 
-      // 1. 上行：英文三字码 (如 CTU / PEK) - 52px 字体，下移至 105px 留下舒适的TopPadding与航标拉开间距
+      // 1. 上行：英文三字码 (如 CTU / PEK) - 52px 字体，调至 95px
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '900 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
       ctx.shadowBlur = 10;
-      ctx.fillText(displayCode, centerX, 105);
+      ctx.fillText(displayCode, centerX, 95);
 
-      // 2. 下行：中文城市名 (如 成都 / 北京) - 56px 加粗，紧凑紧随上行 (175px)
+      // 2. 下行：中文城市名 (如 成都 / 北京) - 56px 加粗，调至 155px
       ctx.font = '700 56px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
       ctx.shadowBlur = 10;
-      ctx.fillText(cleanName, centerX, 175);
+      ctx.fillText(cleanName, centerX, 155);
 
       const tex = new THREE.CanvasTexture(cvs);
       tex.needsUpdate = true;
@@ -539,12 +677,16 @@
       beaconGroup.add(centerDotMesh);
 
       // 4. 悬浮 3D 双行城市代码与中文名标签 Sprite
+      // depthTest:false 避免地球球面 Z-buffer 截断边缘文字；改用 animate() 中法线点积渐隐
       const labelTex = createCityLabelTexture(code, label);
-      const spriteMat = new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthTest: false });
+      const spriteMat = new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthTest: false, depthWrite: false });
       const sprite = new THREE.Sprite(spriteMat);
       sprite.scale.set(0.22, 0.11, 1.0);
       sprite.center.set(0.5, 1.0);
+      sprite.position.set(0, 0.015, 0);
       beaconGroup.add(sprite);
+      // 记录 Sprite 与对应球面法线（局部 Y 轴即法线方向），供 animate() 做可见度计算
+      beaconSprites.push({ sprite, beaconGroup });
 
       return { beaconGroup, surfacePos };
     }
@@ -562,6 +704,7 @@
         earthMesh.remove(originMarkerMesh);
         originMarkerMesh = null;
       }
+      beaconSprites = []; // 清空旧航标的 Sprite 追踪列表
 
       const pData = createBeaconGroup(lat, lon, label, code, false);
       pData.beaconGroup.isSingleBeacon = true; // 标记单点航标
@@ -577,6 +720,7 @@
         earthMesh.remove(originMarkerMesh);
         originMarkerMesh = null;
       }
+      beaconSprites = []; // 清空旧航标的 Sprite 追踪列表
 
       const routeGroup = new THREE.Group();
       routeGroup.isSingleBeacon = false; // 标记多节点航线组，绝不放缩球心坐标系！
@@ -693,6 +837,23 @@
         stars.rotation.y += 0.00008;
         stars.material.opacity = 0.75 + Math.sin(Date.now() * 0.0015) * 0.12;
       }
+
+      // 每帧动态计算城市标签 Sprite 的球面法线可见度，边缘/背面渐隐防止文字截断
+      if (beaconSprites.length > 0 && earthMesh && camera) {
+        // 地球中心→摄像机方向（正面城市法线与此同向，dot > 0 → 可见）
+        const centerToCamera = new THREE.Vector3().subVectors(camera.position, scene.position).normalize();
+        beaconSprites.forEach(({ sprite, beaconGroup }) => {
+          // 将 beaconGroup 的局部 Y 轴（球面法线）转换到世界空间
+          const worldNormal = new THREE.Vector3(0, 1, 0);
+          worldNormal.transformDirection(beaconGroup.matrixWorld);
+          // dot > 0: 正面朝向摄像机; dot < 0: 背面
+          const dot = worldNormal.dot(centerToCamera);
+          // 完全正面(dot≥0.3)→opacity=1; 边缘过渡区(dot∈[0,0.3])→线性渐隐; 背面(dot≤0)→opacity=0
+          const opacity = Math.max(0, Math.min(1, dot / 0.3));
+          sprite.material.opacity = opacity;
+        });
+      }
+
       renderer.render(scene, camera);
     }
 

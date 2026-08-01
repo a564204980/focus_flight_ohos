@@ -185,7 +185,7 @@ export struct EarthGlobe {
     const w = this.canvasWidth;
     const h = this.canvasHeight;
     const cx = w / 2;
-    const cy = h / 2;
+    const cy = h * 0.38;
     const radius = Math.min(w, h) * 0.38 * this.globeScale;
 
     ctx.clearRect(0, 0, w, h);

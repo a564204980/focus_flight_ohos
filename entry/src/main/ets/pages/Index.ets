@@ -14,6 +14,7 @@ import { Airport } from '../models/AirportModel';
 struct Index {
   private controller: webview.WebviewController = new webview.WebviewController();
   @State activeTab: number = 0;
+  @State isDayMode: boolean = false;
   private isWebReady: boolean = false;
   private pendingOrigin: Airport | null = null;
   private pendingDest: Airport | null = null;
@@ -33,9 +34,17 @@ struct Index {
         .imageAccess(true)
         .onlineImageAccess(true)
         .javaScriptAccess(true)
+        .copyOptions(CopyOptions.None)
         .mixedMode(MixedMode.All)
         .onPageEnd(() => {
           this.isWebReady = true;
+          if (this.isDayMode) {
+            try {
+              this.controller.runJavaScript("if (typeof window.setDayNightMode === 'function') { window.setDayNightMode('day'); }");
+            } catch (err) {
+              // 防御捕获异常
+            }
+          }
           if (this.pendingOrigin && this.pendingDest) {
             this.triggerDrawRoute(this.pendingOrigin, this.pendingDest);
             this.pendingOrigin = null;
@@ -47,7 +56,39 @@ struct Index {
         })
         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
 
-      // 2. 底部中央大悬浮面板层 (FocusCheckInCard 位于 BottomNavBar 正上方)
+      // 2. 右上角 Cyber HUD 昼夜模式切换按钮
+      Row() {
+        Row({ space: 6 }) {
+          Text(this.isDayMode ? '☀️' : '🌙')
+            .fontSize(14)
+          Text(this.isDayMode ? '白天' : '夜景')
+            .fontSize(12)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.isDayMode ? '#F59E0B' : '#38BDF8')
+        }
+        .padding({ left: 12, right: 14, top: 8, bottom: 8 })
+        .backgroundColor(this.isDayMode ? 'rgba(15, 23, 42, 0.78)' : 'rgba(10, 15, 26, 0.78)')
+        .border({ width: 1, color: this.isDayMode ? 'rgba(245, 158, 11, 0.45)' : 'rgba(56, 189, 248, 0.35)' })
+        .borderRadius(20)
+        .backdropBlur(16)
+        .shadow({ radius: 10, color: this.isDayMode ? 'rgba(245, 158, 11, 0.25)' : 'rgba(56, 189, 248, 0.2)' })
+        .onClick(() => {
+          this.isDayMode = !this.isDayMode;
+          const modeStr = this.isDayMode ? 'day' : 'night';
+          try {
+            this.controller.runJavaScript(`if (typeof window.setDayNightMode === 'function') { window.setDayNightMode('${modeStr}'); }`);
+          } catch (err) {
+            // 防御捕获异常
+          }
+        })
+      }
+      .width('100%')
+      .justifyContent(FlexAlign.End)
+      .position({ x: 0, y: 48 })
+      .padding({ right: 16 })
+      .hitTestBehavior(HitTestMode.Transparent)
+
+      // 3. 底部中央大悬浮面板层 (FocusCheckInCard 位于 BottomNavBar 正上方)
       Column({ space: 12 }) {
         FocusCheckInCard({
           onRouteChanged: (origin: Airport, dest: Airport | null) => {
