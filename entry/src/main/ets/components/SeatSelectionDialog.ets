@@ -320,7 +320,7 @@ export struct SeatSelectionDialog {
   }
 
   private isSeatOccupied(row: number, col: string): boolean {
-    return (row === 1 && (col === 'A' || col === 'B')) || (row === 3 && col === 'C') || (row === 4 && col === 'F');
+    return false;
   }
 
   // 单个座位 1:1 对标图 1 的真实渲染 Item

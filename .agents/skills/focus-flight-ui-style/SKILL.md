@@ -22,14 +22,14 @@ description: >
 
 ## 视觉基因与 Design Tokens (Design DNA)
 
-1. **色彩系统 (Color System)**:
-   - **深空背景 (Base Background)**: `#020617` / `#030712` (夜空极暗蓝)
-   - **玻璃拟态容器 (Glass Panel)**: `rgba(10, 15, 26, 0.82–0.88)`
-   - **微光边框 (Hairline Border)**: `1px solid rgba(255, 255, 255, 0.12–0.15)`
-   - **高亮/主色调 (Accent Cyan)**: `#38BDF8` (电光蓝 / 品牌色)
-   - **成功/积极状态 (Success Green)**: `#4ADE80` (绿色)
-   - **警告/进度 (Warning Amber)**: `#F59E0B` (暖黄)
-   - **文本颜色**: 标题与主字 `#F8FAFC` (纯白/柔白)，次要字与图标 `#94A3B8` / `#64748B` (板岩灰)
+1. **色彩系统 (Color System - 航空高奢战术 Token)**:
+   - **深虚空夜色底板 (Midnight Void)**: `#050914` / `#0A0F1D` (飞行员舱位夜色)
+   - **玻璃拟态容器 (Glass Panel)**: `#0D1322` / `rgba(13, 19, 34, 0.88)`
+   - **发丝发光线框 (Hairline Border)**: `1px solid rgba(14, 165, 233, 0.25)` 或 `1px solid #1E293B`
+   - **高奢品牌电光主色 (Flight Ice Blue)**: `#0EA5E9` (极地电光冰蓝 / 取代普通天蓝)
+   - **翡翠仪表绿 (Emerald Flight Green)**: `#10B981` (对标高级跑道/准点状态绿，取代刺眼普通绿)
+   - **琥珀战术黄 (Amber Gold)**: `#F59E0B` (仪表盘 Warning 与延误提示)
+   - **文本颜色**: 标题主字 `#F8FAFC` (纯白)，次要字与图标 `#94A3B8` / `#64748B` (板岩灰)
 
 2. **圆角与阴影 (Radius & Elevation)**:
    - 悬浮外壳胶囊: `borderRadius(20)` ~ `borderRadius(28)`
@@ -68,3 +68,12 @@ Row() { ... }
 - 严禁加入与专注体验无关的商业资金（如 `$83,049K`）、机票销售等商业游戏化杂质。
 - 严禁在全屏暗黑 3D 地球背景上使用纯白实色塑料块 (`#FFFFFF`)。
 - 确保所有 `animateTo` 均使用 `this.getUIContext()?.animateTo(...)` 避免 API 告警。
+
+---
+
+### 5. 公共组件与原生组件使用规范 (Common & Native Components First)
+- **多用公共组件 (Reusable Components)**:
+  - 遇到通用 UI 元素（如 HUD 返回按钮 `BackButton.ets`、顶栏 `TopHeaderBar.ets`、战术浮卡等），必须优先提炼并在 `components/` 目录下封装公共组件，严禁在各 Page / Overlay 中粗暴硬编码重复内联 UI 逻辑。
+- **多用原生组件与原生弹窗 (ArkUI Native Components & CustomDialog)**:
+  - 遇到底部抽屉/面板弹窗需求（如机场选择、机舱选座登机牌等），**必须优先使用 HarmonyOS ArkUI 原生 `@CustomDialog` + `CustomDialogController({ alignment: DialogAlignment.Bottom, customStyle: true })` 机制**（参考 `AirportSelectDialog.ets` 与 `SeatSelectBoardingDialog.ets`）。
+  - 利用 HarmonyOS 系统底层的深色半透明蒙层、吸附动画与防错位抖动，严禁自行使用绝对定位手写伪弹窗。

@@ -58,7 +58,7 @@ struct SeatSelectionPage {
   }
 
   private isSeatOccupied(row: number, col: string): boolean {
-    return (row === 1 && (col === 'A' || col === 'B')) || (row === 3 && col === 'C') || (row === 4 && (col === 'E' || col === 'F')) || (row === 6 && col === 'D');
+    return false;
   }
 
   build() {

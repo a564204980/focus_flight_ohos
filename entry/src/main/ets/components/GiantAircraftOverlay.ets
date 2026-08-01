@@ -1,4 +1,6 @@
 import { vibrator } from '@kit.SensorServiceKit';
+import { BackButton } from './BackButton';
+import { SeatSelectBoardingDialog } from './SeatSelectBoardingDialog';
 
 /**
  * GiantAircraftOverlay.ets
@@ -13,14 +15,15 @@ export struct GiantAircraftOverlay {
   @Prop destCode: string = 'CDG';
   @Prop backdropOpacity: number = 0;
   @Prop bodyOffsetY: string = '100%';
-  @State selectedSeatId: string = '1F';
-  onConfirmSeat?: (seatId: string) => void;
+  @State selectedSeatId: string = '';
+  onConfirmSeat?: (seatId: string, taskTitle: string, durationMin: number) => void;
   onClose?: () => void;
 
   private scroller: Scroller = new Scroller();
+  private dialogController: CustomDialogController | null = null;
 
-  // 模拟已占用座位 (不可选)
-  private occupiedSeats: Array<string> = ['1B', '2E', '4A', '5F', '6B', '8C', '9E', '12B', '14F'];
+  // 所有座位均开放选择 (无占用限制)
+  private occupiedSeats: Array<string> = [];
 
   private triggerHaptic(): void {
     try {
@@ -36,7 +39,31 @@ export struct GiantAircraftOverlay {
     }
   }
 
-  // 渲染图 1 风格的精细矢量座椅组件 (无论是否选中均保持双侧扶手结构完整)
+  private openBoardingDialog(seatId: string): void {
+    this.selectedSeatId = seatId;
+    this.dialogController = new CustomDialogController({
+      builder: SeatSelectBoardingDialog({
+        seatId: seatId,
+        flightNo: this.flightNo,
+        originCode: this.originCode,
+        destCode: this.destCode,
+        onConfirmSeat: (sId: string, taskTitle: string, dur: number) => {
+          if (this.onConfirmSeat) {
+            this.onConfirmSeat(sId, taskTitle, dur);
+          }
+          if (this.onClose) {
+            this.onClose();
+          }
+        }
+      }),
+      alignment: DialogAlignment.Bottom,
+      customStyle: true,
+      offset: { dx: 0, dy: 0 }
+    });
+    this.dialogController.open();
+  }
+
+  // 渲染图 1 风格的精细矢量座椅组件 (全舱座位开放点选)
   @Builder
   renderFig1Seat(seatId: string) {
     Row() {
@@ -48,8 +75,7 @@ export struct GiantAircraftOverlay {
             .width(3.5)
             .height(24)
             .backgroundColor(
-              this.selectedSeatId === seatId ? '#007AFF' :
-              (this.occupiedSeats.includes(seatId) ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.45)')
+              this.selectedSeatId === seatId ? '#0EA5E9' : 'rgba(255, 255, 255, 0.45)'
             )
             .borderRadius(1.5)
 
@@ -59,16 +85,15 @@ export struct GiantAircraftOverlay {
               .width('100%')
               .height('100%')
               .backgroundColor(
-                this.selectedSeatId === seatId ? '#007AFF' :
-                (this.occupiedSeats.includes(seatId) ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.28)')
+                this.selectedSeatId === seatId ? '#0EA5E9' : 'rgba(255, 255, 255, 0.28)'
               )
               .borderRadius(3)
 
             if (this.selectedSeatId === seatId) {
               Text('✓')
-                .fontSize(13)
+                .fontSize(12)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#FFFFFF')
+                .fontColor('#F8FAFC')
             }
           }
           .width(23)
@@ -79,8 +104,7 @@ export struct GiantAircraftOverlay {
             .width(3.5)
             .height(24)
             .backgroundColor(
-              this.selectedSeatId === seatId ? '#007AFF' :
-              (this.occupiedSeats.includes(seatId) ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.45)')
+              this.selectedSeatId === seatId ? '#0EA5E9' : 'rgba(255, 255, 255, 0.45)'
             )
             .borderRadius(1.5)
         }
@@ -91,24 +115,18 @@ export struct GiantAircraftOverlay {
           .width(36)
           .height(5)
           .backgroundColor(
-            this.selectedSeatId === seatId ? '#007AFF' :
-            (this.occupiedSeats.includes(seatId) ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.45)')
+            this.selectedSeatId === seatId ? '#0EA5E9' : 'rgba(255, 255, 255, 0.45)'
           )
           .borderRadius(1.5)
       }
+      .alignItems(HorizontalAlign.Center)
     }
     .width(38)
     .height(36)
     .justifyContent(FlexAlign.Center)
     .onClick(() => {
-      if (this.occupiedSeats.includes(seatId)) {
-        return;
-      }
       this.triggerHaptic();
-      this.selectedSeatId = seatId;
-      if (this.onConfirmSeat) {
-        this.onConfirmSeat(seatId);
-      }
+      this.openBoardingDialog(seatId);
     })
   }
 
@@ -225,6 +243,16 @@ export struct GiantAircraftOverlay {
       .height('100%')
       .translate({ y: this.bodyOffsetY })
       .hitTestBehavior(HitTestMode.Default)
+
+      // 3. 左上角复用 HUD 纯透玻璃质感 BackButton 公共组件
+      BackButton({
+        opacityValue: this.backdropOpacity,
+        onClickAction: () => {
+          if (this.onClose) {
+            this.onClose();
+          }
+        }
+      })
     }
     .width('100%')
     .height('100%')

@@ -161,7 +161,7 @@ struct Index {
           isVisible: this.isGiantAircraftVisible,
           backdropOpacity: this.giantAircraftBackdropOpacity,
           bodyOffsetY: this.giantAircraftY,
-          onConfirmSeat: (seatId: string) => {
+          onConfirmSeat: (seatId: string, taskTitle?: string, durationMin?: number) => {
             this.closeGiantAircraft();
           },
           onClose: () => {
