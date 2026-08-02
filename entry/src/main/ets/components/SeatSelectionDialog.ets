@@ -116,27 +116,37 @@ export struct SeatSelectionDialog {
       // 2. 机舱与座位可滚动视图区域 (包含 1:1 弧形机头轮廓)
       Scroll() {
         Column({ space: 16 }) {
-          // 2a. 1:1 对标图 1：机头弧形轮廓 & 4 扇驾驶舱风挡玻璃 (Airplane Nose Cockpit)
+          // 2a. 1:1 对标图 1：完整飞机机头（包含尖锐雷达罩与 4 扇驾驶舱风挡玻璃，保持大尺寸不变形）
           Stack({ alignContent: Alignment.Top }) {
-            // 机头外壳拱形
+            // 1) 顶部尖锐机头雷达罩 (Nose Cone Tip)
+            Column()
+              .width(76)
+              .height(50)
+              .backgroundColor('rgba(255, 255, 255, 0.04)')
+              .border({ width: 1.5, color: 'rgba(255, 255, 255, 0.15)', radius: { topLeft: 38, topRight: 38 } })
+              .borderRadius({ topLeft: 38, topRight: 38 })
+              .offset({ y: 0 })
+
+            // 2) 机头主体外壳 (Fuselage Body)
             Column()
               .width(240)
-              .height(130)
+              .height(120)
               .backgroundColor('rgba(255, 255, 255, 0.04)')
               .border({ width: 1.5, color: 'rgba(255, 255, 255, 0.15)', radius: { topLeft: 120, topRight: 120 } })
               .borderRadius({ topLeft: 120, topRight: 120 })
+              .offset({ y: 32 })
 
-            // 驾驶舱风挡玻璃弧形挡板 4 块 (Cockpit Windows)
+            // 3) 驾驶舱风挡玻璃弧形挡板 4 块 (Cockpit Windows)
             Row({ space: 6 }) {
               Row().width(42).height(24).backgroundColor('rgba(2, 6, 23, 0.85)').borderRadius({ topLeft: 12, topRight: 4 })
               Row().width(42).height(24).backgroundColor('rgba(2, 6, 23, 0.85)').borderRadius({ topLeft: 4, topRight: 4 })
               Row().width(42).height(24).backgroundColor('rgba(2, 6, 23, 0.85)').borderRadius({ topLeft: 4, topRight: 4 })
               Row().width(42).height(24).backgroundColor('rgba(2, 6, 23, 0.85)').borderRadius({ topLeft: 4, topRight: 12 })
             }
-            .offset({ y: 48 })
+            .offset({ y: 80 })
           }
           .width('100%')
-          .height(110)
+          .height(152)
 
           // 2b. 商务舱 Header
           Column({ space: 10 }) {

@@ -1,0 +1,16 @@
+{
+  "configuration_version": "1.0",
+  "app_info": {
+    "app_id": "6917612569653937782",
+    "package_name": "com.example.focus_flight_ohos"
+  },
+  "client": {
+    "client_id": "2007991352024915776",
+    "client_secret": "1d02abff4f3fe74a702a1c6f5c7ea4921081de4f1ff6a948331868c9b6bb62e0"
+  },
+  "service": {
+    "map": {
+      "app_id": "6917612569653937782"
+    }
+  }
+}

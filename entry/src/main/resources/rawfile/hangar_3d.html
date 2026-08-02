@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Focus Flight 3D Cyber Hangar</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #050914;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #F8FAFC;
+    }
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    /* 战术 HUD 覆盖层 */
+    .hud-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+    }
+    .hud-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .hud-title-box {
+      background: rgba(13, 19, 34, 0.85);
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      border-radius: 12px;
+      padding: 10px 14px;
+      backdrop-filter: blur(12px);
+    }
+    .hud-tag {
+      font-size: 10px;
+      font-weight: bold;
+      color: #0EA5E9;
+      letter-spacing: 1.5px;
+      margin-bottom: 4px;
+    }
+    .hud-model-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: #F8FAFC;
+    }
+    .hud-sub {
+      font-size: 11px;
+      color: #94A3B8;
+    }
+    /* 模式切换按键 */
+    .hud-controls {
+      pointer-events: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .hud-btn {
+      background: rgba(13, 19, 34, 0.85);
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      border-radius: 18px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #0EA5E9;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+      transition: all 0.2s ease;
+    }
+    .hud-btn.active {
+      background: rgba(14, 165, 233, 0.25);
+      border-color: #0EA5E9;
+      color: #F8FAFC;
+      box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
+    }
+    .hud-btn-zoom {
+      background: rgba(13, 19, 34, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #10B981;
+    }
+    /* 右侧悬浮缩放战术按键组 */
+    .zoom-dock {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 50;
+    }
+    .zoom-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 21px;
+      background: rgba(13, 19, 34, 0.88);
+      border: 1px solid rgba(14, 165, 233, 0.45);
+      color: #F8FAFC;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .zoom-btn:active {
+      transform: scale(0.92);
+      background: rgba(14, 165, 233, 0.3);
+    }
+    /* 底栏战术指标 */
+    .hud-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .hud-metric-card {
+      background: rgba(13, 19, 34, 0.85);
+      border: 1px solid #1E293B;
+      border-radius: 10px;
+      padding: 8px 12px;
+      backdrop-filter: blur(12px);
+    }
+    .hud-metric-label {
+      font-size: 9px;
+      color: #64748B;
+    }
+    .hud-metric-val {
+      font-size: 12px;
+      font-weight: bold;
+      color: #10B981;
+    }
+    /* 极速加载指示器 */
+    #loading-bar-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 250px;
+      text-align: center;
+      background: rgba(13, 19, 34, 0.92);
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      border-radius: 14px;
+      padding: 18px;
+      backdrop-filter: blur(16px);
+      z-index: 100;
+    }
+    .loading-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #0EA5E9;
+      margin-bottom: 8px;
+    }
+    .progress-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #0EA5E9;
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <!-- 极速 3D 加载条 -->
+  <div id="loading-bar-container">
+    <div class="loading-title">加载 3D 战术战机 (b737_800.glb)...</div>
+    <div class="progress-track">
+      <div id="progress-fill" class="progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- 右侧悬浮 3D 缩放控制组 -->
+  <div class="zoom-dock">
+    <div id="btn-zoom-in" class="zoom-btn" title="放大视角">➕</div>
+    <div id="btn-zoom-out" class="zoom-btn" title="缩小视角">➖</div>
+    <div id="btn-reset" class="zoom-btn" style="font-size: 12px;" title="重置视角">🎯</div>
+  </div>
+
+  <!-- 战术 HUD UI 覆盖层 -->
+  <div class="hud-overlay">
+    <div class="hud-header">
+      <div class="hud-title-box">
+        <div class="hud-tag">3D HOLOGRAM VIEWER</div>
+        <div class="hud-model-name">Boeing 737-800 战术客机</div>
+        <div class="hud-sub">4K Navy Ice 极光涂装 · 双指捏合 / 按钮缩放</div>
+      </div>
+      <div class="hud-controls">
+        <button id="btn-livery" class="hud-btn active">🎨 4K 极光涂装</button>
+        <button id="btn-wireframe" class="hud-btn">🌐 全息线框</button>
+        <button id="btn-rotate" class="hud-btn active">🔄 巡航旋转</button>
+      </div>
+    </div>
+
+    <div class="hud-footer">
+      <div class="hud-metric-card">
+        <div class="hud-metric-label">3D MODEL & LIVERY</div>
+        <div class="hud-metric-val">b737_800.glb + Navy Ice 4K Map</div>
+      </div>
+      <div class="hud-metric-card">
+        <div class="hud-metric-label">STATUS</div>
+        <div class="hud-metric-val">● 3D RENDER READY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入 Three.js、解耦 GLTF 解析器与 Base64 3D 模型 + 4K 涂装贴图数据 -->
+  <script src="js/three.min.js"></script>
+  <script src="js/GLTFLoader.js"></script>
+  <script src="js/OrbitControls.js"></script>
+  <script src="js/b737_800_data.js"></script>
+  <script src="js/b737_800_livery_data.js"></script>
+
+  <script>
+    let scene, camera, renderer, controls, loadedMesh = null;
+    let liveryTexture = null;
+    let isWireframe = false;
+    let isLiveryActive = true;
+
+    function base64ToArrayBuffer(base64) {
+      var binary_string = window.atob(base64);
+      var len = binary_string.length;
+      var bytes = new Uint8Array(len);
+      for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+
+    function init() {
+      const container = document.getElementById('canvas-container');
+
+      // 1. Scene & Background
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x050914);
+
+      // 2. Camera
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(20, 10, 30);
+
+      // 3. Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      // 4. Orbit Controls (支持双指捏合缩放)
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 1.2;
+
+      // 5. Lighting System (极暗高奢夜色电光)
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+      scene.add(ambientLight);
+
+      const cyanPointLight = new THREE.PointLight(0x0EA5E9, 2.2, 100);
+      cyanPointLight.position.set(10, 20, 15);
+      scene.add(cyanPointLight);
+
+      const greenPointLight = new THREE.PointLight(0x10B981, 1.5, 100);
+      greenPointLight.position.set(-15, -10, -10);
+      scene.add(greenPointLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+      dirLight.position.set(5, 12, 10);
+      scene.add(dirLight);
+
+      // Grid Floor (Cyber 网格地板)
+      const gridHelper = new THREE.GridHelper(60, 40, 0x0EA5E9, 0x1E293B);
+      gridHelper.position.y = -5;
+      scene.add(gridHelper);
+
+      // 6. Preload 4K Livery Texture
+      if (typeof B737_800_LIVERY_BASE64 !== 'undefined' && B737_800_LIVERY_BASE64) {
+        const textureLoader = new THREE.TextureLoader();
+        liveryTexture = textureLoader.load(B737_800_LIVERY_BASE64);
+        liveryTexture.flipY = false; // GLTF standard UV flip
+      }
+
+      // 7. Load GLB Model from Base64 Data Script (100% Reliable in Webview)
+      loadModel();
+
+      window.addEventListener('resize', onWindowResize, false);
+      setupUIEvents();
+      animate();
+    }
+
+    function applyTextureToMesh(mesh, useTexture) {
+      mesh.traverse(function (child) {
+        if (child.isMesh && child.material) {
+          child.material.wireframe = isWireframe;
+          if (isWireframe) {
+            child.material.color.setHex(0x0EA5E9);
+          } else if (useTexture && liveryTexture) {
+            child.material.map = liveryTexture;
+            child.material.color.setHex(0xffffff);
+            child.material.needsUpdate = true;
+          } else {
+            child.material.map = null;
+            child.material.color.setHex(0x0EA5E9);
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+    }
+
+    function loadModel() {
+      const loadingContainer = document.getElementById('loading-bar-container');
+      const progressFill = document.getElementById('progress-fill');
+
+      if (typeof B737_800_GLB_BASE64 === 'undefined' || !B737_800_GLB_BASE64) {
+        if (loadingContainer) {
+          loadingContainer.innerHTML = '<div style="color:#EF4444;font-size:12px;">3D 数据脚本未就绪，请重试</div>';
+        }
+        return;
+      }
+
+      if (progressFill) progressFill.style.width = '35%';
+
+      setTimeout(function () {
+        try {
+          const arrayBuffer = base64ToArrayBuffer(B737_800_GLB_BASE64);
+          if (progressFill) progressFill.style.width = '65%';
+
+          const loader = new THREE.GLTFLoader();
+          loader.parse(arrayBuffer, '', function (gltf) {
+            loadedMesh = gltf.scene;
+
+            // Auto-center and auto-scale model
+            const box = new THREE.Box3().setFromObject(loadedMesh);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+
+            loadedMesh.position.sub(center); // center model
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scaleFactor = 25 / maxDim;
+            loadedMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+            // Apply 4K Livery Texture if available
+            applyTextureToMesh(loadedMesh, isLiveryActive);
+
+            scene.add(loadedMesh);
+
+            if (progressFill) progressFill.style.width = '100%';
+            setTimeout(function () {
+              if (loadingContainer) loadingContainer.style.display = 'none';
+            }, 250);
+          }, function (error) {
+            console.error('Error parsing GLTF binary:', error);
+            if (loadingContainer) {
+              loadingContainer.innerHTML = '<div style="color:#EF4444;font-size:12px;">模型解析失败，请重试</div>';
+            }
+          });
+        } catch (e) {
+          console.error('Error converting base64 ArrayBuffer:', e);
+          if (loadingContainer) {
+            loadingContainer.innerHTML = '<div style="color:#EF4444;font-size:12px;">转换失败: ' + e.message + '</div>';
+          }
+        }
+      }, 50);
+    }
+
+    function setupUIEvents() {
+      const btnLivery = document.getElementById('btn-livery');
+      const btnWireframe = document.getElementById('btn-wireframe');
+      const btnRotate = document.getElementById('btn-rotate');
+      const btnZoomIn = document.getElementById('btn-zoom-in');
+      const btnZoomOut = document.getElementById('btn-zoom-out');
+      const btnReset = document.getElementById('btn-reset');
+
+      if (btnLivery) {
+        btnLivery.addEventListener('click', function () {
+          isLiveryActive = !isLiveryActive;
+          isWireframe = false;
+          if (btnWireframe) btnWireframe.classList.remove('active');
+
+          if (isLiveryActive) {
+            btnLivery.classList.add('active');
+          } else {
+            btnLivery.classList.remove('active');
+          }
+          if (loadedMesh) applyTextureToMesh(loadedMesh, isLiveryActive);
+        });
+      }
+
+      if (btnWireframe) {
+        btnWireframe.addEventListener('click', function () {
+          isWireframe = !isWireframe;
+          if (isWireframe) {
+            btnWireframe.classList.add('active');
+            isLiveryActive = false;
+            if (btnLivery) btnLivery.classList.remove('active');
+          } else {
+            btnWireframe.classList.remove('active');
+          }
+          if (loadedMesh) applyTextureToMesh(loadedMesh, isLiveryActive);
+        });
+      }
+
+      if (btnRotate) {
+        btnRotate.addEventListener('click', function () {
+          controls.autoRotate = !controls.autoRotate;
+          if (controls.autoRotate) {
+            btnRotate.classList.add('active');
+          } else {
+            btnRotate.classList.remove('active');
+          }
+        });
+      }
+
+      // 缩放按键事件绑定 (Zoom In / Zoom Out / Reset)
+      if (btnZoomIn) {
+        btnZoomIn.addEventListener('click', function () {
+          controls.zoomIn(0.82);
+        });
+      }
+
+      if (btnZoomOut) {
+        btnZoomOut.addEventListener('click', function () {
+          controls.zoomOut(1.22);
+        });
+      }
+
+      if (btnReset) {
+        btnReset.addEventListener('click', function () {
+          camera.position.set(20, 10, 30);
+          controls.target.set(0, 0, 0);
+          controls.update();
+        });
+      }
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

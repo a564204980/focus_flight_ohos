@@ -77,3 +77,19 @@ Row() { ... }
 - **多用原生组件与原生弹窗 (ArkUI Native Components & CustomDialog)**:
   - 遇到底部抽屉/面板弹窗需求（如机场选择、机舱选座登机牌等），**必须优先使用 HarmonyOS ArkUI 原生 `@CustomDialog` + `CustomDialogController({ alignment: DialogAlignment.Bottom, customStyle: true })` 机制**（参考 `AirportSelectDialog.ets` 与 `SeatSelectBoardingDialog.ets`）。
   - 利用 HarmonyOS 系统底层的深色半透明蒙层、吸附动画与防错位抖动，严禁自行使用绝对定位手写伪弹窗。
+
+---
+
+### 6. 资源规划与代码拆分规范 (Resource Architecture & Code Modularization)
+- **静态资源子目录分类 (rawfile Subdirectory Standard)**:
+  - 严禁将静态文件（JS、CSS、图片、模型、JSON 配置等）粗暴散落平铺在 `rawfile` 根目录下。
+  - 必须按文件类型建立结构清晰的子目录进行归类存放：
+    - `rawfile/css/` ：CSS 样式库
+    - `rawfile/js/` ：框架解析库与数据脚本
+    - `rawfile/models/` ：3D 资产模型 (`.glb` / `.gltf`)
+    - `rawfile/textures/` ：高清贴图与背景图片 (`.jpg` / `.png`)
+    - `rawfile/data/` ：JSON 配置文件与数据文件
+    - `rawfile/` 根目录仅允许保留 HTML 视图入口文件。
+- **代码拆分防臃肿 (Modularization & Anti-Bloat)**:
+  - 保持代码干净精简，单个组件/脚本文件切勿过于臃肿。当 UI 或业务逻辑复杂时，必须按功能模块拆分为独立的子组件与 Service 函数。
+  - 严禁随意乱发/乱建临时重名文件，保持项目文件结构高度严谨。

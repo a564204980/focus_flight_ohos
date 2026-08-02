@@ -1,10 +1,14 @@
 {
   "name": "entry",
   "version": "1.0.0",
-  "description": "Please describe the basic information.",
+  "description": "Focus Flight OHOS Application Entry Module",
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {}
+  "dependencies": {
+    "@amap/amap_lbs_common": "^11.1.103",
+    "@amap/amap_lbs_map3d": "^11.1.103"
+  },
+  "devDependencies": {},
+  "dynamicDependencies": {}
 }
-

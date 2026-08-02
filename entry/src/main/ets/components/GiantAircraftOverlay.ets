@@ -48,6 +48,9 @@ export struct GiantAircraftOverlay {
         originCode: this.originCode,
         destCode: this.destCode,
         onConfirmSeat: (sId: string, taskTitle: string, dur: number) => {
+          if (this.dialogController) {
+            this.dialogController.close();
+          }
           if (this.onConfirmSeat) {
             this.onConfirmSeat(sId, taskTitle, dur);
           }
@@ -130,25 +133,29 @@ export struct GiantAircraftOverlay {
     })
   }
 
-  // 渲染单排 2x2 座椅行组件
+  // 渲染单排 2x2 座椅行组件 (AB列与EF列围绕中心轴绝对对称，左右两侧边距完全一致)
   @Builder
   renderSeatRow(rowNum: number) {
     Row() {
-      Text('').width(20) // 左侧镜像平衡占位 (保证距离左侧壁绝对对称)
+      // 左侧 AB 座椅组 (总宽 84vp)
       Row({ space: 8 }) {
         this.renderFig1Seat(`${rowNum}A`)
         this.renderFig1Seat(`${rowNum}B`)
       }
-      .margin({ right: 38 }) // 加宽过道 (38vp)
 
+      // 中间过道排号标识 (总宽 48vp，精准居中)
+      Text(`${rowNum}`)
+        .fontSize(11)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('rgba(148, 163, 184, 0.6)')
+        .width(48)
+        .textAlign(TextAlign.Center)
+
+      // 右侧 EF 座椅组 (总宽 84vp)
       Row({ space: 8 }) {
         this.renderFig1Seat(`${rowNum}E`)
         this.renderFig1Seat(`${rowNum}F`)
       }
-      .margin({ right: 6 }) // 排号往左靠拢 (紧贴 F 座)
-
-      Text(`${rowNum}`).fontSize(11).fontColor('#94A3B8').width(16).textAlign(TextAlign.Center)
-      Text('').width(14) // 右侧镜像平衡补齐
     }
     .width('100%')
     .justifyContent(FlexAlign.Center)
@@ -168,33 +175,29 @@ export struct GiantAircraftOverlay {
       Scroll(this.scroller) {
         Column() {
           Stack({ alignContent: Alignment.Top }) {
-            // 2a. SVG 飞机底图 (加大延伸尺寸，向下微调平移 980vp)
+            // 2a. SVG 飞机底图 (保持 8.8 倍放大，向下适当平移 1260vp，确保顶部机头尖角完整可见)
             Image($r('app.media.aircraft_top_view'))
               .width('100%')
               .aspectRatio(1)
               .objectFit(ImageFit.Contain)
               .scale({ x: 8.8, y: 8.8 })
-              .offset({ y: 980 })
+              .offset({ y: 1260 })
 
-            // 2b. 可滑动多排战术 Seats 布局 (初始向下偏移 240vp，包含 26 排 Seats)
+            // 2b. 可滑动多排战术 Seats 布局 (向下平移 520vp 精准对齐机舱，包含 26 排 Seats)
             Column({ space: 8 }) {
-              // 顶部列字母标识 (A  B   |过道|   E  F)
+              // 顶部列字母标识 (A  B   |过道|   E  F，对称居中对齐)
               Row() {
-                Text('').width(20)
                 Row({ space: 8 }) {
                   Text('A').fontSize(11).fontColor('#94A3B8').width(38).textAlign(TextAlign.Center)
                   Text('B').fontSize(11).fontColor('#94A3B8').width(38).textAlign(TextAlign.Center)
                 }
-                .margin({ right: 38 })
+
+                Text('过道').fontSize(9).fontColor('rgba(148, 163, 184, 0.4)').width(48).textAlign(TextAlign.Center)
 
                 Row({ space: 8 }) {
                   Text('E').fontSize(11).fontColor('#94A3B8').width(38).textAlign(TextAlign.Center)
                   Text('F').fontSize(11).fontColor('#94A3B8').width(38).textAlign(TextAlign.Center)
                 }
-                .margin({ right: 6 })
-
-                Text('').width(16)
-                Text('').width(14)
               }
               .width('100%')
               .justifyContent(FlexAlign.Center)
@@ -229,11 +232,11 @@ export struct GiantAircraftOverlay {
             }
             .width('100%')
             .padding({ top: 10, bottom: 50 })
-            .offset({ y: 240 })
+            .offset({ y: 520 })
           }
           .width('100%')
-          .height(1480)
-          .margin({ top: 50 })
+          .height(1760)
+          .margin({ top: 30 })
         }
         .width('100%')
       }

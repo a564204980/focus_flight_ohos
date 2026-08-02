@@ -7,11 +7,11 @@
         "material": {
           "certpath": "C:\\Users\\Lenovo\\.ohos\\config\\default_focus_flight_ohos_TkAd5EVhYaYx0oqNhtbJrVp2yLuoh2lvy9KBUpSdHfY=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "000000192126B8E5814DA29A619611D8C21F75A18B90137199AD7A2259E00BCA3D22CC59E3B29AA469",
+          "keyPassword": "0000001B8117AF23319DB7661CB1B9B9EB11CD572DBE76EBC7DDC6F78E146DF8B3A00A0930449657679E33",
           "profile": "C:\\Users\\Lenovo\\.ohos\\config\\default_focus_flight_ohos_TkAd5EVhYaYx0oqNhtbJrVp2yLuoh2lvy9KBUpSdHfY=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\Lenovo\\.ohos\\config\\default_focus_flight_ohos_TkAd5EVhYaYx0oqNhtbJrVp2yLuoh2lvy9KBUpSdHfY=.p12",
-          "storePassword": "00000019AC8E2135ADAC79674ED08F70C1FB11ABF5B16F9907048463772968722BC9F4437AF52976AB"
+          "storePassword": "0000001B2921B1C237A6014C7383438956CE8362B7DC092B22546B7A46D7B73556AA9A47B858984952375D"
         }
       }
     ],

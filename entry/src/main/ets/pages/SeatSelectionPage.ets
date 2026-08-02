@@ -148,27 +148,37 @@ struct SeatSelectionPage {
       // 3. 全屏主体：1:1 弧形机头 & 机舱选座网格 (Scrollable Aircraft Cabin Area)
       Scroll() {
         Column({ space: 20 }) {
-          // 3a. 1:1 对标图 1：拱形机头轮廓 & 4 扇驾驶舱风挡玻璃 (Airplane Nose Cockpit)
+          // 3a. 1:1 对标图 1：完整飞机机头（包含尖锐雷达罩与 4 扇驾驶舱风挡玻璃，保持大尺寸不变形）
           Stack({ alignContent: Alignment.Top }) {
-            // 机头拱形外壳
+            // 1) 顶部尖锐机头雷达罩 (Nose Cone Tip)
+            Column()
+              .width(90)
+              .height(60)
+              .backgroundColor('rgba(255, 255, 255, 0.03)')
+              .border({ width: 2, color: 'rgba(255, 255, 255, 0.15)', radius: { topLeft: 45, topRight: 45 } })
+              .borderRadius({ topLeft: 45, topRight: 45 })
+              .offset({ y: 0 })
+
+            // 2) 机头主体外壳 (Fuselage Body)
             Column()
               .width(280)
-              .height(160)
+              .height(150)
               .backgroundColor('rgba(255, 255, 255, 0.03)')
               .border({ width: 2, color: 'rgba(255, 255, 255, 0.15)', radius: { topLeft: 140, topRight: 140 } })
               .borderRadius({ topLeft: 140, topRight: 140 })
+              .offset({ y: 40 })
 
-            // 驾驶舱 4 扇风挡玻璃 (Cockpit Arc Windows)
+            // 3) 驾驶舱 4 扇风挡玻璃 (Cockpit Arc Windows)
             Row({ space: 8 }) {
               Row().width(52).height(30).backgroundColor('rgba(2, 6, 23, 0.9)').borderRadius({ topLeft: 16, topRight: 4 })
               Row().width(52).height(30).backgroundColor('rgba(2, 6, 23, 0.9)').borderRadius({ topLeft: 4, topRight: 4 })
               Row().width(52).height(30).backgroundColor('rgba(2, 6, 23, 0.9)').borderRadius({ topLeft: 4, topRight: 4 })
               Row().width(52).height(30).backgroundColor('rgba(2, 6, 23, 0.9)').borderRadius({ topLeft: 4, topRight: 16 })
             }
-            .offset({ y: 58 })
+            .offset({ y: 98 })
           }
           .width('100%')
-          .height(140)
+          .height(190)
 
           // 3b. 图例说明 Bar (Seat Status Legend Bar)
           Row({ space: 16 }) {
@@ -351,12 +361,15 @@ struct SeatSelectionPage {
         .shadow({ radius: 16, color: 'rgba(74, 222, 128, 0.45)', offsetY: 4 })
         .onClick(() => {
           this.triggerHaptic();
-          // 返回主页并把选座结果传回！
-          router.back({
-            url: 'pages/Index',
+          router.pushUrl({
+            url: 'pages/MapPage',
             params: {
-              completedSeat: this.selectedSeatId,
-              isCheckInConfirmed: true
+              flightNo: this.flightNo,
+              seatId: this.selectedSeatId,
+              taskTitle: '💻 深度编程',
+              durationMin: this.focusMinutesVal,
+              originCode: this.originCode,
+              destCode: this.destCode
             }
           });
         })

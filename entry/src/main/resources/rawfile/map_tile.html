@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Focus Flight Night Tile Map</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body, #map {
+      width: 100%;
+      height: 100%;
+      background: #080c14;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+    .leaflet-control-attribution, .leaflet-control-zoom {
+      display: none !important;
+    }
+    .airport-marker {
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid #38BDF8;
+      border-radius: 50%;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38BDF8;
+      font-weight: bold;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map = null;
+    let flightPolyline = null;
+    let originMarker = null;
+    let destMarker = null;
+
+    // 初始化 100% 原生纯中文【夜间/晚上的】地图 (style=8 夜色纯暗，无商业 POI，无加油站)
+    function initNightMap() {
+      if (map) {
+        map.remove();
+      }
+
+      // style=8: 高德官方纯中文夜间/晚上的地图瓦片 (暗夜底色、纯中文主干路名与城市名)
+      const tileUrl = 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}';
+
+      map = L.map('map', {
+        zoomControl: false,
+        attributionControl: false,
+        fadeAnimation: true,
+        zoomAnimation: true
+      }).setView([30.5785, 103.9471], 11);
+
+      L.tileLayer(tileUrl, {
+        maxZoom: 18,
+        minZoom: 3,
+        subdomains: '1234'
+      }).addTo(map);
+    }
+
+    // 绘制起终点与流畅大圆弧夜航线
+    function drawFlightRoute(lat1, lon1, city1, code1, lat2, lon2, city2, code2) {
+      if (!map) initNightMap();
+
+      const start = [lat1, lon1];
+      const end = [lat2, lon2];
+
+      const points = [];
+      const steps = 80;
+      const midLat = (lat1 + lat2) / 2 + Math.abs(lon2 - lon1) * 0.15;
+      const midLon = (lon1 + lon2) / 2;
+
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const curLat = (1-t)*(1-t)*lat1 + 2*(1-t)*t*midLat + t*t*lat2;
+        const curLon = (1-t)*(1-t)*lon1 + 2*(1-t)*t*midLon + t*t*lon2;
+        points.push([curLat, curLon]);
+      }
+
+      if (flightPolyline) map.removeLayer(flightPolyline);
+      if (originMarker) map.removeLayer(originMarker);
+      if (destMarker) map.removeLayer(destMarker);
+
+      // 绘制发光霓虹夜航线条
+      flightPolyline = L.polyline(points, {
+        color: '#38BDF8',
+        weight: 4,
+        opacity: 0.9,
+        smoothFactor: 1.0,
+        dashArray: '8, 8'
+      }).addTo(map);
+
+      // 中文 Marker
+      const originIcon = L.divIcon({
+        className: 'airport-marker',
+        html: `<div>${code1}</div>`,
+        iconSize: [36, 36]
+      });
+      const destIcon = L.divIcon({
+        className: 'airport-marker',
+        html: `<div>${code2}</div>`,
+        iconSize: [36, 36]
+      });
+
+      originMarker = L.marker(start, { icon: originIcon }).addTo(map);
+      destMarker = L.marker(end, { icon: destIcon }).addTo(map);
+
+      const bounds = L.latLngBounds([start, end]);
+      map.fitBounds(bounds, { padding: [60, 60] });
+    }
+
+    // 默认直接加载夜间/晚上的模式
+    initNightMap();
+  </script>
+</body>
+</html>

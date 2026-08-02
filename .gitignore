@@ -1,12 +1,35 @@
+# Dependencies & Native Modules
 /node_modules
 /oh_modules
-/local.properties
+oh_modules/
+
+# DevEco Studio & Build Outputs
 /.idea
-**/build
 /.hvigor
-.cxx
+/.appanalyzer
+/.cxx
+/.preview
+/.test
 /.clangd
 /.clang-format
 /.clang-tidy
-**/.test
-/.appanalyzer
+**/build/
+**/build
+build/
+
+# Local Configurations & Logs
+local.properties
+*.log
+crash*.log
+
+# IDE & OS Generated Files
+*.iml
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Compiled Packages
+*.hap
+*.hsp
+*.app
+*.har
