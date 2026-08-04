@@ -1,4 +1,4 @@
-import { Airport, POPULAR_AIRPORTS } from '../models/AirportModel';
+import { Airport, POPULAR_AIRPORTS, AirportRepository } from '../models/AirportModel';
 
 /**
  * AirportSelectDialog.ets
@@ -15,27 +15,45 @@ export struct AirportSelectDialog {
 
   @State searchText: string = '';
   @State selectedCategory: string = '全部';
+  @State isDataLoaded: boolean = false;
 
   private categories: string[] = ['全部', '国内枢纽', '国际/港澳台'];
 
+  aboutToAppear() {
+    try {
+      AirportRepository.loadAirports(getContext(this)).then(() => {
+        this.isDataLoaded = true;
+      }).catch(() => {});
+    } catch (e) {
+      // 忽略上下文无法获取的兼容性异常
+    }
+  }
+
   private getFilteredAirports(): Airport[] {
-    return POPULAR_AIRPORTS.filter(airport => {
+    const isSearching = this.searchText.trim().length > 0;
+    // 如果正在输入关键词搜索，在全量 5,165 个机场库中检索；否则显示常用热门列表
+    const targetList = isSearching ? AirportRepository.getAllAirports() : POPULAR_AIRPORTS;
+
+    return targetList.filter(airport => {
       // 1. 搜索文本过滤
-      if (this.searchText.trim().length > 0) {
+      if (isSearching) {
         const query = this.searchText.trim().toLowerCase();
         const matchCode = airport.code.toLowerCase().includes(query);
         const matchName = airport.name.toLowerCase().includes(query);
         const matchCity = airport.city.toLowerCase().includes(query);
-        if (!matchCode && !matchName && !matchCity) {
+        const matchKeywords = airport.keywords ? (airport.keywords as string).toLowerCase().includes(query) : false;
+        if (!matchCode && !matchName && !matchCity && !matchKeywords) {
           return false;
         }
       }
 
-      // 2. 分类页签过滤
-      if (this.selectedCategory === '国内枢纽') {
-        return ['PEK', 'PKX', 'PVG', 'SHA', 'CAN', 'SZX', 'TFU', 'CTU', 'HGH', 'WUH', 'XIY', 'CKG', 'NKG', 'XMN', 'TSN', 'CGO', 'TAO', 'CSX', 'KMG'].includes(airport.code);
-      } else if (this.selectedCategory === '国际/港澳台') {
-        return ['HKG', 'MFM', 'TPE', 'HND', 'NRT', 'ICN', 'SIN', 'LHR', 'CDG', 'JFK', 'LAX'].includes(airport.code);
+      // 2. 分类页签过滤 (仅在非搜索模式下过滤)
+      if (!isSearching) {
+        if (this.selectedCategory === '国内枢纽') {
+          return ['PEK', 'PKX', 'PVG', 'SHA', 'CAN', 'SZX', 'TFU', 'CTU', 'HGH', 'WUH', 'XIY', 'CKG', 'NKG', 'XMN', 'TSN', 'CGO', 'TAO', 'CSX', 'KMG'].includes(airport.code);
+        } else if (this.selectedCategory === '国际/港澳台') {
+          return ['HKG', 'MFM', 'TPE', 'HND', 'NRT', 'ICN', 'SIN', 'LHR', 'CDG', 'JFK', 'LAX'].includes(airport.code);
+        }
       }
       return true;
     });

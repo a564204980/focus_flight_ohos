@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "es2020",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@kit.MapKit": ["./entry/src/main/ets/types/kit.d.ts"]
+    }
+  },
+  "include": [
+    "entry/src/main/ets/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "oh_modules",
+    "build"
+  ]
+}

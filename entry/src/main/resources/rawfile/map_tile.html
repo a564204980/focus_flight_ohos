@@ -53,15 +53,15 @@
         map.remove();
       }
 
-      // style=8: 高德官方纯中文夜间/晚上的地图瓦片 (暗夜底色、纯中文主干路名与城市名)
-      const tileUrl = 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}';
+      // CartoDB 暗夜极简科技风底图
+      const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
       map = L.map('map', {
         zoomControl: false,
         attributionControl: false,
         fadeAnimation: true,
         zoomAnimation: true
-      }).setView([30.5785, 103.9471], 11);
+      }).setView([30.589825, 103.955706], 11);
 
       L.tileLayer(tileUrl, {
         maxZoom: 18,

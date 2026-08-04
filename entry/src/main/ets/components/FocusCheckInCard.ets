@@ -581,11 +581,11 @@ export struct FocusCheckInCard {
       if (nearest) {
         this.selectOriginAirport(nearest);
       } else {
-        const defaultOrigin = findAirportByCode('CTU') || { code: 'CTU', name: '成都双流国际机场', city: '成都', lat: 30.5785, lon: 103.9471 };
+        const defaultOrigin = findAirportByCode('CTU') || { code: 'CTU', name: '成都双流国际机场', city: '成都', lat: 30.589825, lon: 103.955706 };
         this.selectOriginAirport(defaultOrigin);
       }
     } catch (err) {
-      const defaultOrigin = findAirportByCode('CTU') || { code: 'CTU', name: '成都双流国际机场', city: '成都', lat: 30.5785, lon: 103.9471 };
+      const defaultOrigin = findAirportByCode('CTU') || { code: 'CTU', name: '成都双流国际机场', city: '成都', lat: 30.589825, lon: 103.955706 };
       this.selectOriginAirport(defaultOrigin);
     } finally {
       this.isLocating = false;

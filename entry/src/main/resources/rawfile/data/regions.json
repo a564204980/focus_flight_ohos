@@ -1,0 +1,9127 @@
+[
+  {
+    "code": "AE-AZ",
+    "name": "Abu Dhabi Emirate",
+    "country": "AE"
+  },
+  {
+    "code": "AE-DU",
+    "name": "Dubai Emirate",
+    "country": "AE"
+  },
+  {
+    "code": "AE-FU",
+    "name": "Fujairah Emirate",
+    "country": "AE"
+  },
+  {
+    "code": "AE-RK",
+    "name": "Ras al-Khaimah Emirate",
+    "country": "AE"
+  },
+  {
+    "code": "AE-SH",
+    "name": "Sharjah Emirate",
+    "country": "AE"
+  },
+  {
+    "code": "AF-BAL",
+    "name": "Balkh Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-BDS",
+    "name": "Badakhshan Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-FYB",
+    "name": "Faryab Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-HER",
+    "name": "Herat Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-KAB",
+    "name": "Kabul Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-KAN",
+    "name": "Kandahar Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-KDZ",
+    "name": "Kunduz Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-KHO",
+    "name": "Khost Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-NAN",
+    "name": "Nangarhar Province",
+    "country": "AF"
+  },
+  {
+    "code": "AF-PAR",
+    "name": "Parwan Province",
+    "country": "AF"
+  },
+  {
+    "code": "AG-03",
+    "name": "Saint George Parish",
+    "country": "AG"
+  },
+  {
+    "code": "AG-10",
+    "name": "Barbuda Dependency",
+    "country": "AG"
+  },
+  {
+    "code": "AI-U-A",
+    "name": "(unassigned)",
+    "country": "AI"
+  },
+  {
+    "code": "AL-02",
+    "name": "Durrës County",
+    "country": "AL"
+  },
+  {
+    "code": "AL-07",
+    "name": "Kukës County",
+    "country": "AL"
+  },
+  {
+    "code": "AM-ER",
+    "name": "Yerevan (capital district)",
+    "country": "AM"
+  },
+  {
+    "code": "AM-SH",
+    "name": "Shirak Province",
+    "country": "AM"
+  },
+  {
+    "code": "AO-BGU",
+    "name": "Benguela Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-BIE",
+    "name": "Bié Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-CAB",
+    "name": "Cabinda Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-CCU",
+    "name": "Cuando Cubango Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-CNN",
+    "name": "Cunene Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-CUS",
+    "name": "Cuanza Sul Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-HUA",
+    "name": "Huambo Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-HUI",
+    "name": "Huíla Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-LNO",
+    "name": "Lunda Norte Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-LSU",
+    "name": "Lunda Sul Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-LUA",
+    "name": "Luanda Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-MAL",
+    "name": "Malanje Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-MOX",
+    "name": "Moxico Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-NAM",
+    "name": "Namibe Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-UIG",
+    "name": "Uíge Province",
+    "country": "AO"
+  },
+  {
+    "code": "AO-ZAI",
+    "name": "Zaire Province",
+    "country": "AO"
+  },
+  {
+    "code": "AR-A",
+    "name": "Salta Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-B",
+    "name": "Buenos Aires Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-C",
+    "name": "Buenos Aires (Autonomous City)",
+    "country": "AR"
+  },
+  {
+    "code": "AR-D",
+    "name": "San Luis Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-E",
+    "name": "Entre Ríos Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-F",
+    "name": "La Rioja Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-G",
+    "name": "Santiago del Estero Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-H",
+    "name": "Chaco Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-J",
+    "name": "San Juan Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-K",
+    "name": "Catamarca Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-L",
+    "name": "La Pampa Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-M",
+    "name": "Mendoza Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-N",
+    "name": "Misiones Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-P",
+    "name": "Formosa Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-Q",
+    "name": "Neuquén Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-R",
+    "name": "Río Negro Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-S",
+    "name": "Santa Fe Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-T",
+    "name": "Tucumán Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-U",
+    "name": "Chubut Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-V",
+    "name": "Tierra del Fuego Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-W",
+    "name": "Corrientes Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-X",
+    "name": "Córdoba Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-Y",
+    "name": "Jujuy Province",
+    "country": "AR"
+  },
+  {
+    "code": "AR-Z",
+    "name": "Santa Cruz Province",
+    "country": "AR"
+  },
+  {
+    "code": "AS-MA",
+    "name": "Manuʻa District",
+    "country": "AS"
+  },
+  {
+    "code": "AS-WT",
+    "name": "Western District",
+    "country": "AS"
+  },
+  {
+    "code": "AT-2",
+    "name": "Carinthia",
+    "country": "AT"
+  },
+  {
+    "code": "AT-4",
+    "name": "Upper Austria",
+    "country": "AT"
+  },
+  {
+    "code": "AT-5",
+    "name": "Salzburg",
+    "country": "AT"
+  },
+  {
+    "code": "AT-6",
+    "name": "Styria",
+    "country": "AT"
+  },
+  {
+    "code": "AT-7",
+    "name": "Tyrol",
+    "country": "AT"
+  },
+  {
+    "code": "AT-9",
+    "name": "Vienna",
+    "country": "AT"
+  },
+  {
+    "code": "AU-ACT",
+    "name": "Australian Capital Territory",
+    "country": "AU"
+  },
+  {
+    "code": "AU-NSW",
+    "name": "New South Wales",
+    "country": "AU"
+  },
+  {
+    "code": "AU-NT",
+    "name": "Northern Territory",
+    "country": "AU"
+  },
+  {
+    "code": "AU-QLD",
+    "name": "Queensland",
+    "country": "AU"
+  },
+  {
+    "code": "AU-SA",
+    "name": "South Australia",
+    "country": "AU"
+  },
+  {
+    "code": "AU-TAS",
+    "name": "Tasmania",
+    "country": "AU"
+  },
+  {
+    "code": "AU-VIC",
+    "name": "Victoria",
+    "country": "AU"
+  },
+  {
+    "code": "AU-WA",
+    "name": "Western Australia",
+    "country": "AU"
+  },
+  {
+    "code": "AW-U-A",
+    "name": "(unassigned)",
+    "country": "AW"
+  },
+  {
+    "code": "AZ-BA",
+    "name": "Baku (city)",
+    "country": "AZ"
+  },
+  {
+    "code": "AZ-GA",
+    "name": "Ganja (city)",
+    "country": "AZ"
+  },
+  {
+    "code": "AZ-LA",
+    "name": "Lankaran District",
+    "country": "AZ"
+  },
+  {
+    "code": "AZ-LAC",
+    "name": "Lacin District",
+    "country": "AZ"
+  },
+  {
+    "code": "AZ-NX",
+    "name": "Nakhchivan Autonomous Republic",
+    "country": "AZ"
+  },
+  {
+    "code": "AZ-QAB",
+    "name": "Qabala District",
+    "country": "AZ"
+  },
+  {
+    "code": "AZ-ZAQ",
+    "name": "Zaqatala District",
+    "country": "AZ"
+  },
+  {
+    "code": "BA-BIH",
+    "name": "Federation of Bosnia and Herzegovina",
+    "country": "BA"
+  },
+  {
+    "code": "BA-SRP",
+    "name": "Republika Srpska",
+    "country": "BA"
+  },
+  {
+    "code": "BB-01",
+    "name": "Christ Church",
+    "country": "BB"
+  },
+  {
+    "code": "BD-A",
+    "name": "Barisal Division",
+    "country": "BD"
+  },
+  {
+    "code": "BD-B",
+    "name": "Chittagong Division",
+    "country": "BD"
+  },
+  {
+    "code": "BD-C",
+    "name": "Dhaka Division",
+    "country": "BD"
+  },
+  {
+    "code": "BD-D",
+    "name": "Khulna Division",
+    "country": "BD"
+  },
+  {
+    "code": "BD-E",
+    "name": "Rajshahi Division",
+    "country": "BD"
+  },
+  {
+    "code": "BD-G",
+    "name": "Sylhet Division",
+    "country": "BD"
+  },
+  {
+    "code": "BE-VAN",
+    "name": "Antwerp Province",
+    "country": "BE"
+  },
+  {
+    "code": "BE-VBR",
+    "name": "Flemish Brabant Province",
+    "country": "BE"
+  },
+  {
+    "code": "BE-VWV",
+    "name": "West Flanders Province",
+    "country": "BE"
+  },
+  {
+    "code": "BE-WHT",
+    "name": "Hainaut Province",
+    "country": "BE"
+  },
+  {
+    "code": "BE-WLG",
+    "name": "Liège Province",
+    "country": "BE"
+  },
+  {
+    "code": "BF-HOU",
+    "name": "Houet Province",
+    "country": "BF"
+  },
+  {
+    "code": "BF-KAD",
+    "name": "Kadiogo Province",
+    "country": "BF"
+  },
+  {
+    "code": "BG-02",
+    "name": "Burgas Province",
+    "country": "BG"
+  },
+  {
+    "code": "BG-03",
+    "name": "Varna Province",
+    "country": "BG"
+  },
+  {
+    "code": "BG-04",
+    "name": "Veliko Tarnovo Province",
+    "country": "BG"
+  },
+  {
+    "code": "BG-16",
+    "name": "Plovdiv Province",
+    "country": "BG"
+  },
+  {
+    "code": "BG-22",
+    "name": "Sofia City Province",
+    "country": "BG"
+  },
+  {
+    "code": "BH-15",
+    "name": "Muharraq Governorate",
+    "country": "BH"
+  },
+  {
+    "code": "BI-BM",
+    "name": "Bujumbura Mairie Province",
+    "country": "BI"
+  },
+  {
+    "code": "BI-GI",
+    "name": "Gitega Province",
+    "country": "BI"
+  },
+  {
+    "code": "BI-KI",
+    "name": "Kirundo Province",
+    "country": "BI"
+  },
+  {
+    "code": "BJ-AQ",
+    "name": "Atlantique Department",
+    "country": "BJ"
+  },
+  {
+    "code": "BL-U-A",
+    "name": "(unassigned)",
+    "country": "BL"
+  },
+  {
+    "code": "BM-U-A",
+    "name": "(unassigned)",
+    "country": "BM"
+  },
+  {
+    "code": "BN-BM",
+    "name": "Brunei-Muara District",
+    "country": "BN"
+  },
+  {
+    "code": "BO-B",
+    "name": "El Beni Department",
+    "country": "BO"
+  },
+  {
+    "code": "BO-C",
+    "name": "Cochabamba Department",
+    "country": "BO"
+  },
+  {
+    "code": "BO-H",
+    "name": "Chuquisaca Department",
+    "country": "BO"
+  },
+  {
+    "code": "BO-L",
+    "name": "La Paz Department",
+    "country": "BO"
+  },
+  {
+    "code": "BO-N",
+    "name": "Pando Department",
+    "country": "BO"
+  },
+  {
+    "code": "BO-O",
+    "name": "Oruro Department",
+    "country": "BO"
+  },
+  {
+    "code": "BO-P",
+    "name": "Potosí Department",
+    "country": "BO"
+  },
+  {
+    "code": "BO-S",
+    "name": "Santa Cruz Department",
+    "country": "BO"
+  },
+  {
+    "code": "BO-T",
+    "name": "Tarija Department",
+    "country": "BO"
+  },
+  {
+    "code": "BQ-BO",
+    "name": "Bonaire",
+    "country": "BQ"
+  },
+  {
+    "code": "BQ-SA",
+    "name": "Saba",
+    "country": "BQ"
+  },
+  {
+    "code": "BQ-SE",
+    "name": "Sint Eustatius",
+    "country": "BQ"
+  },
+  {
+    "code": "BR-AC",
+    "name": "Acre",
+    "country": "BR"
+  },
+  {
+    "code": "BR-AL",
+    "name": "Alagoas",
+    "country": "BR"
+  },
+  {
+    "code": "BR-AM",
+    "name": "Amazonas",
+    "country": "BR"
+  },
+  {
+    "code": "BR-AP",
+    "name": "Amapá",
+    "country": "BR"
+  },
+  {
+    "code": "BR-BA",
+    "name": "Bahia",
+    "country": "BR"
+  },
+  {
+    "code": "BR-CE",
+    "name": "Ceará",
+    "country": "BR"
+  },
+  {
+    "code": "BR-DF",
+    "name": "Distrito Federal",
+    "country": "BR"
+  },
+  {
+    "code": "BR-ES",
+    "name": "Espírito Santo",
+    "country": "BR"
+  },
+  {
+    "code": "BR-GO",
+    "name": "Goiás",
+    "country": "BR"
+  },
+  {
+    "code": "BR-MA",
+    "name": "Maranhão",
+    "country": "BR"
+  },
+  {
+    "code": "BR-MG",
+    "name": "Minas Gerais",
+    "country": "BR"
+  },
+  {
+    "code": "BR-MS",
+    "name": "Mato Grosso do Sul",
+    "country": "BR"
+  },
+  {
+    "code": "BR-MT",
+    "name": "Mato Grosso",
+    "country": "BR"
+  },
+  {
+    "code": "BR-PA",
+    "name": "Pará",
+    "country": "BR"
+  },
+  {
+    "code": "BR-PB",
+    "name": "Paraíba",
+    "country": "BR"
+  },
+  {
+    "code": "BR-PE",
+    "name": "Pernambuco",
+    "country": "BR"
+  },
+  {
+    "code": "BR-PI",
+    "name": "Piauí",
+    "country": "BR"
+  },
+  {
+    "code": "BR-PR",
+    "name": "Paraná",
+    "country": "BR"
+  },
+  {
+    "code": "BR-RJ",
+    "name": "Rio de Janeiro",
+    "country": "BR"
+  },
+  {
+    "code": "BR-RN",
+    "name": "Rio Grande do Norte",
+    "country": "BR"
+  },
+  {
+    "code": "BR-RO",
+    "name": "Rondônia",
+    "country": "BR"
+  },
+  {
+    "code": "BR-RR",
+    "name": "Roraima",
+    "country": "BR"
+  },
+  {
+    "code": "BR-RS",
+    "name": "Rio Grande do Sul",
+    "country": "BR"
+  },
+  {
+    "code": "BR-SC",
+    "name": "Santa Catarina",
+    "country": "BR"
+  },
+  {
+    "code": "BR-SE",
+    "name": "Sergipe",
+    "country": "BR"
+  },
+  {
+    "code": "BR-SP",
+    "name": "São Paulo",
+    "country": "BR"
+  },
+  {
+    "code": "BR-TO",
+    "name": "Tocantins",
+    "country": "BR"
+  },
+  {
+    "code": "BS-AK",
+    "name": "Acklins",
+    "country": "BS"
+  },
+  {
+    "code": "BS-BI",
+    "name": "Bimini",
+    "country": "BS"
+  },
+  {
+    "code": "BS-BY",
+    "name": "Berry Islands",
+    "country": "BS"
+  },
+  {
+    "code": "BS-CE",
+    "name": "Central Eleuthera",
+    "country": "BS"
+  },
+  {
+    "code": "BS-CI",
+    "name": "Cat Island",
+    "country": "BS"
+  },
+  {
+    "code": "BS-CK",
+    "name": "Crooked Island and Long Cay",
+    "country": "BS"
+  },
+  {
+    "code": "BS-CO",
+    "name": "Central Abaco",
+    "country": "BS"
+  },
+  {
+    "code": "BS-EX",
+    "name": "Exuma",
+    "country": "BS"
+  },
+  {
+    "code": "BS-FP",
+    "name": "City of Freeport",
+    "country": "BS"
+  },
+  {
+    "code": "BS-HI",
+    "name": "Harbour Island",
+    "country": "BS"
+  },
+  {
+    "code": "BS-IN",
+    "name": "Inagua",
+    "country": "BS"
+  },
+  {
+    "code": "BS-LI",
+    "name": "Long Island",
+    "country": "BS"
+  },
+  {
+    "code": "BS-MG",
+    "name": "Mayaguana",
+    "country": "BS"
+  },
+  {
+    "code": "BS-NP",
+    "name": "New Providence",
+    "country": "BS"
+  },
+  {
+    "code": "BS-NS",
+    "name": "North Andros",
+    "country": "BS"
+  },
+  {
+    "code": "BS-RI",
+    "name": "Ragged Island",
+    "country": "BS"
+  },
+  {
+    "code": "BS-SA",
+    "name": "South Andros",
+    "country": "BS"
+  },
+  {
+    "code": "BS-SE",
+    "name": "South Eleuthera",
+    "country": "BS"
+  },
+  {
+    "code": "BS-SS",
+    "name": "San Salvador",
+    "country": "BS"
+  },
+  {
+    "code": "BT-11",
+    "name": "Paro District",
+    "country": "BT"
+  },
+  {
+    "code": "BT-31",
+    "name": "Sarpang District",
+    "country": "BT"
+  },
+  {
+    "code": "BT-33",
+    "name": "Bumthang District",
+    "country": "BT"
+  },
+  {
+    "code": "BT-41",
+    "name": "Trashigang District",
+    "country": "BT"
+  },
+  {
+    "code": "BW-CH",
+    "name": "Chobe District",
+    "country": "BW"
+  },
+  {
+    "code": "BW-FR",
+    "name": "Francistown (city)",
+    "country": "BW"
+  },
+  {
+    "code": "BW-GA",
+    "name": "Gaborone (city)",
+    "country": "BW"
+  },
+  {
+    "code": "BW-JW",
+    "name": "Jwaneng (town)",
+    "country": "BW"
+  },
+  {
+    "code": "BW-NW",
+    "name": "North West District",
+    "country": "BW"
+  },
+  {
+    "code": "BW-SP",
+    "name": "Selebi-Phikwe (town)",
+    "country": "BW"
+  },
+  {
+    "code": "BW-ST",
+    "name": "Sowa (town)",
+    "country": "BW"
+  },
+  {
+    "code": "BY-BR",
+    "name": "Brest Region",
+    "country": "BY"
+  },
+  {
+    "code": "BY-HO",
+    "name": "Gomel Region",
+    "country": "BY"
+  },
+  {
+    "code": "BY-HR",
+    "name": "Grodno Region",
+    "country": "BY"
+  },
+  {
+    "code": "BY-MA",
+    "name": "Mogilev Region",
+    "country": "BY"
+  },
+  {
+    "code": "BY-MI",
+    "name": "Minsk Region",
+    "country": "BY"
+  },
+  {
+    "code": "BY-VI",
+    "name": "Vitebsk Region",
+    "country": "BY"
+  },
+  {
+    "code": "BZ-BZ",
+    "name": "Belize District",
+    "country": "BZ"
+  },
+  {
+    "code": "BZ-CY",
+    "name": "Cayo District",
+    "country": "BZ"
+  },
+  {
+    "code": "BZ-CZL",
+    "name": "Corozal District",
+    "country": "BZ"
+  },
+  {
+    "code": "BZ-SC",
+    "name": "Stann Creek District",
+    "country": "BZ"
+  },
+  {
+    "code": "BZ-TOL",
+    "name": "Toledo District",
+    "country": "BZ"
+  },
+  {
+    "code": "CA-AB",
+    "name": "Alberta",
+    "country": "CA"
+  },
+  {
+    "code": "CA-BC",
+    "name": "British Columbia",
+    "country": "CA"
+  },
+  {
+    "code": "CA-MB",
+    "name": "Manitoba",
+    "country": "CA"
+  },
+  {
+    "code": "CA-NB",
+    "name": "New Brunswick",
+    "country": "CA"
+  },
+  {
+    "code": "CA-NL",
+    "name": "Newfoundland and Labrador",
+    "country": "CA"
+  },
+  {
+    "code": "CA-NS",
+    "name": "Nova Scotia",
+    "country": "CA"
+  },
+  {
+    "code": "CA-NT",
+    "name": "Northwest Territories",
+    "country": "CA"
+  },
+  {
+    "code": "CA-NU",
+    "name": "Nunavut",
+    "country": "CA"
+  },
+  {
+    "code": "CA-ON",
+    "name": "Ontario",
+    "country": "CA"
+  },
+  {
+    "code": "CA-PE",
+    "name": "Prince Edward Island",
+    "country": "CA"
+  },
+  {
+    "code": "CA-QC",
+    "name": "Quebec",
+    "country": "CA"
+  },
+  {
+    "code": "CA-SK",
+    "name": "Saskatchewan",
+    "country": "CA"
+  },
+  {
+    "code": "CA-YT",
+    "name": "Yukon",
+    "country": "CA"
+  },
+  {
+    "code": "CC-U-A",
+    "name": "(unassigned)",
+    "country": "CC"
+  },
+  {
+    "code": "CD-BU",
+    "name": "Bas-Uélé Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-EQ",
+    "name": "Équateur Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-HK",
+    "name": "Haut-Katanga Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-HL",
+    "name": "Haut-Lomami Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-HU",
+    "name": "Haut-Uélé Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-IT",
+    "name": "Ituri Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-KC",
+    "name": "Kasaï-Central Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-KE",
+    "name": "Kasaï-Oriental Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-KL",
+    "name": "Kwilu Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-KN",
+    "name": "Kinshasa Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-KS",
+    "name": "Kasaï Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-LU",
+    "name": "Lualaba Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-MA",
+    "name": "Maniema Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-MN",
+    "name": "Mai-Ndombe Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-MO",
+    "name": "Mongala Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-NK",
+    "name": "Nord-Kivu Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-NU",
+    "name": "Nord-Ubangi Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-SK",
+    "name": "Sud-Kivu Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-SU",
+    "name": "Sud-Ubangi Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-TA",
+    "name": "Tanganyika Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-TO",
+    "name": "Tshopo Province",
+    "country": "CD"
+  },
+  {
+    "code": "CD-TU",
+    "name": "Tshuapa Province",
+    "country": "CD"
+  },
+  {
+    "code": "CF-HS",
+    "name": "Mambéré-Kadéï",
+    "country": "CF"
+  },
+  {
+    "code": "CF-MP",
+    "name": "Ombella-M'Poko",
+    "country": "CF"
+  },
+  {
+    "code": "CG-12",
+    "name": "Pool Department",
+    "country": "CG"
+  },
+  {
+    "code": "CG-13",
+    "name": "Sangha Department",
+    "country": "CG"
+  },
+  {
+    "code": "CG-14",
+    "name": "Plateaux Department",
+    "country": "CG"
+  },
+  {
+    "code": "CG-5",
+    "name": "Kouilou Department",
+    "country": "CG"
+  },
+  {
+    "code": "CG-8",
+    "name": "Cuvette Department",
+    "country": "CG"
+  },
+  {
+    "code": "CG-9",
+    "name": "Niari Department",
+    "country": "CG"
+  },
+  {
+    "code": "CH-BE",
+    "name": "Bern",
+    "country": "CH"
+  },
+  {
+    "code": "CH-GE",
+    "name": "Geneva",
+    "country": "CH"
+  },
+  {
+    "code": "CH-GR",
+    "name": "Grisons",
+    "country": "CH"
+  },
+  {
+    "code": "CH-SG",
+    "name": "St. Gallen",
+    "country": "CH"
+  },
+  {
+    "code": "CH-TI",
+    "name": "Ticino",
+    "country": "CH"
+  },
+  {
+    "code": "CH-VS",
+    "name": "Valais",
+    "country": "CH"
+  },
+  {
+    "code": "CH-ZH",
+    "name": "Zürich",
+    "country": "CH"
+  },
+  {
+    "code": "CI-AB",
+    "name": "Abidjan (autonomous district)",
+    "country": "CI"
+  },
+  {
+    "code": "CI-BS",
+    "name": "Bas-Sassandra District",
+    "country": "CI"
+  },
+  {
+    "code": "CI-MG",
+    "name": "Montagnes District",
+    "country": "CI"
+  },
+  {
+    "code": "CI-SM",
+    "name": "Sassandra-Marahoué District",
+    "country": "CI"
+  },
+  {
+    "code": "CI-SV",
+    "name": "Savanes District",
+    "country": "CI"
+  },
+  {
+    "code": "CI-VB",
+    "name": "Vallée du Bandama District",
+    "country": "CI"
+  },
+  {
+    "code": "CI-YM",
+    "name": "Yamoussoukro (autonomous district)",
+    "country": "CI"
+  },
+  {
+    "code": "CK-U-A",
+    "name": "(unassigned)",
+    "country": "CK"
+  },
+  {
+    "code": "CL-AI",
+    "name": "Aysén Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-AN",
+    "name": "Antofagasta Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-AP",
+    "name": "Arica and Parinacota Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-AR",
+    "name": "Araucanía Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-AT",
+    "name": "Atacama Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-BI",
+    "name": "Bío-Bío Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-CO",
+    "name": "Coquimbo Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-LL",
+    "name": "Los Lagos Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-LR",
+    "name": "Los Ríos Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-MA",
+    "name": "Magallanes Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-ML",
+    "name": "Maule Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-NB",
+    "name": "Ñuble Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-RM",
+    "name": "Santiago Metropolitan Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-TA",
+    "name": "Tarapacá Region",
+    "country": "CL"
+  },
+  {
+    "code": "CL-VS",
+    "name": "Valparaíso Region",
+    "country": "CL"
+  },
+  {
+    "code": "CM-AD",
+    "name": "Adamaoua Region",
+    "country": "CM"
+  },
+  {
+    "code": "CM-CE",
+    "name": "Centre Region",
+    "country": "CM"
+  },
+  {
+    "code": "CM-EN",
+    "name": "Far North Region",
+    "country": "CM"
+  },
+  {
+    "code": "CM-LT",
+    "name": "Littoral Region",
+    "country": "CM"
+  },
+  {
+    "code": "CM-NO",
+    "name": "North Region",
+    "country": "CM"
+  },
+  {
+    "code": "CM-NW",
+    "name": "North-West Region",
+    "country": "CM"
+  },
+  {
+    "code": "CM-OU",
+    "name": "West Region",
+    "country": "CM"
+  },
+  {
+    "code": "CM-SW",
+    "name": "South-West Region",
+    "country": "CM"
+  },
+  {
+    "code": "CN-11",
+    "name": "Beijing Municipality",
+    "country": "CN"
+  },
+  {
+    "code": "CN-12",
+    "name": "Tianjin Municipality",
+    "country": "CN"
+  },
+  {
+    "code": "CN-13",
+    "name": "Hebei Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-14",
+    "name": "Shanxi Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-15",
+    "name": "Inner Mongolia Autonomous Region",
+    "country": "CN"
+  },
+  {
+    "code": "CN-21",
+    "name": "Liaoning Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-22",
+    "name": "Jilin Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-23",
+    "name": "Heilongjiang Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-31",
+    "name": "Shanghai Municipality",
+    "country": "CN"
+  },
+  {
+    "code": "CN-32",
+    "name": "Jiangsu Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-33",
+    "name": "Zhejiang Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-34",
+    "name": "Anhui Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-35",
+    "name": "Fujian Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-36",
+    "name": "Jiangxi Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-37",
+    "name": "Shandong Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-41",
+    "name": "Henan Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-42",
+    "name": "Hubei Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-43",
+    "name": "Hunan Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-44",
+    "name": "Guangdong Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-45",
+    "name": "Guangxi Autonomous Region",
+    "country": "CN"
+  },
+  {
+    "code": "CN-46",
+    "name": "Hainan Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-50",
+    "name": "Chongqing Municipality",
+    "country": "CN"
+  },
+  {
+    "code": "CN-51",
+    "name": "Sichuan Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-52",
+    "name": "Guizhou Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-53",
+    "name": "Yunnan Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-54",
+    "name": "Tibet Autonomous Region",
+    "country": "CN"
+  },
+  {
+    "code": "CN-61",
+    "name": "Shaanxi Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-62",
+    "name": "Gansu Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-63",
+    "name": "Qinghai Province",
+    "country": "CN"
+  },
+  {
+    "code": "CN-64",
+    "name": "Ningxia Autonomous Region",
+    "country": "CN"
+  },
+  {
+    "code": "CN-65",
+    "name": "Xinjiang Autonomous Region",
+    "country": "CN"
+  },
+  {
+    "code": "CO-AMA",
+    "name": "Amazonas Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-ANT",
+    "name": "Antioquía Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-ARA",
+    "name": "Arauca Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-ATL",
+    "name": "Atlántico Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-BOL",
+    "name": "Bolívar Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-CAL",
+    "name": "Caldas Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-CAQ",
+    "name": "Caquetá Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-CAS",
+    "name": "Casanare Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-CAU",
+    "name": "Cauca Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-CES",
+    "name": "César Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-CHO",
+    "name": "Chocó Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-COR",
+    "name": "Córdoba Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-CUN",
+    "name": "Cundinamarca Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-DC",
+    "name": "Bogotá Capital District",
+    "country": "CO"
+  },
+  {
+    "code": "CO-GUA",
+    "name": "Guainía Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-GUV",
+    "name": "Guaviare Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-HUI",
+    "name": "Huila Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-LAG",
+    "name": "La Guajira Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-MAG",
+    "name": "Magdalena Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-MET",
+    "name": "Meta Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-NAR",
+    "name": "Nariño Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-NSA",
+    "name": "Norte de Santander Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-PUT",
+    "name": "Putumayo Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-QUI",
+    "name": "Quindio Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-RIS",
+    "name": "Risaralda Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-SAN",
+    "name": "Santander Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-SAP",
+    "name": "San Andrés, Providencia y Santa Catalina Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-SUC",
+    "name": "Sucre Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-TOL",
+    "name": "Tolima Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-VAC",
+    "name": "Valle del Cauca Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-VAU",
+    "name": "Vaupés Department",
+    "country": "CO"
+  },
+  {
+    "code": "CO-VID",
+    "name": "Vichada Department",
+    "country": "CO"
+  },
+  {
+    "code": "CR-A",
+    "name": "Alajuela Province",
+    "country": "CR"
+  },
+  {
+    "code": "CR-G",
+    "name": "Guanacaste Province",
+    "country": "CR"
+  },
+  {
+    "code": "CR-L",
+    "name": "Limón Province",
+    "country": "CR"
+  },
+  {
+    "code": "CR-P",
+    "name": "Puntarenas Province",
+    "country": "CR"
+  },
+  {
+    "code": "CR-SJ",
+    "name": "San José Province",
+    "country": "CR"
+  },
+  {
+    "code": "CU-03",
+    "name": "La Habana Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-04",
+    "name": "Matanzas Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-05",
+    "name": "Villa Clara Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-06",
+    "name": "Cienfuegos Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-07",
+    "name": "Sancti Spíritus Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-08",
+    "name": "Ciego de Ávila Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-09",
+    "name": "Camagüey Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-10",
+    "name": "Las Tunas Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-11",
+    "name": "Holguín Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-12",
+    "name": "Granma Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-13",
+    "name": "Santiago de Cuba Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-14",
+    "name": "Guantánamo Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-15",
+    "name": "Artemisa Province",
+    "country": "CU"
+  },
+  {
+    "code": "CU-99",
+    "name": "Isla de la Juventud (special municipality)",
+    "country": "CU"
+  },
+  {
+    "code": "CV-B",
+    "name": "Barlavento Islands",
+    "country": "CV"
+  },
+  {
+    "code": "CV-S",
+    "name": "Sotavento Islands",
+    "country": "CV"
+  },
+  {
+    "code": "CW-U-A",
+    "name": "(unassigned)",
+    "country": "CW"
+  },
+  {
+    "code": "CX-U-A",
+    "name": "(unassigned)",
+    "country": "CX"
+  },
+  {
+    "code": "CY-02",
+    "name": "Nicosia District",
+    "country": "CY"
+  },
+  {
+    "code": "CY-04",
+    "name": "Larnaca District",
+    "country": "CY"
+  },
+  {
+    "code": "CY-06",
+    "name": "Paphos District",
+    "country": "CY"
+  },
+  {
+    "code": "CY-XX",
+    "name": "Sovereign Base Areas of Akrotiri and Dhekelia",
+    "country": "CY"
+  },
+  {
+    "code": "CZ-JC",
+    "name": "South Bohemian Region",
+    "country": "CZ"
+  },
+  {
+    "code": "CZ-JM",
+    "name": "South Moravian Region",
+    "country": "CZ"
+  },
+  {
+    "code": "CZ-KA",
+    "name": "Karlovy Vary Region",
+    "country": "CZ"
+  },
+  {
+    "code": "CZ-MO",
+    "name": "Moravian-Silesian Region",
+    "country": "CZ"
+  },
+  {
+    "code": "CZ-PA",
+    "name": "Pardubice Region",
+    "country": "CZ"
+  },
+  {
+    "code": "CZ-PR",
+    "name": "Praha (Prague) (capital city)",
+    "country": "CZ"
+  },
+  {
+    "code": "CZ-ST",
+    "name": "Central Bohemian Region",
+    "country": "CZ"
+  },
+  {
+    "code": "CZ-ZL",
+    "name": "Zlín Region",
+    "country": "CZ"
+  },
+  {
+    "code": "DE-BR",
+    "name": "Brandenburg",
+    "country": "DE"
+  },
+  {
+    "code": "DE-BW",
+    "name": "Baden-Württemberg",
+    "country": "DE"
+  },
+  {
+    "code": "DE-BY",
+    "name": "Bavaria",
+    "country": "DE"
+  },
+  {
+    "code": "DE-HB",
+    "name": "Bremen",
+    "country": "DE"
+  },
+  {
+    "code": "DE-HE",
+    "name": "Hesse",
+    "country": "DE"
+  },
+  {
+    "code": "DE-HH",
+    "name": "Hamburg",
+    "country": "DE"
+  },
+  {
+    "code": "DE-MV",
+    "name": "Mecklenburg-Vorpommern",
+    "country": "DE"
+  },
+  {
+    "code": "DE-NI",
+    "name": "Lower Saxony",
+    "country": "DE"
+  },
+  {
+    "code": "DE-NW",
+    "name": "North Rhine-Westphalia",
+    "country": "DE"
+  },
+  {
+    "code": "DE-RP",
+    "name": "Rhineland-Palatinate",
+    "country": "DE"
+  },
+  {
+    "code": "DE-SH",
+    "name": "Schleswig-Holstein",
+    "country": "DE"
+  },
+  {
+    "code": "DE-SL",
+    "name": "Saarland",
+    "country": "DE"
+  },
+  {
+    "code": "DE-SN",
+    "name": "Saxony",
+    "country": "DE"
+  },
+  {
+    "code": "DE-TH",
+    "name": "Thuringia",
+    "country": "DE"
+  },
+  {
+    "code": "DJ-DJ",
+    "name": "Djibouti Region",
+    "country": "DJ"
+  },
+  {
+    "code": "DK-81",
+    "name": "North Jutland",
+    "country": "DK"
+  },
+  {
+    "code": "DK-82",
+    "name": "Central Jutland",
+    "country": "DK"
+  },
+  {
+    "code": "DK-83",
+    "name": "South Denmark",
+    "country": "DK"
+  },
+  {
+    "code": "DK-84",
+    "name": "Capital Region",
+    "country": "DK"
+  },
+  {
+    "code": "DK-85",
+    "name": "Zealand",
+    "country": "DK"
+  },
+  {
+    "code": "DM-02",
+    "name": "Saint Andrew Parish",
+    "country": "DM"
+  },
+  {
+    "code": "DM-10",
+    "name": "Saint Paul Parish",
+    "country": "DM"
+  },
+  {
+    "code": "DO-01",
+    "name": "Distrito Nacional",
+    "country": "DO"
+  },
+  {
+    "code": "DO-04",
+    "name": "Barahona Province",
+    "country": "DO"
+  },
+  {
+    "code": "DO-11",
+    "name": "La Altagracia Province",
+    "country": "DO"
+  },
+  {
+    "code": "DO-12",
+    "name": "La Romana Province",
+    "country": "DO"
+  },
+  {
+    "code": "DO-16",
+    "name": "Pedernales Province",
+    "country": "DO"
+  },
+  {
+    "code": "DO-18",
+    "name": "Puerto Plata Province",
+    "country": "DO"
+  },
+  {
+    "code": "DO-20",
+    "name": "Samaná Province",
+    "country": "DO"
+  },
+  {
+    "code": "DO-25",
+    "name": "Santiago de los Caballeros Province",
+    "country": "DO"
+  },
+  {
+    "code": "DZ-01",
+    "name": "Adrar Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-02",
+    "name": "Chlef Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-03",
+    "name": "Laghouat Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-05",
+    "name": "Batna Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-06",
+    "name": "Béjaïa Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-07",
+    "name": "Biskra Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-08",
+    "name": "Béchar Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-11",
+    "name": "Tamanrasset Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-12",
+    "name": "Tébessa Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-13",
+    "name": "Tlemcen Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-14",
+    "name": "Tiaret Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-16",
+    "name": "Algiers Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-18",
+    "name": "Jijel Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-19",
+    "name": "Sétif Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-23",
+    "name": "Annaba Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-25",
+    "name": "Constantine Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-28",
+    "name": "M'Sila Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-29",
+    "name": "Mascara Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-30",
+    "name": "Ouargla Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-31",
+    "name": "Oran Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-33",
+    "name": "Illizi Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-37",
+    "name": "Tindouf Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-39",
+    "name": "El Oued Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-45",
+    "name": "Naama Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-47",
+    "name": "Ghardaïa Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-50",
+    "name": "El Menia Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-52",
+    "name": "Bordj Baji Mokhtar Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-54",
+    "name": "Timimoun Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-55",
+    "name": "Touggourt Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-56",
+    "name": "Djanet Province",
+    "country": "DZ"
+  },
+  {
+    "code": "DZ-57",
+    "name": "In Salah Province",
+    "country": "DZ"
+  },
+  {
+    "code": "EC-25",
+    "name": "Santa Elena Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-A",
+    "name": "Azuay Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-C",
+    "name": "Carchi Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-D",
+    "name": "Orellana Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-E",
+    "name": "Esmeraldas Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-G",
+    "name": "Guayas Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-L",
+    "name": "Loja Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-M",
+    "name": "Manabi Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-N",
+    "name": "Napo Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-O",
+    "name": "El Oro Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-P",
+    "name": "Pichincha Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-S",
+    "name": "Morona-Santiago Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-T",
+    "name": "Tungurahua Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-U",
+    "name": "Sucumbios Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-W",
+    "name": "Galapagos Province",
+    "country": "EC"
+  },
+  {
+    "code": "EC-X",
+    "name": "Cotopaxi Province",
+    "country": "EC"
+  },
+  {
+    "code": "EE-37",
+    "name": "Harju County",
+    "country": "EE"
+  },
+  {
+    "code": "EE-39",
+    "name": "Hiiu County",
+    "country": "EE"
+  },
+  {
+    "code": "EE-67",
+    "name": "Pärnu County",
+    "country": "EE"
+  },
+  {
+    "code": "EE-74",
+    "name": "Saare County",
+    "country": "EE"
+  },
+  {
+    "code": "EE-7B",
+    "name": "Tartu County",
+    "country": "EE"
+  },
+  {
+    "code": "EG-ALX",
+    "name": "Alexandria Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-ASN",
+    "name": "Aswan Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-AST",
+    "name": "Asyut Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-BA",
+    "name": "Red Sea Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-C",
+    "name": "Cairo Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-GZ",
+    "name": "Giza Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-JS",
+    "name": "South Sinai Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-LX",
+    "name": "Luxor Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-MT",
+    "name": "Matruh Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-PTS",
+    "name": "Port Said Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-SHG",
+    "name": "Sohag Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EG-SIN",
+    "name": "North Sinai Governorate",
+    "country": "EG"
+  },
+  {
+    "code": "EH-U-A",
+    "name": "(unassigned)",
+    "country": "EH"
+  },
+  {
+    "code": "ER-DK",
+    "name": "Southern Red Sea Region",
+    "country": "ER"
+  },
+  {
+    "code": "ER-SK",
+    "name": "Northern Red Sea Region",
+    "country": "ER"
+  },
+  {
+    "code": "ES-AN",
+    "name": "Andalucía",
+    "country": "ES"
+  },
+  {
+    "code": "ES-AR",
+    "name": "Aragón",
+    "country": "ES"
+  },
+  {
+    "code": "ES-AS",
+    "name": "Asturias",
+    "country": "ES"
+  },
+  {
+    "code": "ES-CB",
+    "name": "Cantabria",
+    "country": "ES"
+  },
+  {
+    "code": "ES-CL",
+    "name": "Castilla y León",
+    "country": "ES"
+  },
+  {
+    "code": "ES-CM",
+    "name": "Castilla–La Mancha",
+    "country": "ES"
+  },
+  {
+    "code": "ES-CN",
+    "name": "Canary Islands",
+    "country": "ES"
+  },
+  {
+    "code": "ES-CT",
+    "name": "Catalonia",
+    "country": "ES"
+  },
+  {
+    "code": "ES-EX",
+    "name": "Extremadura",
+    "country": "ES"
+  },
+  {
+    "code": "ES-GA",
+    "name": "Galicia",
+    "country": "ES"
+  },
+  {
+    "code": "ES-IB",
+    "name": "Islas Baleares",
+    "country": "ES"
+  },
+  {
+    "code": "ES-MC",
+    "name": "Murcia (region)",
+    "country": "ES"
+  },
+  {
+    "code": "ES-MD",
+    "name": "Madrid (community)",
+    "country": "ES"
+  },
+  {
+    "code": "ES-ML",
+    "name": "Melilla (city)",
+    "country": "ES"
+  },
+  {
+    "code": "ES-NC",
+    "name": "Navarra",
+    "country": "ES"
+  },
+  {
+    "code": "ES-PV",
+    "name": "Basque Country",
+    "country": "ES"
+  },
+  {
+    "code": "ES-RI",
+    "name": "La Rioja",
+    "country": "ES"
+  },
+  {
+    "code": "ES-VC",
+    "name": "Valencia (community)",
+    "country": "ES"
+  },
+  {
+    "code": "ET-AA",
+    "name": "Addis Ababa",
+    "country": "ET"
+  },
+  {
+    "code": "ET-AF",
+    "name": "Afar Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-AM",
+    "name": "Amhara Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-BE",
+    "name": "Benishangul-Gumuz Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-DD",
+    "name": "Dire Dawa",
+    "country": "ET"
+  },
+  {
+    "code": "ET-GA",
+    "name": "Gambela Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-OR",
+    "name": "Oromia Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-SN",
+    "name": "Southern Nations, Nationalities, and Peoples' Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-SO",
+    "name": "Somali Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-SW",
+    "name": "South West Ethiopia Peoples' Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-TI",
+    "name": "Tigray Region",
+    "country": "ET"
+  },
+  {
+    "code": "ET-XSD",
+    "name": "Sidama Region",
+    "country": "ET"
+  },
+  {
+    "code": "FI-01",
+    "name": "Åland Islands Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-02",
+    "name": "South Karelia Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-03",
+    "name": "South Ostrobothnia Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-04",
+    "name": "Southern Savonia Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-05",
+    "name": "Kainuu Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-07",
+    "name": "Central Ostrobothnia Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-08",
+    "name": "Central Finland Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-10",
+    "name": "Lapland Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-11",
+    "name": "Pirkanmaa Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-12",
+    "name": "Ostrobothnia Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-13",
+    "name": "North Karelia Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-14",
+    "name": "North Ostrobothnia Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-15",
+    "name": "Northern Savonia Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-17",
+    "name": "Satakunta Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-18",
+    "name": "Uusimaa Region",
+    "country": "FI"
+  },
+  {
+    "code": "FI-19",
+    "name": "Southwest Finland Region",
+    "country": "FI"
+  },
+  {
+    "code": "FJ-C",
+    "name": "Central Division",
+    "country": "FJ"
+  },
+  {
+    "code": "FJ-E",
+    "name": "Eastern Division",
+    "country": "FJ"
+  },
+  {
+    "code": "FJ-N",
+    "name": "Northern Division",
+    "country": "FJ"
+  },
+  {
+    "code": "FJ-R",
+    "name": "Rotuma (dependency)",
+    "country": "FJ"
+  },
+  {
+    "code": "FJ-W",
+    "name": "Western Division",
+    "country": "FJ"
+  },
+  {
+    "code": "FK-U-A",
+    "name": "(unassigned)",
+    "country": "FK"
+  },
+  {
+    "code": "FM-KSA",
+    "name": "Kosrae State",
+    "country": "FM"
+  },
+  {
+    "code": "FM-PNI",
+    "name": "Pohnpei State",
+    "country": "FM"
+  },
+  {
+    "code": "FM-TRK",
+    "name": "Chuuk State",
+    "country": "FM"
+  },
+  {
+    "code": "FM-YAP",
+    "name": "Yap State",
+    "country": "FM"
+  },
+  {
+    "code": "FO-U-A",
+    "name": "(unassigned)",
+    "country": "FO"
+  },
+  {
+    "code": "FR-ARA",
+    "name": "Auvergne-Rhône-Alpes",
+    "country": "FR"
+  },
+  {
+    "code": "FR-BFC",
+    "name": "Bourgogne-Franche-Comté",
+    "country": "FR"
+  },
+  {
+    "code": "FR-BRE",
+    "name": "Brittany",
+    "country": "FR"
+  },
+  {
+    "code": "FR-COR",
+    "name": "Corsica",
+    "country": "FR"
+  },
+  {
+    "code": "FR-CVL",
+    "name": "Centre-Val de Loire",
+    "country": "FR"
+  },
+  {
+    "code": "FR-GES",
+    "name": "Grand Est",
+    "country": "FR"
+  },
+  {
+    "code": "FR-HDF",
+    "name": "Hauts-de-France",
+    "country": "FR"
+  },
+  {
+    "code": "FR-IDF",
+    "name": "Île-de-France",
+    "country": "FR"
+  },
+  {
+    "code": "FR-NAQ",
+    "name": "Nouvelle-Aquitaine",
+    "country": "FR"
+  },
+  {
+    "code": "FR-NOR",
+    "name": "Normandy",
+    "country": "FR"
+  },
+  {
+    "code": "FR-OCC",
+    "name": "Occitanie",
+    "country": "FR"
+  },
+  {
+    "code": "FR-PAC",
+    "name": "Provence-Alpes-Côte-d'Azur",
+    "country": "FR"
+  },
+  {
+    "code": "FR-PDL",
+    "name": "Pays-de-la-Loire",
+    "country": "FR"
+  },
+  {
+    "code": "GA-1",
+    "name": "Estuaire Province",
+    "country": "GA"
+  },
+  {
+    "code": "GA-2",
+    "name": "Haut-Ogooué Province",
+    "country": "GA"
+  },
+  {
+    "code": "GA-3",
+    "name": "Moyen-Ogooué Province",
+    "country": "GA"
+  },
+  {
+    "code": "GA-4",
+    "name": "Ngounié Province",
+    "country": "GA"
+  },
+  {
+    "code": "GA-6",
+    "name": "Ogooué-Ivindo Province",
+    "country": "GA"
+  },
+  {
+    "code": "GA-7",
+    "name": "Ogooué-Lolo Province",
+    "country": "GA"
+  },
+  {
+    "code": "GA-8",
+    "name": "Ogooué-Maritime Province",
+    "country": "GA"
+  },
+  {
+    "code": "GA-9",
+    "name": "Woleu-Ntem Province",
+    "country": "GA"
+  },
+  {
+    "code": "GB-ENG",
+    "name": "England",
+    "country": "GB"
+  },
+  {
+    "code": "GB-NIR",
+    "name": "Northern Ireland",
+    "country": "GB"
+  },
+  {
+    "code": "GB-SCT",
+    "name": "Scotland",
+    "country": "GB"
+  },
+  {
+    "code": "GB-WLS",
+    "name": "Wales",
+    "country": "GB"
+  },
+  {
+    "code": "GD-GE",
+    "name": "Saint George",
+    "country": "GD"
+  },
+  {
+    "code": "GD-PA",
+    "name": "Saint Patrick",
+    "country": "GD"
+  },
+  {
+    "code": "GE-AB",
+    "name": "Autonomous Republic of Abkhazia",
+    "country": "GE"
+  },
+  {
+    "code": "GE-AJ",
+    "name": "Autonomous Republic of Adjara",
+    "country": "GE"
+  },
+  {
+    "code": "GE-IM",
+    "name": "Imereti",
+    "country": "GE"
+  },
+  {
+    "code": "GE-TB",
+    "name": "Tbilisi",
+    "country": "GE"
+  },
+  {
+    "code": "GF-CY",
+    "name": "Cayenne",
+    "country": "GF"
+  },
+  {
+    "code": "GF-SL",
+    "name": "Saint-Laurent-du-Maroni",
+    "country": "GF"
+  },
+  {
+    "code": "GG-A",
+    "name": "Alderney",
+    "country": "GG"
+  },
+  {
+    "code": "GG-G",
+    "name": "Guernsey",
+    "country": "GG"
+  },
+  {
+    "code": "GH-AA",
+    "name": "Greater Accra Region",
+    "country": "GH"
+  },
+  {
+    "code": "GH-AH",
+    "name": "Ashanti Region",
+    "country": "GH"
+  },
+  {
+    "code": "GH-BO",
+    "name": "Bono Region",
+    "country": "GH"
+  },
+  {
+    "code": "GH-NP",
+    "name": "Northern Region",
+    "country": "GH"
+  },
+  {
+    "code": "GH-WP",
+    "name": "Western Region",
+    "country": "GH"
+  },
+  {
+    "code": "GI-U-A",
+    "name": "(unassigned)",
+    "country": "GI"
+  },
+  {
+    "code": "GL-AV",
+    "name": "Avannaata Municipality",
+    "country": "GL"
+  },
+  {
+    "code": "GL-KU",
+    "name": "Kujalleq Municipality",
+    "country": "GL"
+  },
+  {
+    "code": "GL-QA",
+    "name": "Qeqqata Municipality",
+    "country": "GL"
+  },
+  {
+    "code": "GL-QK",
+    "name": "Qeqertalik Municipality",
+    "country": "GL"
+  },
+  {
+    "code": "GL-SE",
+    "name": "Sermersooq Municipality",
+    "country": "GL"
+  },
+  {
+    "code": "GM-W",
+    "name": "Western Division",
+    "country": "GM"
+  },
+  {
+    "code": "GN-C",
+    "name": "Conakry Special Zone",
+    "country": "GN"
+  },
+  {
+    "code": "GP-U-A",
+    "name": "(unassigned)",
+    "country": "GP"
+  },
+  {
+    "code": "GQ-AN",
+    "name": "Annobón Province",
+    "country": "GQ"
+  },
+  {
+    "code": "GQ-BN",
+    "name": "Bioko Norte Province",
+    "country": "GQ"
+  },
+  {
+    "code": "GQ-LI",
+    "name": "Litoral Province",
+    "country": "GQ"
+  },
+  {
+    "code": "GQ-WN",
+    "name": "Wele-Nzas Province",
+    "country": "GQ"
+  },
+  {
+    "code": "GR-A",
+    "name": "Eastern Macedonia and Thrace",
+    "country": "GR"
+  },
+  {
+    "code": "GR-B",
+    "name": "Central Macedonia",
+    "country": "GR"
+  },
+  {
+    "code": "GR-C",
+    "name": "Western Macedonia",
+    "country": "GR"
+  },
+  {
+    "code": "GR-D",
+    "name": "Epirus",
+    "country": "GR"
+  },
+  {
+    "code": "GR-E",
+    "name": "Thessaly",
+    "country": "GR"
+  },
+  {
+    "code": "GR-F",
+    "name": "Ionian Islands",
+    "country": "GR"
+  },
+  {
+    "code": "GR-G",
+    "name": "Western Greece",
+    "country": "GR"
+  },
+  {
+    "code": "GR-H",
+    "name": "Central Greece",
+    "country": "GR"
+  },
+  {
+    "code": "GR-I",
+    "name": "Attica",
+    "country": "GR"
+  },
+  {
+    "code": "GR-J",
+    "name": "Peloponnese",
+    "country": "GR"
+  },
+  {
+    "code": "GR-K",
+    "name": "North Aegean",
+    "country": "GR"
+  },
+  {
+    "code": "GR-L",
+    "name": "South Aegean",
+    "country": "GR"
+  },
+  {
+    "code": "GR-M",
+    "name": "Crete",
+    "country": "GR"
+  },
+  {
+    "code": "GT-AV",
+    "name": "Alta Verapez Department",
+    "country": "GT"
+  },
+  {
+    "code": "GT-ES",
+    "name": "Escuintla Department",
+    "country": "GT"
+  },
+  {
+    "code": "GT-GU",
+    "name": "Guatemala Department",
+    "country": "GT"
+  },
+  {
+    "code": "GT-HU",
+    "name": "Huehuetenango Department",
+    "country": "GT"
+  },
+  {
+    "code": "GT-IZ",
+    "name": "Izabal Department",
+    "country": "GT"
+  },
+  {
+    "code": "GT-PE",
+    "name": "Petén Department",
+    "country": "GT"
+  },
+  {
+    "code": "GT-QZ",
+    "name": "Quetzaltenango Department",
+    "country": "GT"
+  },
+  {
+    "code": "GT-RE",
+    "name": "Retalhuleu Department",
+    "country": "GT"
+  },
+  {
+    "code": "GU-U-A",
+    "name": "(unassigned)",
+    "country": "GU"
+  },
+  {
+    "code": "GW-BS",
+    "name": "Bissau Autonomous Sector",
+    "country": "GW"
+  },
+  {
+    "code": "GY-DE",
+    "name": "Demerara-Mahaica",
+    "country": "GY"
+  },
+  {
+    "code": "GY-PT",
+    "name": "Potaro-Siparuni",
+    "country": "GY"
+  },
+  {
+    "code": "GY-UT",
+    "name": "Upper Takutu-Upper Essequibo",
+    "country": "GY"
+  },
+  {
+    "code": "HK-NT",
+    "name": "New Territories",
+    "country": "HK"
+  },
+  {
+    "code": "HN-AT",
+    "name": "Atlántida Department",
+    "country": "HN"
+  },
+  {
+    "code": "HN-CL",
+    "name": "Colón Department",
+    "country": "HN"
+  },
+  {
+    "code": "HN-CM",
+    "name": "Comayagua Department",
+    "country": "HN"
+  },
+  {
+    "code": "HN-CR",
+    "name": "Cortés Department",
+    "country": "HN"
+  },
+  {
+    "code": "HN-FM",
+    "name": "Francisco Morazán Department",
+    "country": "HN"
+  },
+  {
+    "code": "HN-GD",
+    "name": "Gracias a Dios Department",
+    "country": "HN"
+  },
+  {
+    "code": "HN-IB",
+    "name": "Islas de la Bahía Department",
+    "country": "HN"
+  },
+  {
+    "code": "HR-01",
+    "name": "Zagreb County",
+    "country": "HR"
+  },
+  {
+    "code": "HR-08",
+    "name": "Primorje-Gorski Kotar County",
+    "country": "HR"
+  },
+  {
+    "code": "HR-13",
+    "name": "Zadar County",
+    "country": "HR"
+  },
+  {
+    "code": "HR-14",
+    "name": "Osijek-Baranja County",
+    "country": "HR"
+  },
+  {
+    "code": "HR-17",
+    "name": "Split-Dalmatia County",
+    "country": "HR"
+  },
+  {
+    "code": "HR-18",
+    "name": "Istria County",
+    "country": "HR"
+  },
+  {
+    "code": "HR-19",
+    "name": "Dubrovnik-Neretva County",
+    "country": "HR"
+  },
+  {
+    "code": "HT-GA",
+    "name": "Grande'Anse Department",
+    "country": "HT"
+  },
+  {
+    "code": "HT-ND",
+    "name": "Nord Department",
+    "country": "HT"
+  },
+  {
+    "code": "HT-NO",
+    "name": "Nord-Ouest Department",
+    "country": "HT"
+  },
+  {
+    "code": "HT-OU",
+    "name": "Ouest Department",
+    "country": "HT"
+  },
+  {
+    "code": "HT-SD",
+    "name": "Sud Department",
+    "country": "HT"
+  },
+  {
+    "code": "HT-SE",
+    "name": "Sud-Est Department",
+    "country": "HT"
+  },
+  {
+    "code": "HU-BA",
+    "name": "Baranya County",
+    "country": "HU"
+  },
+  {
+    "code": "HU-BU",
+    "name": "Budapest (capital city)",
+    "country": "HU"
+  },
+  {
+    "code": "HU-HB",
+    "name": "Hajdu-Bihar County",
+    "country": "HU"
+  },
+  {
+    "code": "HU-ZA",
+    "name": "Zala County",
+    "country": "HU"
+  },
+  {
+    "code": "ID-AC",
+    "name": "Aceh",
+    "country": "ID"
+  },
+  {
+    "code": "ID-BA",
+    "name": "Bali",
+    "country": "ID"
+  },
+  {
+    "code": "ID-BB",
+    "name": "Bangka Belitung",
+    "country": "ID"
+  },
+  {
+    "code": "ID-BE",
+    "name": "Bengkulu",
+    "country": "ID"
+  },
+  {
+    "code": "ID-BT",
+    "name": "Banten",
+    "country": "ID"
+  },
+  {
+    "code": "ID-GO",
+    "name": "Gorontalo",
+    "country": "ID"
+  },
+  {
+    "code": "ID-JA",
+    "name": "Jambi",
+    "country": "ID"
+  },
+  {
+    "code": "ID-JB",
+    "name": "Jawa Barat (West Java)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-JI",
+    "name": "Jawa Timur (East Java)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-JK",
+    "name": "Jakarta Raya",
+    "country": "ID"
+  },
+  {
+    "code": "ID-JT",
+    "name": "Jawa Tengah (Central Java)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-KB",
+    "name": "Kalimantan Barat (West Kalimantan)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-KI",
+    "name": "Kalimantan Timur (East Kalimantan)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-KR",
+    "name": "Kepulauan Riau (Riau Islands)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-KS",
+    "name": "Kalimantan Selatan (South Kalimantan)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-KT",
+    "name": "Kalimantan Tengah (Central Kalimantan)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-KU",
+    "name": "Kalimantan Utara (North Kalimantan)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-LA",
+    "name": "Lampung",
+    "country": "ID"
+  },
+  {
+    "code": "ID-MA",
+    "name": "Maluku",
+    "country": "ID"
+  },
+  {
+    "code": "ID-MU",
+    "name": "Maluku Utara (North Maluku)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-NB",
+    "name": "Nusa Tenggara Barat (West Nusa Tenggara)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-NT",
+    "name": "Nusa Tenggara Timur (East Nusa Tenggara)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-PA",
+    "name": "Papua",
+    "country": "ID"
+  },
+  {
+    "code": "ID-PB",
+    "name": "Papua Barat (West Papua)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-PD",
+    "name": "Papua Barat Daya (Southwest Papua)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-PP",
+    "name": "Papua Pegunungan (Highland Papua)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-PS",
+    "name": "Papua Selatan (South Papua)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-PT",
+    "name": "Papua Tengah (Central Papua)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-RI",
+    "name": "Riau",
+    "country": "ID"
+  },
+  {
+    "code": "ID-SA",
+    "name": "Sulawesi Utara (North Sulawesi)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-SB",
+    "name": "Sumatera Barat (West Sumatra)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-SG",
+    "name": "Sulawesi Tenggara (Southeast Sulawesi)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-SN",
+    "name": "Sulawesi Selatan (South Sulawesi)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-SS",
+    "name": "Sumatera Selatan (South Sumatra)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-ST",
+    "name": "Sulawesi Tengah (Central Sulawesi)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-SU",
+    "name": "Sumatera Utara (North Sumatra)",
+    "country": "ID"
+  },
+  {
+    "code": "ID-YO",
+    "name": "Yogyakarta",
+    "country": "ID"
+  },
+  {
+    "code": "IE-CE",
+    "name": "County Clare",
+    "country": "IE"
+  },
+  {
+    "code": "IE-CO",
+    "name": "County Cork",
+    "country": "IE"
+  },
+  {
+    "code": "IE-D",
+    "name": "County Dublin",
+    "country": "IE"
+  },
+  {
+    "code": "IE-DL",
+    "name": "County Donegal",
+    "country": "IE"
+  },
+  {
+    "code": "IE-G",
+    "name": "County Galway",
+    "country": "IE"
+  },
+  {
+    "code": "IE-KY",
+    "name": "County Kerry",
+    "country": "IE"
+  },
+  {
+    "code": "IE-MO",
+    "name": "County Mayo",
+    "country": "IE"
+  },
+  {
+    "code": "IE-SO",
+    "name": "County Sligo",
+    "country": "IE"
+  },
+  {
+    "code": "IE-WD",
+    "name": "County Waterford",
+    "country": "IE"
+  },
+  {
+    "code": "IL-D",
+    "name": "Southern District",
+    "country": "IL"
+  },
+  {
+    "code": "IL-HA",
+    "name": "Haifa District",
+    "country": "IL"
+  },
+  {
+    "code": "IL-M",
+    "name": "Central District",
+    "country": "IL"
+  },
+  {
+    "code": "IL-Z",
+    "name": "Northern District",
+    "country": "IL"
+  },
+  {
+    "code": "IM-U-A",
+    "name": "(unassigned)",
+    "country": "IM"
+  },
+  {
+    "code": "IN-AN",
+    "name": "Andaman and Nicobar Islands",
+    "country": "IN"
+  },
+  {
+    "code": "IN-AP",
+    "name": "Andhra Pradesh",
+    "country": "IN"
+  },
+  {
+    "code": "IN-AR",
+    "name": "Arunachal Pradesh",
+    "country": "IN"
+  },
+  {
+    "code": "IN-AS",
+    "name": "Assam",
+    "country": "IN"
+  },
+  {
+    "code": "IN-BR",
+    "name": "Bihar",
+    "country": "IN"
+  },
+  {
+    "code": "IN-CH",
+    "name": "Chandigarh",
+    "country": "IN"
+  },
+  {
+    "code": "IN-CT",
+    "name": "Chhattisgarh",
+    "country": "IN"
+  },
+  {
+    "code": "IN-DH",
+    "name": "Dadra and Nagar Haveli and Daman and Diu",
+    "country": "IN"
+  },
+  {
+    "code": "IN-DL",
+    "name": "Delhi (National Capital Territory)",
+    "country": "IN"
+  },
+  {
+    "code": "IN-GA",
+    "name": "Goa",
+    "country": "IN"
+  },
+  {
+    "code": "IN-GJ",
+    "name": "Gujarat",
+    "country": "IN"
+  },
+  {
+    "code": "IN-HP",
+    "name": "Himachal Pradesh",
+    "country": "IN"
+  },
+  {
+    "code": "IN-HR",
+    "name": "Haryana",
+    "country": "IN"
+  },
+  {
+    "code": "IN-JH",
+    "name": "Jharkhand",
+    "country": "IN"
+  },
+  {
+    "code": "IN-JK",
+    "name": "Jammu and Kashmir",
+    "country": "IN"
+  },
+  {
+    "code": "IN-KA",
+    "name": "Karnataka",
+    "country": "IN"
+  },
+  {
+    "code": "IN-KL",
+    "name": "Kerala",
+    "country": "IN"
+  },
+  {
+    "code": "IN-LA",
+    "name": "Ladakh",
+    "country": "IN"
+  },
+  {
+    "code": "IN-LD",
+    "name": "Lakshadweep",
+    "country": "IN"
+  },
+  {
+    "code": "IN-ML",
+    "name": "Meghalaya",
+    "country": "IN"
+  },
+  {
+    "code": "IN-MM",
+    "name": "Maharashtra",
+    "country": "IN"
+  },
+  {
+    "code": "IN-MN",
+    "name": "Manipur",
+    "country": "IN"
+  },
+  {
+    "code": "IN-MP",
+    "name": "Madhya Pradesh",
+    "country": "IN"
+  },
+  {
+    "code": "IN-MZ",
+    "name": "Mizoram",
+    "country": "IN"
+  },
+  {
+    "code": "IN-NL",
+    "name": "Nagaland",
+    "country": "IN"
+  },
+  {
+    "code": "IN-OR",
+    "name": "Odisha",
+    "country": "IN"
+  },
+  {
+    "code": "IN-PB",
+    "name": "Punjab",
+    "country": "IN"
+  },
+  {
+    "code": "IN-PY",
+    "name": "Pondicherry",
+    "country": "IN"
+  },
+  {
+    "code": "IN-RJ",
+    "name": "Rajasthan",
+    "country": "IN"
+  },
+  {
+    "code": "IN-TG",
+    "name": "Telangana",
+    "country": "IN"
+  },
+  {
+    "code": "IN-TN",
+    "name": "Tamil Nadu",
+    "country": "IN"
+  },
+  {
+    "code": "IN-TR",
+    "name": "Tripura",
+    "country": "IN"
+  },
+  {
+    "code": "IN-UP",
+    "name": "Uttar Pradesh",
+    "country": "IN"
+  },
+  {
+    "code": "IN-UT",
+    "name": "Uttarakhand",
+    "country": "IN"
+  },
+  {
+    "code": "IN-WB",
+    "name": "West Bengal",
+    "country": "IN"
+  },
+  {
+    "code": "IO-U-A",
+    "name": "(unassigned)",
+    "country": "IO"
+  },
+  {
+    "code": "IQ-AR",
+    "name": "Erbil Governorate",
+    "country": "IQ"
+  },
+  {
+    "code": "IQ-BA",
+    "name": "Basra Governorate",
+    "country": "IQ"
+  },
+  {
+    "code": "IQ-NA",
+    "name": "Najaf Governorate",
+    "country": "IQ"
+  },
+  {
+    "code": "IQ-NI",
+    "name": "Ninawa Governorate",
+    "country": "IQ"
+  },
+  {
+    "code": "IQ-SW",
+    "name": "As-Sulaymaniyyah Governorate",
+    "country": "IQ"
+  },
+  {
+    "code": "IQ-TS",
+    "name": "Kirkuk Governorate",
+    "country": "IQ"
+  },
+  {
+    "code": "IR-01",
+    "name": "Gilan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-02",
+    "name": "Mazandaran Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-03",
+    "name": "East Azerbaijan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-04",
+    "name": "West Azerbaijan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-05",
+    "name": "Kermanshah Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-06",
+    "name": "Khuzestan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-07",
+    "name": "Fars Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-08",
+    "name": "Kerman Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-09",
+    "name": "Razavi Khorasan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-10",
+    "name": "Isfahan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-11",
+    "name": "Sistan and Baluchestan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-12",
+    "name": "Kurdistan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-13",
+    "name": "Hamadan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-14",
+    "name": "Chaharmahal and Bakhtiari Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-15",
+    "name": "Lorestan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-16",
+    "name": "Iiam Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-17",
+    "name": "Kohgiluyeh and Boyer-Ahmad Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-18",
+    "name": "Bushehr Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-19",
+    "name": "Zanjan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-20",
+    "name": "Semnan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-21",
+    "name": "Yazd Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-22",
+    "name": "Hormozgan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-23",
+    "name": "Tehran Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-24",
+    "name": "Ardabil Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-26",
+    "name": "Qazvin Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-27",
+    "name": "Golestan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-28",
+    "name": "North Khorasan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-29",
+    "name": "South Khorasan Province",
+    "country": "IR"
+  },
+  {
+    "code": "IR-30",
+    "name": "Alborz Province",
+    "country": "IR"
+  },
+  {
+    "code": "IS-1",
+    "name": "Capital Region",
+    "country": "IS"
+  },
+  {
+    "code": "IS-2",
+    "name": "Southern Peninsula",
+    "country": "IS"
+  },
+  {
+    "code": "IS-4",
+    "name": "Westfjords",
+    "country": "IS"
+  },
+  {
+    "code": "IS-6",
+    "name": "Northeastern Region",
+    "country": "IS"
+  },
+  {
+    "code": "IS-7",
+    "name": "Eastern Region",
+    "country": "IS"
+  },
+  {
+    "code": "IS-8",
+    "name": "Southern Region",
+    "country": "IS"
+  },
+  {
+    "code": "IT-21",
+    "name": "Piedmont",
+    "country": "IT"
+  },
+  {
+    "code": "IT-23",
+    "name": "Valle d'Aosta",
+    "country": "IT"
+  },
+  {
+    "code": "IT-25",
+    "name": "Lombardy",
+    "country": "IT"
+  },
+  {
+    "code": "IT-32",
+    "name": "Trentino-Alto Adige",
+    "country": "IT"
+  },
+  {
+    "code": "IT-34",
+    "name": "Veneto",
+    "country": "IT"
+  },
+  {
+    "code": "IT-36",
+    "name": "Friuli-Venezia Giulia",
+    "country": "IT"
+  },
+  {
+    "code": "IT-42",
+    "name": "Liguria",
+    "country": "IT"
+  },
+  {
+    "code": "IT-45",
+    "name": "Emilia-Romagna",
+    "country": "IT"
+  },
+  {
+    "code": "IT-52",
+    "name": "Tuscany",
+    "country": "IT"
+  },
+  {
+    "code": "IT-55",
+    "name": "Umbria",
+    "country": "IT"
+  },
+  {
+    "code": "IT-57",
+    "name": "Marche",
+    "country": "IT"
+  },
+  {
+    "code": "IT-62",
+    "name": "Lazio",
+    "country": "IT"
+  },
+  {
+    "code": "IT-65",
+    "name": "Abruzzi",
+    "country": "IT"
+  },
+  {
+    "code": "IT-72",
+    "name": "Campania",
+    "country": "IT"
+  },
+  {
+    "code": "IT-75",
+    "name": "Apulia",
+    "country": "IT"
+  },
+  {
+    "code": "IT-78",
+    "name": "Calabria",
+    "country": "IT"
+  },
+  {
+    "code": "IT-82",
+    "name": "Sicily",
+    "country": "IT"
+  },
+  {
+    "code": "IT-88",
+    "name": "Sardinia",
+    "country": "IT"
+  },
+  {
+    "code": "JE-U-A",
+    "name": "(unassigned)",
+    "country": "JE"
+  },
+  {
+    "code": "JM-01",
+    "name": "Kingston Parish",
+    "country": "JM"
+  },
+  {
+    "code": "JM-02",
+    "name": "Saint Andrew Parish",
+    "country": "JM"
+  },
+  {
+    "code": "JM-04",
+    "name": "Portland Parish",
+    "country": "JM"
+  },
+  {
+    "code": "JM-05",
+    "name": "Saint Mary Parish",
+    "country": "JM"
+  },
+  {
+    "code": "JM-08",
+    "name": "Saint James Parish",
+    "country": "JM"
+  },
+  {
+    "code": "JO-AM",
+    "name": "Amman Governorate",
+    "country": "JO"
+  },
+  {
+    "code": "JO-AQ",
+    "name": "Al 'Aqaba Governorate",
+    "country": "JO"
+  },
+  {
+    "code": "JP-01",
+    "name": "Hokkaidō Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-02",
+    "name": "Aomori Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-03",
+    "name": "Iwate Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-04",
+    "name": "Miyagi Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-05",
+    "name": "Akita Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-06",
+    "name": "Yamagata Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-07",
+    "name": "Fukushima Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-08",
+    "name": "Ibaraki Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-12",
+    "name": "Chiba Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-13",
+    "name": "Tōkyō Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-15",
+    "name": "Niigata Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-16",
+    "name": "Toyama Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-17",
+    "name": "Ishikawa Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-18",
+    "name": "Fukui Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-20",
+    "name": "Nagano Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-21",
+    "name": "Gifu Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-22",
+    "name": "Shizuoka Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-23",
+    "name": "Aichi Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-27",
+    "name": "Ōsaka Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-28",
+    "name": "Hyōgo Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-30",
+    "name": "Wakayama Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-31",
+    "name": "Tottori Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-32",
+    "name": "Shimane Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-33",
+    "name": "Okayama Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-34",
+    "name": "Hiroshima Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-35",
+    "name": "Yamaguchi Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-37",
+    "name": "Kagawa Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-38",
+    "name": "Ehime Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-39",
+    "name": "Kōchi Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-40",
+    "name": "Fukuoka Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-41",
+    "name": "Saga Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-42",
+    "name": "Nagasaki Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-43",
+    "name": "Kumamoto Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-44",
+    "name": "Ōita Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-45",
+    "name": "Miyazaki Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-46",
+    "name": "Kagoshima Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "JP-47",
+    "name": "Okinawa Prefecture",
+    "country": "JP"
+  },
+  {
+    "code": "KE-01",
+    "name": "Mombasa County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-03",
+    "name": "Kilifi County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-05",
+    "name": "Lamu County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-08",
+    "name": "Wajir County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-12",
+    "name": "Meru County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-19",
+    "name": "Nyeri County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-23",
+    "name": "Turkana County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-26",
+    "name": "Trans-Nzoia County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-27",
+    "name": "Uasin Gishu County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-32",
+    "name": "Nakuru County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-34",
+    "name": "Kajiado County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-42",
+    "name": "Kisumu County",
+    "country": "KE"
+  },
+  {
+    "code": "KE-47",
+    "name": "Nairobi City County",
+    "country": "KE"
+  },
+  {
+    "code": "KG-C",
+    "name": "Chuy Region",
+    "country": "KG"
+  },
+  {
+    "code": "KG-O",
+    "name": "Osh Region",
+    "country": "KG"
+  },
+  {
+    "code": "KG-Y",
+    "name": "Issyk Kul Region",
+    "country": "KG"
+  },
+  {
+    "code": "KH-12",
+    "name": "Phnom Penh (municipality)",
+    "country": "KH"
+  },
+  {
+    "code": "KH-16",
+    "name": "Ratanakiri province",
+    "country": "KH"
+  },
+  {
+    "code": "KH-17",
+    "name": "Siem Reap province",
+    "country": "KH"
+  },
+  {
+    "code": "KH-18",
+    "name": "Preah Sihanouk province",
+    "country": "KH"
+  },
+  {
+    "code": "KH-2",
+    "name": "Battambang province",
+    "country": "KH"
+  },
+  {
+    "code": "KH-8",
+    "name": "Kandal province",
+    "country": "KH"
+  },
+  {
+    "code": "KH-9",
+    "name": "Koh Kong province",
+    "country": "KH"
+  },
+  {
+    "code": "KI-G",
+    "name": "Gilbert Islands",
+    "country": "KI"
+  },
+  {
+    "code": "KI-L",
+    "name": "Line Islands",
+    "country": "KI"
+  },
+  {
+    "code": "KI-P",
+    "name": "Phoenix Islands",
+    "country": "KI"
+  },
+  {
+    "code": "KM-A",
+    "name": "Anjouan (Ndzouani)",
+    "country": "KM"
+  },
+  {
+    "code": "KM-G",
+    "name": "Grande Comore (Ngazidja)",
+    "country": "KM"
+  },
+  {
+    "code": "KM-M",
+    "name": "Mohéli (Mwali)",
+    "country": "KM"
+  },
+  {
+    "code": "KN-U-A",
+    "name": "(unassigned)",
+    "country": "KN"
+  },
+  {
+    "code": "KP-01",
+    "name": "Pyongyang (capital city)",
+    "country": "KP"
+  },
+  {
+    "code": "KP-07",
+    "name": "Kangwon Province",
+    "country": "KP"
+  },
+  {
+    "code": "KP-08",
+    "name": "South Hamgyong Province",
+    "country": "KP"
+  },
+  {
+    "code": "KP-09",
+    "name": "North Hamgyong Province",
+    "country": "KP"
+  },
+  {
+    "code": "KR-11",
+    "name": "Seoul-teukbyeolsi (Seoul Special City)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-26",
+    "name": "Busan-gwangyeoksi (Busan Metropolitan City)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-27",
+    "name": "Daegu-gwangyeoksi (Daegu Metropolitan City)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-28",
+    "name": "Incheon-Gwangyeoksi (Incheon Metropolitan City)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-29",
+    "name": "Gwangju-gwangyeoksi (Gwangju Metropolitan City)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-31",
+    "name": "Ulsan-gwangyeoksi (Ulsan Metropolitan City)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-41",
+    "name": "Gyeonggi-do (Gyeonggi Province)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-42",
+    "name": "Gangwon Teukbyeoljachi-do (Gangwon Special Self-Governing Province)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-46",
+    "name": "Jeollanam-do (South Jeolla Province)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-47",
+    "name": "Gyeongsangbuk-do (North Gyeongsang Province)",
+    "country": "KR"
+  },
+  {
+    "code": "KR-49",
+    "name": "Jeju Teukbyeoljachi-do (Jeju Special Self-Governing Province)",
+    "country": "KR"
+  },
+  {
+    "code": "KW-FA",
+    "name": "Al Farwaniyah Governorate",
+    "country": "KW"
+  },
+  {
+    "code": "KY-CB",
+    "name": "Cayman Brac",
+    "country": "KY"
+  },
+  {
+    "code": "KY-GC",
+    "name": "Grand Cayman",
+    "country": "KY"
+  },
+  {
+    "code": "KY-LC",
+    "name": "Little Cayman",
+    "country": "KY"
+  },
+  {
+    "code": "KZ-ABA",
+    "name": "Abai Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-AKM",
+    "name": "Akmola Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-AKT",
+    "name": "Aktobe Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-ALA",
+    "name": "Almaty City",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-AST",
+    "name": "Astana City",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-ATY",
+    "name": "Atyrau Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-BAY",
+    "name": "Baikonur City",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-JET",
+    "name": "Jetisu Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-KAR",
+    "name": "Karaganda Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-KUS",
+    "name": "Kostanay Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-KZY",
+    "name": "Kyzylorda Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-MAN",
+    "name": "Mangystau Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-PAV",
+    "name": "Pavlodar Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-SEV",
+    "name": "North Kazakhstan Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-ULY",
+    "name": "Ulytau Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-VOS",
+    "name": "East Kazakhstan Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-YUZ",
+    "name": "Turkistan Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-ZAP",
+    "name": "West Kazakhstan Region",
+    "country": "KZ"
+  },
+  {
+    "code": "KZ-ZHA",
+    "name": "Jambyl Region",
+    "country": "KZ"
+  },
+  {
+    "code": "LA-BK",
+    "name": "Bokeo Province",
+    "country": "LA"
+  },
+  {
+    "code": "LA-CH",
+    "name": "Champasak Province",
+    "country": "LA"
+  },
+  {
+    "code": "LA-HO",
+    "name": "Houaphan Province",
+    "country": "LA"
+  },
+  {
+    "code": "LA-LM",
+    "name": "Louang Namtha Province",
+    "country": "LA"
+  },
+  {
+    "code": "LA-LP",
+    "name": "Louangphabang Province",
+    "country": "LA"
+  },
+  {
+    "code": "LA-OU",
+    "name": "Oudomxai Province",
+    "country": "LA"
+  },
+  {
+    "code": "LA-SV",
+    "name": "Savannakhet Province",
+    "country": "LA"
+  },
+  {
+    "code": "LA-VT",
+    "name": "Vientiane Prefecture",
+    "country": "LA"
+  },
+  {
+    "code": "LA-XI",
+    "name": "Xiangkhoang Province",
+    "country": "LA"
+  },
+  {
+    "code": "LB-JL",
+    "name": "Mount Lebanon Governorate",
+    "country": "LB"
+  },
+  {
+    "code": "LC-02",
+    "name": "Castries",
+    "country": "LC"
+  },
+  {
+    "code": "LC-11",
+    "name": "Vieux Fort",
+    "country": "LC"
+  },
+  {
+    "code": "LK-1",
+    "name": "Western Province",
+    "country": "LK"
+  },
+  {
+    "code": "LK-3",
+    "name": "Southern Province",
+    "country": "LK"
+  },
+  {
+    "code": "LK-4",
+    "name": "Northern Province",
+    "country": "LK"
+  },
+  {
+    "code": "LK-5",
+    "name": "Eastern Province",
+    "country": "LK"
+  },
+  {
+    "code": "LK-7",
+    "name": "North Central Province",
+    "country": "LK"
+  },
+  {
+    "code": "LR-MG",
+    "name": "Margibi County",
+    "country": "LR"
+  },
+  {
+    "code": "LR-MO",
+    "name": "Montserrado County",
+    "country": "LR"
+  },
+  {
+    "code": "LR-SI",
+    "name": "Sinoe County",
+    "country": "LR"
+  },
+  {
+    "code": "LS-A",
+    "name": "Maseru District",
+    "country": "LS"
+  },
+  {
+    "code": "LT-KL",
+    "name": "Klaipėda County",
+    "country": "LT"
+  },
+  {
+    "code": "LT-KU",
+    "name": "Kaunas County",
+    "country": "LT"
+  },
+  {
+    "code": "LT-SA",
+    "name": "Šiauliai County",
+    "country": "LT"
+  },
+  {
+    "code": "LT-VL",
+    "name": "Vilnius County",
+    "country": "LT"
+  },
+  {
+    "code": "LU-L",
+    "name": "Luxembourg",
+    "country": "LU"
+  },
+  {
+    "code": "LV-062",
+    "name": "Mārupe Municipality",
+    "country": "LV"
+  },
+  {
+    "code": "LV-112",
+    "name": "South Kurzeme Municipality",
+    "country": "LV"
+  },
+  {
+    "code": "LY-BA",
+    "name": "Benghazi District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-GT",
+    "name": "Ghat District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-JA",
+    "name": "Al Jabal al Akhdar District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-KF",
+    "name": "Al Kufrah District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-MI",
+    "name": "Misurata District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-NL",
+    "name": "Nalut District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-SB",
+    "name": "Sabha District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-SH",
+    "name": "Wadi Al Shatii District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-SR",
+    "name": "Surt District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-TB",
+    "name": "Tripoli District",
+    "country": "LY"
+  },
+  {
+    "code": "LY-WA",
+    "name": "Al Wahat District",
+    "country": "LY"
+  },
+  {
+    "code": "MA-01",
+    "name": "Tanger-Tétouan-Al Hoceïma Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-02",
+    "name": "L'Oriental Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-03",
+    "name": "Fès-Meknès Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-04",
+    "name": "Rabat-Salé-Kénitra Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-05",
+    "name": "Béni Mellal-Khénifra Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-06",
+    "name": "Casablanca-Settat Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-07",
+    "name": "Marrakech-Safi Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-08",
+    "name": "Drâa-Tafilalet Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-09",
+    "name": "Souss-Massa Region",
+    "country": "MA"
+  },
+  {
+    "code": "MA-10",
+    "name": "Guelmim-Oued Noun Region",
+    "country": "MA"
+  },
+  {
+    "code": "MD-CU",
+    "name": "Chişinău (city)",
+    "country": "MD"
+  },
+  {
+    "code": "MD-RS",
+    "name": "Rîşcani District",
+    "country": "MD"
+  },
+  {
+    "code": "ME-16",
+    "name": "Podgorica Municipality",
+    "country": "ME"
+  },
+  {
+    "code": "ME-19",
+    "name": "Tivat Municipality",
+    "country": "ME"
+  },
+  {
+    "code": "MF-U-A",
+    "name": "(unassigned)",
+    "country": "MF"
+  },
+  {
+    "code": "MG-A",
+    "name": "Toamasina",
+    "country": "MG"
+  },
+  {
+    "code": "MG-D",
+    "name": "Antsiranana",
+    "country": "MG"
+  },
+  {
+    "code": "MG-F",
+    "name": "Fianarantsoa",
+    "country": "MG"
+  },
+  {
+    "code": "MG-M",
+    "name": "Mahajanga",
+    "country": "MG"
+  },
+  {
+    "code": "MG-T",
+    "name": "Antananarivo",
+    "country": "MG"
+  },
+  {
+    "code": "MG-U",
+    "name": "Toliara",
+    "country": "MG"
+  },
+  {
+    "code": "MH-ALL",
+    "name": "Ailinglapalap",
+    "country": "MH"
+  },
+  {
+    "code": "MH-AUR",
+    "name": "Aur",
+    "country": "MH"
+  },
+  {
+    "code": "MH-ENI",
+    "name": "Eniwetok",
+    "country": "MH"
+  },
+  {
+    "code": "MH-JAL",
+    "name": "Jaluit",
+    "country": "MH"
+  },
+  {
+    "code": "MH-KIL",
+    "name": "Kili",
+    "country": "MH"
+  },
+  {
+    "code": "MH-LIK",
+    "name": "Likiep",
+    "country": "MH"
+  },
+  {
+    "code": "MH-MAJ",
+    "name": "Majuro",
+    "country": "MH"
+  },
+  {
+    "code": "MH-MIL",
+    "name": "Mili",
+    "country": "MH"
+  },
+  {
+    "code": "MH-NMU",
+    "name": "Namu",
+    "country": "MH"
+  },
+  {
+    "code": "MH-RON",
+    "name": "Rongelap",
+    "country": "MH"
+  },
+  {
+    "code": "MH-UJA",
+    "name": "Ujae",
+    "country": "MH"
+  },
+  {
+    "code": "MH-UTI",
+    "name": "Utirik",
+    "country": "MH"
+  },
+  {
+    "code": "MH-WTJ",
+    "name": "Wotje",
+    "country": "MH"
+  },
+  {
+    "code": "MH-WTN",
+    "name": "Wotho",
+    "country": "MH"
+  },
+  {
+    "code": "MK-003",
+    "name": "Southwestern Statistical Region",
+    "country": "MK"
+  },
+  {
+    "code": "MK-008",
+    "name": "Skopje Statistical Region",
+    "country": "MK"
+  },
+  {
+    "code": "ML-2",
+    "name": "Koulikoro Region",
+    "country": "ML"
+  },
+  {
+    "code": "ML-5",
+    "name": "Mopti Region",
+    "country": "ML"
+  },
+  {
+    "code": "ML-7",
+    "name": "Gao Region",
+    "country": "ML"
+  },
+  {
+    "code": "MM-01",
+    "name": "Sagaing Region",
+    "country": "MM"
+  },
+  {
+    "code": "MM-03",
+    "name": "Magway Region",
+    "country": "MM"
+  },
+  {
+    "code": "MM-04",
+    "name": "Mandalay Region",
+    "country": "MM"
+  },
+  {
+    "code": "MM-05",
+    "name": "Tanintharyi Region",
+    "country": "MM"
+  },
+  {
+    "code": "MM-06",
+    "name": "Yangon Region",
+    "country": "MM"
+  },
+  {
+    "code": "MM-07",
+    "name": "Ayeyarwady Region",
+    "country": "MM"
+  },
+  {
+    "code": "MM-11",
+    "name": "Kachin State",
+    "country": "MM"
+  },
+  {
+    "code": "MM-12",
+    "name": "Kayah State",
+    "country": "MM"
+  },
+  {
+    "code": "MM-15",
+    "name": "Mon State",
+    "country": "MM"
+  },
+  {
+    "code": "MM-16",
+    "name": "Rakhine State",
+    "country": "MM"
+  },
+  {
+    "code": "MM-17",
+    "name": "Shan State",
+    "country": "MM"
+  },
+  {
+    "code": "MN-041",
+    "name": "Khövsgöl Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-043",
+    "name": "Khovd Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-046",
+    "name": "Uvs Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-047",
+    "name": "Töv Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-051",
+    "name": "Sükhbaatar Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-053",
+    "name": "Ömnögovi Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-055",
+    "name": "Övörkhangai Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-057",
+    "name": "Zavkhan Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-059",
+    "name": "Dundgovi Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-061",
+    "name": "Dornod Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-065",
+    "name": "Govi-Altai Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-067",
+    "name": "Bulgan Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-069",
+    "name": "Bayankhongor Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-071",
+    "name": "Bayan-Ölgii Province",
+    "country": "MN"
+  },
+  {
+    "code": "MN-1",
+    "name": "Ulaanbaatar (provincial municipality)",
+    "country": "MN"
+  },
+  {
+    "code": "MO-CAR",
+    "name": "Nossa Senhora do Carmo (Taipa)",
+    "country": "MO"
+  },
+  {
+    "code": "MP-U-A",
+    "name": "(unassigned)",
+    "country": "MP"
+  },
+  {
+    "code": "MQ-U-A",
+    "name": "(unassigned)",
+    "country": "MQ"
+  },
+  {
+    "code": "MR-07",
+    "name": "Adrar Region",
+    "country": "MR"
+  },
+  {
+    "code": "MR-08",
+    "name": "Dakhlet Nouadhibou Region",
+    "country": "MR"
+  },
+  {
+    "code": "MR-11",
+    "name": "Tiris Zemmour Region",
+    "country": "MR"
+  },
+  {
+    "code": "MR-NKC",
+    "name": "Nouakchott Region",
+    "country": "MR"
+  },
+  {
+    "code": "MS-SP",
+    "name": "Saint Peter Parish",
+    "country": "MS"
+  },
+  {
+    "code": "MT-25",
+    "name": "Luqa",
+    "country": "MT"
+  },
+  {
+    "code": "MU-GP",
+    "name": "Grand Port",
+    "country": "MU"
+  },
+  {
+    "code": "MU-RO",
+    "name": "Rodrigues Island",
+    "country": "MU"
+  },
+  {
+    "code": "MV-00",
+    "name": "Alif Dhaal Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-01",
+    "name": "Addu Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-05",
+    "name": "Laamu Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-07",
+    "name": "Haa Alif Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-08",
+    "name": "Kolhumadulu Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-20",
+    "name": "Baa Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-23",
+    "name": "Haa Dhaalu Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-24",
+    "name": "Shaviyani Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-25",
+    "name": "Noonu Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-27",
+    "name": "Gaafu Alifu Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-28",
+    "name": "Gaafu Dhaalu Atoll",
+    "country": "MV"
+  },
+  {
+    "code": "MV-MLE",
+    "name": "Malé (capital city)",
+    "country": "MV"
+  },
+  {
+    "code": "MW-BL",
+    "name": "Blantyre District",
+    "country": "MW"
+  },
+  {
+    "code": "MW-KR",
+    "name": "Karonga District",
+    "country": "MW"
+  },
+  {
+    "code": "MW-LI",
+    "name": "Lilongwe District",
+    "country": "MW"
+  },
+  {
+    "code": "MW-MZ",
+    "name": "Mzimba District",
+    "country": "MW"
+  },
+  {
+    "code": "MW-NK",
+    "name": "Nkhotakota District",
+    "country": "MW"
+  },
+  {
+    "code": "MX-AGU",
+    "name": "Aguascalientes",
+    "country": "MX"
+  },
+  {
+    "code": "MX-BCN",
+    "name": "Baja California",
+    "country": "MX"
+  },
+  {
+    "code": "MX-BCS",
+    "name": "Baja California Sur",
+    "country": "MX"
+  },
+  {
+    "code": "MX-CAM",
+    "name": "Campeche",
+    "country": "MX"
+  },
+  {
+    "code": "MX-CHH",
+    "name": "Chihuahua",
+    "country": "MX"
+  },
+  {
+    "code": "MX-CHP",
+    "name": "Chiapas",
+    "country": "MX"
+  },
+  {
+    "code": "MX-COA",
+    "name": "Coahuila",
+    "country": "MX"
+  },
+  {
+    "code": "MX-COL",
+    "name": "Colima",
+    "country": "MX"
+  },
+  {
+    "code": "MX-DIF",
+    "name": "Ciudad de México",
+    "country": "MX"
+  },
+  {
+    "code": "MX-DUR",
+    "name": "Durango",
+    "country": "MX"
+  },
+  {
+    "code": "MX-GRO",
+    "name": "Guerrero",
+    "country": "MX"
+  },
+  {
+    "code": "MX-GUA",
+    "name": "Guanajuato",
+    "country": "MX"
+  },
+  {
+    "code": "MX-JAL",
+    "name": "Jalisco",
+    "country": "MX"
+  },
+  {
+    "code": "MX-MEX",
+    "name": "México (state)",
+    "country": "MX"
+  },
+  {
+    "code": "MX-MIC",
+    "name": "Michoacán",
+    "country": "MX"
+  },
+  {
+    "code": "MX-MOR",
+    "name": "Morelos",
+    "country": "MX"
+  },
+  {
+    "code": "MX-NAY",
+    "name": "Nayarit",
+    "country": "MX"
+  },
+  {
+    "code": "MX-NLE",
+    "name": "Nuevo León",
+    "country": "MX"
+  },
+  {
+    "code": "MX-OAX",
+    "name": "Oaxaca",
+    "country": "MX"
+  },
+  {
+    "code": "MX-PUE",
+    "name": "Puebla",
+    "country": "MX"
+  },
+  {
+    "code": "MX-QUE",
+    "name": "Querétaro",
+    "country": "MX"
+  },
+  {
+    "code": "MX-ROO",
+    "name": "Quintana Roo",
+    "country": "MX"
+  },
+  {
+    "code": "MX-SIN",
+    "name": "Sinaloa",
+    "country": "MX"
+  },
+  {
+    "code": "MX-SLP",
+    "name": "San Luis Potosí",
+    "country": "MX"
+  },
+  {
+    "code": "MX-SON",
+    "name": "Sonora",
+    "country": "MX"
+  },
+  {
+    "code": "MX-TAB",
+    "name": "Tabasco",
+    "country": "MX"
+  },
+  {
+    "code": "MX-TAM",
+    "name": "Tamaulipas",
+    "country": "MX"
+  },
+  {
+    "code": "MX-VER",
+    "name": "Veracruz",
+    "country": "MX"
+  },
+  {
+    "code": "MX-YUC",
+    "name": "Yucatán",
+    "country": "MX"
+  },
+  {
+    "code": "MX-ZAC",
+    "name": "Zacatecas",
+    "country": "MX"
+  },
+  {
+    "code": "MY-01",
+    "name": "Johor",
+    "country": "MY"
+  },
+  {
+    "code": "MY-02",
+    "name": "Kedah",
+    "country": "MY"
+  },
+  {
+    "code": "MY-03",
+    "name": "Kelantan",
+    "country": "MY"
+  },
+  {
+    "code": "MY-04",
+    "name": "Melaka",
+    "country": "MY"
+  },
+  {
+    "code": "MY-06",
+    "name": "Pahang",
+    "country": "MY"
+  },
+  {
+    "code": "MY-07",
+    "name": "Penang",
+    "country": "MY"
+  },
+  {
+    "code": "MY-08",
+    "name": "Perak",
+    "country": "MY"
+  },
+  {
+    "code": "MY-10",
+    "name": "Selangor",
+    "country": "MY"
+  },
+  {
+    "code": "MY-11",
+    "name": "Terengganu",
+    "country": "MY"
+  },
+  {
+    "code": "MY-12",
+    "name": "Sabah",
+    "country": "MY"
+  },
+  {
+    "code": "MY-13",
+    "name": "Sarawak",
+    "country": "MY"
+  },
+  {
+    "code": "MY-15",
+    "name": "Labuan (Federal Territory)",
+    "country": "MY"
+  },
+  {
+    "code": "MZ-A",
+    "name": "Niassa Province",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-B",
+    "name": "Manica Province",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-G",
+    "name": "Gaza Province",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-I",
+    "name": "Inhambane Province",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-MPM",
+    "name": "Maputo (city)",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-N",
+    "name": "Nampula Province",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-P",
+    "name": "Cabo Delgado Province",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-Q",
+    "name": "Zambezia Province",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-S",
+    "name": "Sofala Province",
+    "country": "MZ"
+  },
+  {
+    "code": "MZ-T",
+    "name": "Tete Province",
+    "country": "MZ"
+  },
+  {
+    "code": "NA-CA",
+    "name": "Zambezi Region",
+    "country": "NA"
+  },
+  {
+    "code": "NA-ER",
+    "name": "Erongo Region",
+    "country": "NA"
+  },
+  {
+    "code": "NA-KA",
+    "name": "ǁKaras Region",
+    "country": "NA"
+  },
+  {
+    "code": "NA-KE",
+    "name": "Kavango East Region",
+    "country": "NA"
+  },
+  {
+    "code": "NA-KH",
+    "name": "Khomas Region",
+    "country": "NA"
+  },
+  {
+    "code": "NA-OD",
+    "name": "Otjozondjupa Region",
+    "country": "NA"
+  },
+  {
+    "code": "NA-ON",
+    "name": "Oshana Region",
+    "country": "NA"
+  },
+  {
+    "code": "NA-OT",
+    "name": "Oshikoto Region",
+    "country": "NA"
+  },
+  {
+    "code": "NC-01",
+    "name": "Province des îles Loyauté",
+    "country": "NC"
+  },
+  {
+    "code": "NC-02",
+    "name": "Province Nord",
+    "country": "NC"
+  },
+  {
+    "code": "NC-03",
+    "name": "Province Sud",
+    "country": "NC"
+  },
+  {
+    "code": "NE-1",
+    "name": "Agadez Region",
+    "country": "NE"
+  },
+  {
+    "code": "NE-4",
+    "name": "Maradi Region",
+    "country": "NE"
+  },
+  {
+    "code": "NE-5",
+    "name": "Tahoua Region",
+    "country": "NE"
+  },
+  {
+    "code": "NE-7",
+    "name": "Zinder Region",
+    "country": "NE"
+  },
+  {
+    "code": "NE-8",
+    "name": "Niamey Capital District",
+    "country": "NE"
+  },
+  {
+    "code": "NF-U-A",
+    "name": "(unassigned)",
+    "country": "NF"
+  },
+  {
+    "code": "NG-AD",
+    "name": "Adamawa State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-AK",
+    "name": "Akwa Ibom State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-BA",
+    "name": "Bauchi State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-BE",
+    "name": "Benue State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-BO",
+    "name": "Borno State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-CR",
+    "name": "Cross River State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-DE",
+    "name": "Delta State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-ED",
+    "name": "Edo State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-EN",
+    "name": "Enugu State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-FC",
+    "name": "Abuja Capital Territory",
+    "country": "NG"
+  },
+  {
+    "code": "NG-GO",
+    "name": "Gombe State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-IM",
+    "name": "Imo State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-KD",
+    "name": "Kaduna State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-KN",
+    "name": "Kano State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-KT",
+    "name": "Katsina State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-KW",
+    "name": "Kwara State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-LA",
+    "name": "Lagos State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-NI",
+    "name": "Niger State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-ON",
+    "name": "Ondo State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-OY",
+    "name": "Oyo State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-PL",
+    "name": "Plateau State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-RI",
+    "name": "Rivers State",
+    "country": "NG"
+  },
+  {
+    "code": "NG-SO",
+    "name": "Sokoto State",
+    "country": "NG"
+  },
+  {
+    "code": "NI-AN",
+    "name": "North Caribbean Coast Autonomous Region",
+    "country": "NI"
+  },
+  {
+    "code": "NI-AS",
+    "name": "South Caribbean Coast Autonomous Region",
+    "country": "NI"
+  },
+  {
+    "code": "NI-MN",
+    "name": "Managua Department",
+    "country": "NI"
+  },
+  {
+    "code": "NL-DR",
+    "name": "Drenthe",
+    "country": "NL"
+  },
+  {
+    "code": "NL-FL",
+    "name": "Flevoland",
+    "country": "NL"
+  },
+  {
+    "code": "NL-LI",
+    "name": "Limburg",
+    "country": "NL"
+  },
+  {
+    "code": "NL-NB",
+    "name": "Noord-Brabant",
+    "country": "NL"
+  },
+  {
+    "code": "NL-NH",
+    "name": "Noord-Holland",
+    "country": "NL"
+  },
+  {
+    "code": "NL-OV",
+    "name": "Overijssel",
+    "country": "NL"
+  },
+  {
+    "code": "NL-ZH",
+    "name": "Zuid-Holland",
+    "country": "NL"
+  },
+  {
+    "code": "NO-11",
+    "name": "Rogaland",
+    "country": "NO"
+  },
+  {
+    "code": "NO-15",
+    "name": "Møre og Romsdal",
+    "country": "NO"
+  },
+  {
+    "code": "NO-18",
+    "name": "Nordland",
+    "country": "NO"
+  },
+  {
+    "code": "NO-21",
+    "name": "Svalbard",
+    "country": "NO"
+  },
+  {
+    "code": "NO-32",
+    "name": "Akershus",
+    "country": "NO"
+  },
+  {
+    "code": "NO-39",
+    "name": "Vestfold",
+    "country": "NO"
+  },
+  {
+    "code": "NO-40",
+    "name": "Telemark",
+    "country": "NO"
+  },
+  {
+    "code": "NO-42",
+    "name": "Agder",
+    "country": "NO"
+  },
+  {
+    "code": "NO-46",
+    "name": "Vestland",
+    "country": "NO"
+  },
+  {
+    "code": "NO-50",
+    "name": "Trøndelag",
+    "country": "NO"
+  },
+  {
+    "code": "NO-55",
+    "name": "Troms",
+    "country": "NO"
+  },
+  {
+    "code": "NO-56",
+    "name": "Finnmark",
+    "country": "NO"
+  },
+  {
+    "code": "NP-P1",
+    "name": "Koshi Province",
+    "country": "NP"
+  },
+  {
+    "code": "NP-P2",
+    "name": "Madhesh Province",
+    "country": "NP"
+  },
+  {
+    "code": "NP-P3",
+    "name": "Bagmati Province",
+    "country": "NP"
+  },
+  {
+    "code": "NP-P4",
+    "name": "Gandaki Province",
+    "country": "NP"
+  },
+  {
+    "code": "NP-P5",
+    "name": "Lumbini Province",
+    "country": "NP"
+  },
+  {
+    "code": "NP-P6",
+    "name": "Karnali Province",
+    "country": "NP"
+  },
+  {
+    "code": "NP-P7",
+    "name": "Sudurpashchim Province",
+    "country": "NP"
+  },
+  {
+    "code": "NR-14",
+    "name": "Yaren",
+    "country": "NR"
+  },
+  {
+    "code": "NU-U-A",
+    "name": "(unassigned)",
+    "country": "NU"
+  },
+  {
+    "code": "NZ-AUK",
+    "name": "Auckland Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-BOP",
+    "name": "Bay of Plenty Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-CAN",
+    "name": "Canterbury Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-GIS",
+    "name": "Gisborne Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-HKB",
+    "name": "Hawke's Bay Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-MBH",
+    "name": "Marlborough Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-MWT",
+    "name": "Manawatu-Wanganui Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-NSN",
+    "name": "Nelson Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-NTL",
+    "name": "Northland Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-OTA",
+    "name": "Otago Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-STL",
+    "name": "Southland Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-TKI",
+    "name": "Taranaki Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-WGN",
+    "name": "Wellington Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-WKO",
+    "name": "Waikato Region",
+    "country": "NZ"
+  },
+  {
+    "code": "NZ-WTC",
+    "name": "West Coast Region",
+    "country": "NZ"
+  },
+  {
+    "code": "OM-BA",
+    "name": "Al Batinah Governorate",
+    "country": "OM"
+  },
+  {
+    "code": "OM-MA",
+    "name": "Masqat Governorate",
+    "country": "OM"
+  },
+  {
+    "code": "OM-MU",
+    "name": "Musandam Governorate",
+    "country": "OM"
+  },
+  {
+    "code": "OM-SH",
+    "name": "Ash Sharqlyah Governorate",
+    "country": "OM"
+  },
+  {
+    "code": "OM-WU",
+    "name": "Al Wusta Governorate",
+    "country": "OM"
+  },
+  {
+    "code": "OM-ZU",
+    "name": "Dhofar Governorate",
+    "country": "OM"
+  },
+  {
+    "code": "PA-1",
+    "name": "Bocas del Toro Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-10",
+    "name": "Panamá Oeste Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-2",
+    "name": "Coclé Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-3",
+    "name": "Colón Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-4",
+    "name": "Chiriquí Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-5",
+    "name": "Darién Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-6",
+    "name": "Herrera Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-7",
+    "name": "Los Santos Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-8",
+    "name": "Panamá Province",
+    "country": "PA"
+  },
+  {
+    "code": "PA-9",
+    "name": "Veraguas Province",
+    "country": "PA"
+  },
+  {
+    "code": "PE-AMA",
+    "name": "Amazonas Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-ANC",
+    "name": "Ancash Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-APU",
+    "name": "Apurímac Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-ARE",
+    "name": "Arequipa Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-AYA",
+    "name": "Ayacucho Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-CAJ",
+    "name": "Cajamarca Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-CUS",
+    "name": "Cuzco Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-HUC",
+    "name": "Huánuco Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-ICA",
+    "name": "Ica Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-JUN",
+    "name": "Junín Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-LAL",
+    "name": "La Libertad Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-LAM",
+    "name": "Lambayeque Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-LIM",
+    "name": "Lima Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-LOR",
+    "name": "Loreto Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-MDD",
+    "name": "Madre de Dios Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-MOQ",
+    "name": "Moquegua Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-PIU",
+    "name": "Piura Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-PUN",
+    "name": "Puno Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-SAM",
+    "name": "San Martín Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-TAC",
+    "name": "Tacna Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-TUM",
+    "name": "Tumbes Region",
+    "country": "PE"
+  },
+  {
+    "code": "PE-UCA",
+    "name": "Ucayali Region",
+    "country": "PE"
+  },
+  {
+    "code": "PF-U-A",
+    "name": "(unassigned)",
+    "country": "PF"
+  },
+  {
+    "code": "PG-CPK",
+    "name": "Chimbu Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-CPM",
+    "name": "Central Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-EBR",
+    "name": "East New Britain Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-EHG",
+    "name": "Eastern Highlands Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-EPW",
+    "name": "Enga Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-ESW",
+    "name": "East Sepik Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-GPK",
+    "name": "Gulf Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-HLA",
+    "name": "Hela Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-MBA",
+    "name": "Milne Bay Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-MPL",
+    "name": "Morobe Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-MPM",
+    "name": "Madang Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-MRL",
+    "name": "Manus Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-NCD",
+    "name": "National Capital District (Port Moresby)",
+    "country": "PG"
+  },
+  {
+    "code": "PG-NIK",
+    "name": "New Ireland Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-NPP",
+    "name": "Northern Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-NSB",
+    "name": "Autonomous Region of Bougainville",
+    "country": "PG"
+  },
+  {
+    "code": "PG-SAN",
+    "name": "Sandaun Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-SHM",
+    "name": "Southern Highlands Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-WBK",
+    "name": "West New Britain Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-WHM",
+    "name": "Western Highlands Province",
+    "country": "PG"
+  },
+  {
+    "code": "PG-WPD",
+    "name": "Western Province",
+    "country": "PG"
+  },
+  {
+    "code": "PH-00",
+    "name": "National Capital Region (Metropolitan Manila)",
+    "country": "PH"
+  },
+  {
+    "code": "PH-AKL",
+    "name": "Aklan Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ALB",
+    "name": "Albay Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ANT",
+    "name": "Antique Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-AUR",
+    "name": "Aurora Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-BAG",
+    "name": "Baguio City",
+    "country": "PH"
+  },
+  {
+    "code": "PH-BOH",
+    "name": "Bohol Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-BTC",
+    "name": "Butuan City",
+    "country": "PH"
+  },
+  {
+    "code": "PH-BTN",
+    "name": "Batanes Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-CAG",
+    "name": "Cagayan Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-CAM",
+    "name": "Camiguin Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-CAN",
+    "name": "Camarines Norte Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-CAP",
+    "name": "Capiz Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-CAS",
+    "name": "Camarines Sur Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-CAT",
+    "name": "Catanduanes Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-CEB",
+    "name": "Cebu Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-DAO",
+    "name": "Davao Oriental Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-DVO",
+    "name": "Davao City",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ILI",
+    "name": "Iloilo Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ILN",
+    "name": "Ilocos Norte Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ISA",
+    "name": "Isabela Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-LEY",
+    "name": "Leyte Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-LUN",
+    "name": "La Union Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-MAD",
+    "name": "Marinduque Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-MAS",
+    "name": "Masbate Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-MDC",
+    "name": "Occidental Mindoro Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-MDN",
+    "name": "Maguindanao del Norte Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-MSC",
+    "name": "Misamis Occidental Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-MSR",
+    "name": "Misamis Oriental Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-NEC",
+    "name": "Negros Occidental Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-NER",
+    "name": "Negros Oriental Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-NSA",
+    "name": "Northern Samar Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-PLW",
+    "name": "Palawan Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ROM",
+    "name": "Romblon Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-SCO",
+    "name": "South Cotabato Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-SLU",
+    "name": "Sulu Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-SUN",
+    "name": "Surigao del Norte Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-SUR",
+    "name": "Surigao del Sur Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-TAW",
+    "name": "Tawi-Tawi Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-WSA",
+    "name": "Samar Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ZAN",
+    "name": "Zamboanga del Norte Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ZAS",
+    "name": "Zamboanga del Sur Province",
+    "country": "PH"
+  },
+  {
+    "code": "PH-ZMC",
+    "name": "Zamboanga City",
+    "country": "PH"
+  },
+  {
+    "code": "PK-BA",
+    "name": "Balochistan",
+    "country": "PK"
+  },
+  {
+    "code": "PK-GB",
+    "name": "Gilgit-Baltistan",
+    "country": "PK"
+  },
+  {
+    "code": "PK-JK",
+    "name": "Azad Jammu and Kashmir",
+    "country": "PK"
+  },
+  {
+    "code": "PK-KP",
+    "name": "Khyber Pakhtunkhwa",
+    "country": "PK"
+  },
+  {
+    "code": "PK-PB",
+    "name": "Punjab",
+    "country": "PK"
+  },
+  {
+    "code": "PK-SD",
+    "name": "Sindh",
+    "country": "PK"
+  },
+  {
+    "code": "PL-DS",
+    "name": "Lower Silesian Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-KP",
+    "name": "Kuyavian-Pomeranian Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-LB",
+    "name": "Lubusz Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-LD",
+    "name": "Łódź Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-LU",
+    "name": "Lublin Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-MA",
+    "name": "Lesser Poland Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-MZ",
+    "name": "Masovian Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-PK",
+    "name": "Subcarpathian Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-PM",
+    "name": "Pomeranian Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-SL",
+    "name": "Silesian Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-WN",
+    "name": "Warmian-Masurian Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-WP",
+    "name": "Greater Poland Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PL-ZP",
+    "name": "West Pomeranian Voivodeship",
+    "country": "PL"
+  },
+  {
+    "code": "PM-ML",
+    "name": "Miquelon-Langlade",
+    "country": "PM"
+  },
+  {
+    "code": "PM-SP",
+    "name": "Saint-Pierre",
+    "country": "PM"
+  },
+  {
+    "code": "PR-U-A",
+    "name": "(unassigned)",
+    "country": "PR"
+  },
+  {
+    "code": "PT-02",
+    "name": "Beja District",
+    "country": "PT"
+  },
+  {
+    "code": "PT-04",
+    "name": "Bragança District",
+    "country": "PT"
+  },
+  {
+    "code": "PT-08",
+    "name": "Faro District",
+    "country": "PT"
+  },
+  {
+    "code": "PT-11",
+    "name": "Lisbon District",
+    "country": "PT"
+  },
+  {
+    "code": "PT-13",
+    "name": "Oporto District",
+    "country": "PT"
+  },
+  {
+    "code": "PT-17",
+    "name": "Vila Real District",
+    "country": "PT"
+  },
+  {
+    "code": "PT-18",
+    "name": "Viseu District",
+    "country": "PT"
+  },
+  {
+    "code": "PT-20",
+    "name": "Autonomous Region of Azores",
+    "country": "PT"
+  },
+  {
+    "code": "PT-30",
+    "name": "Autonomous Region of Madeira",
+    "country": "PT"
+  },
+  {
+    "code": "PW-004",
+    "name": "Airai",
+    "country": "PW"
+  },
+  {
+    "code": "PY-1",
+    "name": "Concepción Department",
+    "country": "PY"
+  },
+  {
+    "code": "PY-10",
+    "name": "Alto Paraná Department",
+    "country": "PY"
+  },
+  {
+    "code": "PY-11",
+    "name": "Central Department",
+    "country": "PY"
+  },
+  {
+    "code": "PY-12",
+    "name": "Ñeembucú Department",
+    "country": "PY"
+  },
+  {
+    "code": "PY-13",
+    "name": "Amambay Department",
+    "country": "PY"
+  },
+  {
+    "code": "PY-19",
+    "name": "Boquerón Department",
+    "country": "PY"
+  },
+  {
+    "code": "PY-7",
+    "name": "Itapúa Department",
+    "country": "PY"
+  },
+  {
+    "code": "PY-8",
+    "name": "Misiones Department",
+    "country": "PY"
+  },
+  {
+    "code": "QA-DA",
+    "name": "Ad-Dawhah Municipality",
+    "country": "QA"
+  },
+  {
+    "code": "RE-SD",
+    "name": "Saint-Denis Arrondissement",
+    "country": "RE"
+  },
+  {
+    "code": "RE-SR",
+    "name": "Saint-Pierre Arrondissement",
+    "country": "RE"
+  },
+  {
+    "code": "RO-AR",
+    "name": "Arad County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-B",
+    "name": "Bucharest (municipality)",
+    "country": "RO"
+  },
+  {
+    "code": "RO-BC",
+    "name": "Bacău County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-BH",
+    "name": "Bihor County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-BV",
+    "name": "Braşov County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-CJ",
+    "name": "Cluj County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-CS",
+    "name": "Caras-Severin County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-CT",
+    "name": "Constanţa County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-DJ",
+    "name": "Dolj County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-IF",
+    "name": "Ilfov County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-IS",
+    "name": "Iaşi County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-MM",
+    "name": "Maramureş County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-MS",
+    "name": "Mureş County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-SB",
+    "name": "Sibiu County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-SM",
+    "name": "Satu Mare County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-SV",
+    "name": "Suceava County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-TL",
+    "name": "Tulcea County",
+    "country": "RO"
+  },
+  {
+    "code": "RO-TM",
+    "name": "Timiş County",
+    "country": "RO"
+  },
+  {
+    "code": "RS-00",
+    "name": "Beograd (city)",
+    "country": "RS"
+  },
+  {
+    "code": "RS-16",
+    "name": "Zlatibor District",
+    "country": "RS"
+  },
+  {
+    "code": "RS-18",
+    "name": "Raška District",
+    "country": "RS"
+  },
+  {
+    "code": "RS-20",
+    "name": "Nišava District",
+    "country": "RS"
+  },
+  {
+    "code": "RU-AL",
+    "name": "Altai Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-ALT",
+    "name": "Altai Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RU-AMU",
+    "name": "Amur Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-ARK",
+    "name": "Arkhangelsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-AST",
+    "name": "Astrakhan Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-BA",
+    "name": "Republic of Bashkortostan",
+    "country": "RU"
+  },
+  {
+    "code": "RU-BEL",
+    "name": "Belgorod Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-BRY",
+    "name": "Bryansk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-BU",
+    "name": "Republic of Buryat",
+    "country": "RU"
+  },
+  {
+    "code": "RU-CE",
+    "name": "Chechen Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-CHE",
+    "name": "Chelyabinsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-CHU",
+    "name": "Chukotka Autonomous Okrug",
+    "country": "RU"
+  },
+  {
+    "code": "RU-CU",
+    "name": "Chuvash Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-DA",
+    "name": "Republic of Dagestan",
+    "country": "RU"
+  },
+  {
+    "code": "RU-IN",
+    "name": "Republic of Ingushetia",
+    "country": "RU"
+  },
+  {
+    "code": "RU-IRK",
+    "name": "Irkutsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-IVA",
+    "name": "Ivanovo Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KAM",
+    "name": "Kamchatka Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KB",
+    "name": "Kabardino-Balkar Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KDA",
+    "name": "Krasnodar Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KEM",
+    "name": "Kemerovo Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KGD",
+    "name": "Kaliningrad Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KGN",
+    "name": "Kurgan Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KHA",
+    "name": "Khabarovsk Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KHM",
+    "name": "Khanty-Mansi Autonomous Okrug",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KIR",
+    "name": "Kirov Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KK",
+    "name": "Republic of Khakassia",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KL",
+    "name": "Republic of Kalmykia",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KLU",
+    "name": "Kaluga Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KO",
+    "name": "Komi Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KOS",
+    "name": "Kostroma Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KR",
+    "name": "Republic of Karelia",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KRS",
+    "name": "Kursk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-KYA",
+    "name": "Krasnoyarsk Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RU-LIP",
+    "name": "Lipetsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-MAG",
+    "name": "Magadan Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-ME",
+    "name": "Mari El Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-MO",
+    "name": "Republic of Mordovia",
+    "country": "RU"
+  },
+  {
+    "code": "RU-MOS",
+    "name": "Moscow Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-MOW",
+    "name": "Moscow (city)",
+    "country": "RU"
+  },
+  {
+    "code": "RU-MUR",
+    "name": "Murmansk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-NEN",
+    "name": "Nenets Autonomous Okrug",
+    "country": "RU"
+  },
+  {
+    "code": "RU-NIZ",
+    "name": "Nizhny Novgorod Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-NVS",
+    "name": "Novosibirsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-OMS",
+    "name": "Omsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-ORE",
+    "name": "Orenburg Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-PER",
+    "name": "Perm Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RU-PNZ",
+    "name": "Penza Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-PRI",
+    "name": "Primorsky Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RU-PSK",
+    "name": "Pskov Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-ROS",
+    "name": "Rostov Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-SA",
+    "name": "Sakha (Yakutia) Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-SAK",
+    "name": "Sakhalin Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-SAM",
+    "name": "Samara Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-SAR",
+    "name": "Saratov Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-SE",
+    "name": "Republic of North Ossetia-Alania",
+    "country": "RU"
+  },
+  {
+    "code": "RU-SMO",
+    "name": "Smolensk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-SPE",
+    "name": "Saint Petersburg (city)",
+    "country": "RU"
+  },
+  {
+    "code": "RU-STA",
+    "name": "Stavropol Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RU-SVE",
+    "name": "Sverdlovsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-TA",
+    "name": "Republic of Tatarstan",
+    "country": "RU"
+  },
+  {
+    "code": "RU-TAM",
+    "name": "Tambov Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-TOM",
+    "name": "Tomsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-TY",
+    "name": "Tuva Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-TYU",
+    "name": "Tyumen Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-UD",
+    "name": "Udmurt Republic",
+    "country": "RU"
+  },
+  {
+    "code": "RU-ULY",
+    "name": "Ulyanovsk Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-VGG",
+    "name": "Volgograd Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-VLG",
+    "name": "Vologda Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-VOR",
+    "name": "Voronezh Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-YAN",
+    "name": "Yamalo-Nenets Autonomous Okrug",
+    "country": "RU"
+  },
+  {
+    "code": "RU-YAR",
+    "name": "Yaroslavl Oblast",
+    "country": "RU"
+  },
+  {
+    "code": "RU-ZAB",
+    "name": "Zabaykalsky Krai",
+    "country": "RU"
+  },
+  {
+    "code": "RW-01",
+    "name": "City of Kigali",
+    "country": "RW"
+  },
+  {
+    "code": "RW-04",
+    "name": "Western Province",
+    "country": "RW"
+  },
+  {
+    "code": "SA-01",
+    "name": "Riyadh Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-02",
+    "name": "Makkah Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-03",
+    "name": "Al Madinah Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-04",
+    "name": "Ash Sharqiyah Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-05",
+    "name": "Al Qasim Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-06",
+    "name": "Ha'il Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-07",
+    "name": "Tabuk Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-08",
+    "name": "The Northern Border Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-09",
+    "name": "Jlzan Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-10",
+    "name": "Najran Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-11",
+    "name": "Al Batah Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-12",
+    "name": "Al Jawf Region",
+    "country": "SA"
+  },
+  {
+    "code": "SA-14",
+    "name": "Asir Region",
+    "country": "SA"
+  },
+  {
+    "code": "SB-CE",
+    "name": "Central Province",
+    "country": "SB"
+  },
+  {
+    "code": "SB-CH",
+    "name": "Choiseul Province",
+    "country": "SB"
+  },
+  {
+    "code": "SB-GU",
+    "name": "Guadalcanal Province",
+    "country": "SB"
+  },
+  {
+    "code": "SB-IS",
+    "name": "Isabel Province",
+    "country": "SB"
+  },
+  {
+    "code": "SB-MK",
+    "name": "Makira-Ulawa Province",
+    "country": "SB"
+  },
+  {
+    "code": "SB-ML",
+    "name": "Malaita Province",
+    "country": "SB"
+  },
+  {
+    "code": "SB-RB",
+    "name": "Rennell and Bellona Province",
+    "country": "SB"
+  },
+  {
+    "code": "SB-TE",
+    "name": "Temotu Province",
+    "country": "SB"
+  },
+  {
+    "code": "SB-WE",
+    "name": "Western Province",
+    "country": "SB"
+  },
+  {
+    "code": "SC-14",
+    "name": "Grand' Anse (Praslin)",
+    "country": "SC"
+  },
+  {
+    "code": "SC-20",
+    "name": "Pointe La Rue",
+    "country": "SC"
+  },
+  {
+    "code": "SD-01",
+    "name": "Northern State",
+    "country": "SD"
+  },
+  {
+    "code": "SD-02",
+    "name": "North Darfur State",
+    "country": "SD"
+  },
+  {
+    "code": "SD-03",
+    "name": "Khartoum State",
+    "country": "SD"
+  },
+  {
+    "code": "SD-05",
+    "name": "Kassala State",
+    "country": "SD"
+  },
+  {
+    "code": "SD-09",
+    "name": "North Kurdufan State",
+    "country": "SD"
+  },
+  {
+    "code": "SD-11",
+    "name": "South Darfur State",
+    "country": "SD"
+  },
+  {
+    "code": "SD-26",
+    "name": "Red Sea State",
+    "country": "SD"
+  },
+  {
+    "code": "SE-AB",
+    "name": "Stockholms län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-AC",
+    "name": "Västerbottens län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-BD",
+    "name": "Norrbottena län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-D",
+    "name": "Södermanlands län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-E",
+    "name": "Östergötlands län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-F",
+    "name": "Jönköpings län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-G",
+    "name": "Kronoberge län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-H",
+    "name": "Kalmar län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-I",
+    "name": "Gotlands län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-K",
+    "name": "Blekinge län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-M",
+    "name": "Skåne län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-N",
+    "name": "Hallands län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-Q",
+    "name": "Västra Götalands län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-S",
+    "name": "Värmlanda län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-T",
+    "name": "Örebro län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-U",
+    "name": "Västmanlanda län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-W",
+    "name": "Dalarnas län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-X",
+    "name": "Gävleborge län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-Y",
+    "name": "Västernorrlands län",
+    "country": "SE"
+  },
+  {
+    "code": "SE-Z",
+    "name": "Jämtlande län",
+    "country": "SE"
+  },
+  {
+    "code": "SG-02",
+    "name": "North East",
+    "country": "SG"
+  },
+  {
+    "code": "SG-04",
+    "name": "South East",
+    "country": "SG"
+  },
+  {
+    "code": "SH-AC",
+    "name": "Ascension",
+    "country": "SH"
+  },
+  {
+    "code": "SH-SH",
+    "name": "Saint Helena",
+    "country": "SH"
+  },
+  {
+    "code": "SI-012",
+    "name": "Cerklje na Gorenjskem Municipality",
+    "country": "SI"
+  },
+  {
+    "code": "SI-090",
+    "name": "Piran Municipality",
+    "country": "SI"
+  },
+  {
+    "code": "SI-160",
+    "name": "Hoče-Slivnica Municipality",
+    "country": "SI"
+  },
+  {
+    "code": "SK-BC",
+    "name": "Banská Bystrica Region",
+    "country": "SK"
+  },
+  {
+    "code": "SK-BL",
+    "name": "Bratislava Region",
+    "country": "SK"
+  },
+  {
+    "code": "SK-KI",
+    "name": "Košice Region",
+    "country": "SK"
+  },
+  {
+    "code": "SK-PV",
+    "name": "Prešov Region",
+    "country": "SK"
+  },
+  {
+    "code": "SK-TA",
+    "name": "Trnava Region",
+    "country": "SK"
+  },
+  {
+    "code": "SK-ZI",
+    "name": "Žilina Region",
+    "country": "SK"
+  },
+  {
+    "code": "SL-E",
+    "name": "Eastern Province",
+    "country": "SL"
+  },
+  {
+    "code": "SL-N",
+    "name": "Northern Province",
+    "country": "SL"
+  },
+  {
+    "code": "SL-S",
+    "name": "Southern Province",
+    "country": "SL"
+  },
+  {
+    "code": "SN-DK",
+    "name": "Dakar Region",
+    "country": "SN"
+  },
+  {
+    "code": "SN-FK",
+    "name": "Fatick Region",
+    "country": "SN"
+  },
+  {
+    "code": "SN-MT",
+    "name": "Matam Region",
+    "country": "SN"
+  },
+  {
+    "code": "SN-SL",
+    "name": "Saint-Louis Region",
+    "country": "SN"
+  },
+  {
+    "code": "SN-TC",
+    "name": "Tambacounda Region",
+    "country": "SN"
+  },
+  {
+    "code": "SN-ZG",
+    "name": "Ziguinchor Region",
+    "country": "SN"
+  },
+  {
+    "code": "SO-BN",
+    "name": "Banaadir",
+    "country": "SO"
+  },
+  {
+    "code": "SO-BR",
+    "name": "Bari",
+    "country": "SO"
+  },
+  {
+    "code": "SO-HI",
+    "name": "Hiran",
+    "country": "SO"
+  },
+  {
+    "code": "SO-JH",
+    "name": "Lower Juba",
+    "country": "SO"
+  },
+  {
+    "code": "SO-MU",
+    "name": "Mudug",
+    "country": "SO"
+  },
+  {
+    "code": "SO-NU",
+    "name": "Nugal",
+    "country": "SO"
+  },
+  {
+    "code": "SO-WO",
+    "name": "Maroodi Jeex",
+    "country": "SO"
+  },
+  {
+    "code": "SR-PM",
+    "name": "Paramaribo",
+    "country": "SR"
+  },
+  {
+    "code": "SR-PR",
+    "name": "Para",
+    "country": "SR"
+  },
+  {
+    "code": "SR-SI",
+    "name": "Sipaliwini",
+    "country": "SR"
+  },
+  {
+    "code": "SS-BW",
+    "name": "Western Bahr el Ghazal State",
+    "country": "SS"
+  },
+  {
+    "code": "SS-EC",
+    "name": "Central Equatoria State",
+    "country": "SS"
+  },
+  {
+    "code": "SS-NU",
+    "name": "Upper Nile State",
+    "country": "SS"
+  },
+  {
+    "code": "ST-01",
+    "name": "Água Grande District",
+    "country": "ST"
+  },
+  {
+    "code": "ST-P",
+    "name": "Autonomous Region of Principe",
+    "country": "ST"
+  },
+  {
+    "code": "SV-PA",
+    "name": "La Paz Department",
+    "country": "SV"
+  },
+  {
+    "code": "SV-SS",
+    "name": "San Salvador Department",
+    "country": "SV"
+  },
+  {
+    "code": "SX-U-A",
+    "name": "(unassigned)",
+    "country": "SX"
+  },
+  {
+    "code": "SY-DI",
+    "name": "Damascus Governorate",
+    "country": "SY"
+  },
+  {
+    "code": "SY-DY",
+    "name": "Deir ez-Zor Governorate",
+    "country": "SY"
+  },
+  {
+    "code": "SY-HA",
+    "name": "Al-Hasakah Governorate",
+    "country": "SY"
+  },
+  {
+    "code": "SY-HI",
+    "name": "Homs Governorate",
+    "country": "SY"
+  },
+  {
+    "code": "SY-HL",
+    "name": "Aleppo Governorate",
+    "country": "SY"
+  },
+  {
+    "code": "SY-LA",
+    "name": "Latakia Governorate",
+    "country": "SY"
+  },
+  {
+    "code": "SZ-LU",
+    "name": "Lubombo Region",
+    "country": "SZ"
+  },
+  {
+    "code": "SZ-MA",
+    "name": "Manzini Region",
+    "country": "SZ"
+  },
+  {
+    "code": "TC-GT",
+    "name": "Grand Turk",
+    "country": "TC"
+  },
+  {
+    "code": "TC-NC",
+    "name": "North Caicos",
+    "country": "TC"
+  },
+  {
+    "code": "TC-PR",
+    "name": "Providenciales",
+    "country": "TC"
+  },
+  {
+    "code": "TC-SC",
+    "name": "South Caicos",
+    "country": "TC"
+  },
+  {
+    "code": "TC-SL",
+    "name": "Salt Cay",
+    "country": "TC"
+  },
+  {
+    "code": "TD-BO",
+    "name": "Borkou",
+    "country": "TD"
+  },
+  {
+    "code": "TD-LO",
+    "name": "Logone Occidental",
+    "country": "TD"
+  },
+  {
+    "code": "TD-ND",
+    "name": "N'Djamena (city)",
+    "country": "TD"
+  },
+  {
+    "code": "TD-OD",
+    "name": "Ouaddaï",
+    "country": "TD"
+  },
+  {
+    "code": "TG-K",
+    "name": "Kara Region",
+    "country": "TG"
+  },
+  {
+    "code": "TG-M",
+    "name": "Maritime Region",
+    "country": "TG"
+  },
+  {
+    "code": "TH-10",
+    "name": "Bangkok (special administrative area)",
+    "country": "TH"
+  },
+  {
+    "code": "TH-16",
+    "name": "Lopburi Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-21",
+    "name": "Rayong Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-23",
+    "name": "Trat Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-30",
+    "name": "Nakhon Ratchasima Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-31",
+    "name": "Buriram Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-32",
+    "name": "Surin Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-34",
+    "name": "Ubon Ratchathani Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-40",
+    "name": "Khon Kaen Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-41",
+    "name": "Udon Thani Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-42",
+    "name": "Loei Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-45",
+    "name": "Roi Et Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-47",
+    "name": "Sakon Nakhon Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-48",
+    "name": "Nakhon Phanom Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-50",
+    "name": "Chiang Mai Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-52",
+    "name": "Lampang Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-54",
+    "name": "Phrae Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-55",
+    "name": "Nan Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-57",
+    "name": "Chiang Rai Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-58",
+    "name": "Mae Hong Son Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-60",
+    "name": "Nakhon Sawan Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-63",
+    "name": "Tak Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-64",
+    "name": "Sukhothai Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-65",
+    "name": "Phitsanulok Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-67",
+    "name": "Phetchabun Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-72",
+    "name": "Suphan Buri Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-76",
+    "name": "Phetchaburi Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-80",
+    "name": "Nakhon Si Thammarat Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-81",
+    "name": "Krabi Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-83",
+    "name": "Phuket Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-84",
+    "name": "Surat Thani Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-85",
+    "name": "Ranong Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-86",
+    "name": "Chumphon Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-90",
+    "name": "Songkhla Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-92",
+    "name": "Trang Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-94",
+    "name": "Pattani Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-95",
+    "name": "Yala Province",
+    "country": "TH"
+  },
+  {
+    "code": "TH-96",
+    "name": "Narathiwat Province",
+    "country": "TH"
+  },
+  {
+    "code": "TJ-DU",
+    "name": "Dushanbe",
+    "country": "TJ"
+  },
+  {
+    "code": "TJ-KT",
+    "name": "Khatlon Region",
+    "country": "TJ"
+  },
+  {
+    "code": "TJ-SU",
+    "name": "Sughd Region",
+    "country": "TJ"
+  },
+  {
+    "code": "TL-BA",
+    "name": "Baucau",
+    "country": "TL"
+  },
+  {
+    "code": "TL-CO",
+    "name": "Cova Lima",
+    "country": "TL"
+  },
+  {
+    "code": "TL-DI",
+    "name": "Dili",
+    "country": "TL"
+  },
+  {
+    "code": "TL-OE",
+    "name": "Oecussi",
+    "country": "TL"
+  },
+  {
+    "code": "TM-B",
+    "name": "Balkan Region",
+    "country": "TM"
+  },
+  {
+    "code": "TM-D",
+    "name": "Daşoguz Region",
+    "country": "TM"
+  },
+  {
+    "code": "TM-L",
+    "name": "Lebap Region",
+    "country": "TM"
+  },
+  {
+    "code": "TM-M",
+    "name": "Mary Region",
+    "country": "TM"
+  },
+  {
+    "code": "TM-S",
+    "name": "Ashgabat (city)",
+    "country": "TM"
+  },
+  {
+    "code": "TN-11",
+    "name": "Tunis Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-32",
+    "name": "Jendouba Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-51",
+    "name": "Sousse Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-52",
+    "name": "Monastir Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-61",
+    "name": "Sfax Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-71",
+    "name": "Gafsa Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-72",
+    "name": "Tozeur Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-81",
+    "name": "Gabès Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-82",
+    "name": "Medenine Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TN-83",
+    "name": "Tataouine Governorate",
+    "country": "TN"
+  },
+  {
+    "code": "TO-01",
+    "name": "'Eua",
+    "country": "TO"
+  },
+  {
+    "code": "TO-02",
+    "name": "Ha'apai",
+    "country": "TO"
+  },
+  {
+    "code": "TO-03",
+    "name": "Niua Islands",
+    "country": "TO"
+  },
+  {
+    "code": "TO-04",
+    "name": "Tongatapu",
+    "country": "TO"
+  },
+  {
+    "code": "TO-05",
+    "name": "Vava'u",
+    "country": "TO"
+  },
+  {
+    "code": "TR-02",
+    "name": "Adıyaman Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-04",
+    "name": "Ağrı Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-05",
+    "name": "Amasya Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-06",
+    "name": "Ankara Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-07",
+    "name": "Antalya Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-10",
+    "name": "Balıkesir Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-12",
+    "name": "Bingöl Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-16",
+    "name": "Bursa Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-17",
+    "name": "Çanakkale Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-20",
+    "name": "Denizli Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-21",
+    "name": "Diyarbakır Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-23",
+    "name": "Elazığ Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-24",
+    "name": "Erzincan Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-25",
+    "name": "Erzurum Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-26",
+    "name": "Eskişehir Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-27",
+    "name": "Gaziantep Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-30",
+    "name": "Hakkâri Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-31",
+    "name": "Hatay Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-32",
+    "name": "Isparta Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-33",
+    "name": "Mersin Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-34",
+    "name": "İstanbul Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-35",
+    "name": "İzmir Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-36",
+    "name": "Kars Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-37",
+    "name": "Kastamonu Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-38",
+    "name": "Kayseri Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-41",
+    "name": "Kocaeli Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-42",
+    "name": "Konya Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-43",
+    "name": "Kütahya Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-44",
+    "name": "Malatya Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-46",
+    "name": "Kahramanmaraş Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-47",
+    "name": "Mardin Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-48",
+    "name": "Muğla Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-49",
+    "name": "Muş Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-50",
+    "name": "Nevşehir Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-52",
+    "name": "Ordu Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-53",
+    "name": "Rize Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-55",
+    "name": "Samsun Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-56",
+    "name": "Siirt Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-57",
+    "name": "Sinop Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-58",
+    "name": "Sivas Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-59",
+    "name": "Tekirdağ Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-60",
+    "name": "Tokat Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-61",
+    "name": "Trabzon Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-63",
+    "name": "Şanlıurfa Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-64",
+    "name": "Uşak Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-65",
+    "name": "Van Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-67",
+    "name": "Zonguldak Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-72",
+    "name": "Batman Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-73",
+    "name": "Şırnak Province",
+    "country": "TR"
+  },
+  {
+    "code": "TR-76",
+    "name": "Iğdır Province",
+    "country": "TR"
+  },
+  {
+    "code": "TT-TOB",
+    "name": "Tobago",
+    "country": "TT"
+  },
+  {
+    "code": "TT-TUP",
+    "name": "Tunapuna-Piarco",
+    "country": "TT"
+  },
+  {
+    "code": "TV-FUN",
+    "name": "Funafuti",
+    "country": "TV"
+  },
+  {
+    "code": "TW-CYQ",
+    "name": "Chiayi County",
+    "country": "TW"
+  },
+  {
+    "code": "TW-HUA",
+    "name": "Hualien County",
+    "country": "TW"
+  },
+  {
+    "code": "TW-KHH",
+    "name": "Kaohsiung City",
+    "country": "TW"
+  },
+  {
+    "code": "TW-LIE",
+    "name": "Lienchiang County",
+    "country": "TW"
+  },
+  {
+    "code": "TW-PEN",
+    "name": "Penghu County",
+    "country": "TW"
+  },
+  {
+    "code": "TW-PIF",
+    "name": "Pingtung County",
+    "country": "TW"
+  },
+  {
+    "code": "TW-TAO",
+    "name": "Taoyuan City",
+    "country": "TW"
+  },
+  {
+    "code": "TW-TPE",
+    "name": "Taipei City",
+    "country": "TW"
+  },
+  {
+    "code": "TW-TTT",
+    "name": "Taitung County",
+    "country": "TW"
+  },
+  {
+    "code": "TW-X-KM",
+    "name": "Kinmen County",
+    "country": "TW"
+  },
+  {
+    "code": "TZ-01",
+    "name": "Arusha Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-02",
+    "name": "Dar-es-Salaam Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-03",
+    "name": "Dodoma Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-04",
+    "name": "Iringa Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-05",
+    "name": "Kagera Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-07",
+    "name": "Kaskazini Unguja Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-08",
+    "name": "Xigoma Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-13",
+    "name": "Mara Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-14",
+    "name": "Mbeya Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-17",
+    "name": "Mtwara Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-18",
+    "name": "Mwanza Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-19",
+    "name": "Pwani Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-22",
+    "name": "Shinyanga Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-24",
+    "name": "Tabora Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-25",
+    "name": "Tanga Region",
+    "country": "TZ"
+  },
+  {
+    "code": "TZ-26",
+    "name": "Manyara Region",
+    "country": "TZ"
+  },
+  {
+    "code": "UA-05",
+    "name": "Vinnytsia Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-12",
+    "name": "Dnipropetrovsk (Sicheslav) Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-14",
+    "name": "Donetsk Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-19",
+    "name": "Rivne Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-21",
+    "name": "Zakarpattia Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-23",
+    "name": "Zaporizhia Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-26",
+    "name": "Ivano-Frankivsk Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-32",
+    "name": "Kyiv Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-43",
+    "name": "Crimea (Autonomous Republic)",
+    "country": "UA"
+  },
+  {
+    "code": "UA-46",
+    "name": "Lviv Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-51",
+    "name": "Odessa Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-65",
+    "name": "Kherson Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-68",
+    "name": "Khmelnytskyi Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-71",
+    "name": "Cherkasy Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-77",
+    "name": "Chernivtsi Oblast",
+    "country": "UA"
+  },
+  {
+    "code": "UA-U-A",
+    "name": "(unassigned)",
+    "country": "UA"
+  },
+  {
+    "code": "UG-C",
+    "name": "Central Region",
+    "country": "UG"
+  },
+  {
+    "code": "UG-E",
+    "name": "Eastern Region",
+    "country": "UG"
+  },
+  {
+    "code": "UG-N",
+    "name": "Northern Region",
+    "country": "UG"
+  },
+  {
+    "code": "UG-W",
+    "name": "Western Region",
+    "country": "UG"
+  },
+  {
+    "code": "UM-71",
+    "name": "Midway Atoll",
+    "country": "UM"
+  },
+  {
+    "code": "UM-79",
+    "name": "Wake Island",
+    "country": "UM"
+  },
+  {
+    "code": "US-AK",
+    "name": "Alaska",
+    "country": "US"
+  },
+  {
+    "code": "US-AL",
+    "name": "Alabama",
+    "country": "US"
+  },
+  {
+    "code": "US-AR",
+    "name": "Arkansas",
+    "country": "US"
+  },
+  {
+    "code": "US-AZ",
+    "name": "Arizona",
+    "country": "US"
+  },
+  {
+    "code": "US-CA",
+    "name": "California",
+    "country": "US"
+  },
+  {
+    "code": "US-CO",
+    "name": "Colorado",
+    "country": "US"
+  },
+  {
+    "code": "US-CT",
+    "name": "Connecticut",
+    "country": "US"
+  },
+  {
+    "code": "US-DC",
+    "name": "District of Columbia",
+    "country": "US"
+  },
+  {
+    "code": "US-DE",
+    "name": "Delaware",
+    "country": "US"
+  },
+  {
+    "code": "US-FL",
+    "name": "Florida",
+    "country": "US"
+  },
+  {
+    "code": "US-GA",
+    "name": "Georgia",
+    "country": "US"
+  },
+  {
+    "code": "US-HI",
+    "name": "Hawaii",
+    "country": "US"
+  },
+  {
+    "code": "US-IA",
+    "name": "Iowa",
+    "country": "US"
+  },
+  {
+    "code": "US-ID",
+    "name": "Idaho",
+    "country": "US"
+  },
+  {
+    "code": "US-IL",
+    "name": "Illinois",
+    "country": "US"
+  },
+  {
+    "code": "US-IN",
+    "name": "Indiana",
+    "country": "US"
+  },
+  {
+    "code": "US-KS",
+    "name": "Kansas",
+    "country": "US"
+  },
+  {
+    "code": "US-KY",
+    "name": "Kentucky",
+    "country": "US"
+  },
+  {
+    "code": "US-LA",
+    "name": "Louisiana",
+    "country": "US"
+  },
+  {
+    "code": "US-MA",
+    "name": "Massachusetts",
+    "country": "US"
+  },
+  {
+    "code": "US-MD",
+    "name": "Maryland",
+    "country": "US"
+  },
+  {
+    "code": "US-ME",
+    "name": "Maine",
+    "country": "US"
+  },
+  {
+    "code": "US-MI",
+    "name": "Michigan",
+    "country": "US"
+  },
+  {
+    "code": "US-MN",
+    "name": "Minnesota",
+    "country": "US"
+  },
+  {
+    "code": "US-MO",
+    "name": "Missouri",
+    "country": "US"
+  },
+  {
+    "code": "US-MS",
+    "name": "Mississippi",
+    "country": "US"
+  },
+  {
+    "code": "US-MT",
+    "name": "Montana",
+    "country": "US"
+  },
+  {
+    "code": "US-NC",
+    "name": "North Carolina",
+    "country": "US"
+  },
+  {
+    "code": "US-ND",
+    "name": "North Dakota",
+    "country": "US"
+  },
+  {
+    "code": "US-NE",
+    "name": "Nebraska",
+    "country": "US"
+  },
+  {
+    "code": "US-NH",
+    "name": "New Hampshire",
+    "country": "US"
+  },
+  {
+    "code": "US-NJ",
+    "name": "New Jersey",
+    "country": "US"
+  },
+  {
+    "code": "US-NM",
+    "name": "New Mexico",
+    "country": "US"
+  },
+  {
+    "code": "US-NV",
+    "name": "Nevada",
+    "country": "US"
+  },
+  {
+    "code": "US-NY",
+    "name": "New York",
+    "country": "US"
+  },
+  {
+    "code": "US-OH",
+    "name": "Ohio",
+    "country": "US"
+  },
+  {
+    "code": "US-OK",
+    "name": "Oklahoma",
+    "country": "US"
+  },
+  {
+    "code": "US-OR",
+    "name": "Oregon",
+    "country": "US"
+  },
+  {
+    "code": "US-PA",
+    "name": "Pennsylvania",
+    "country": "US"
+  },
+  {
+    "code": "US-RI",
+    "name": "Rhode Island",
+    "country": "US"
+  },
+  {
+    "code": "US-SC",
+    "name": "South Carolina",
+    "country": "US"
+  },
+  {
+    "code": "US-SD",
+    "name": "South Dakota",
+    "country": "US"
+  },
+  {
+    "code": "US-TN",
+    "name": "Tennessee",
+    "country": "US"
+  },
+  {
+    "code": "US-TX",
+    "name": "Texas",
+    "country": "US"
+  },
+  {
+    "code": "US-UT",
+    "name": "Utah",
+    "country": "US"
+  },
+  {
+    "code": "US-VA",
+    "name": "Virginia",
+    "country": "US"
+  },
+  {
+    "code": "US-VT",
+    "name": "Vermont",
+    "country": "US"
+  },
+  {
+    "code": "US-WA",
+    "name": "Washington",
+    "country": "US"
+  },
+  {
+    "code": "US-WI",
+    "name": "Wisconsin",
+    "country": "US"
+  },
+  {
+    "code": "US-WV",
+    "name": "West Virginia",
+    "country": "US"
+  },
+  {
+    "code": "US-WY",
+    "name": "Wyoming",
+    "country": "US"
+  },
+  {
+    "code": "UY-CA",
+    "name": "Canelones Department",
+    "country": "UY"
+  },
+  {
+    "code": "UY-DU",
+    "name": "Durazno Department",
+    "country": "UY"
+  },
+  {
+    "code": "UY-MA",
+    "name": "Maldonado Department",
+    "country": "UY"
+  },
+  {
+    "code": "UY-PA",
+    "name": "Paysandu Department",
+    "country": "UY"
+  },
+  {
+    "code": "UY-RV",
+    "name": "Rivera Department",
+    "country": "UY"
+  },
+  {
+    "code": "UY-SA",
+    "name": "Salto Department",
+    "country": "UY"
+  },
+  {
+    "code": "UZ-AN",
+    "name": "Andijan Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-BU",
+    "name": "Bukhara Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-FA",
+    "name": "Fergana Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-JI",
+    "name": "Jizzakh Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-NG",
+    "name": "Namangan Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-NW",
+    "name": "Navoiy Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-QA",
+    "name": "Qashqadaryo Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-QR",
+    "name": "Republic of Karakalpakstan",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-SA",
+    "name": "Samarqand Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-SU",
+    "name": "Surxondaryo Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-TO",
+    "name": "Tashkent Region",
+    "country": "UZ"
+  },
+  {
+    "code": "UZ-XO",
+    "name": "Xorazm Region",
+    "country": "UZ"
+  },
+  {
+    "code": "VC-04",
+    "name": "Saint George",
+    "country": "VC"
+  },
+  {
+    "code": "VC-06",
+    "name": "Grenadines",
+    "country": "VC"
+  },
+  {
+    "code": "VE-B",
+    "name": "Anzoátegui State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-C",
+    "name": "Apure State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-D",
+    "name": "Aragua State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-E",
+    "name": "Barinas State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-F",
+    "name": "Bolívar State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-G",
+    "name": "Carabobo State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-I",
+    "name": "Falcón State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-J",
+    "name": "Guárico State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-K",
+    "name": "Lara State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-L",
+    "name": "Mérida State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-N",
+    "name": "Monagas State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-O",
+    "name": "Nueva Esparta State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-P",
+    "name": "Portuguesa State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-R",
+    "name": "Sucre State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-S",
+    "name": "Táchira State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-T",
+    "name": "Trujillo State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-U",
+    "name": "Yaracuy State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-V",
+    "name": "Zulia State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-W",
+    "name": "Federal Dependencies",
+    "country": "VE"
+  },
+  {
+    "code": "VE-X",
+    "name": "La Guaira State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-Y",
+    "name": "Delta Amacuro State",
+    "country": "VE"
+  },
+  {
+    "code": "VE-Z",
+    "name": "Amazonas State",
+    "country": "VE"
+  },
+  {
+    "code": "VG-U-A",
+    "name": "(unassigned)",
+    "country": "VG"
+  },
+  {
+    "code": "VI-SC",
+    "name": "Saint Croix",
+    "country": "VI"
+  },
+  {
+    "code": "VI-ST",
+    "name": "Saint Thomas",
+    "country": "VI"
+  },
+  {
+    "code": "VN-CH",
+    "name": "Central Highlands Region",
+    "country": "VN"
+  },
+  {
+    "code": "VN-NC",
+    "name": "North Central Region",
+    "country": "VN"
+  },
+  {
+    "code": "VN-NE",
+    "name": "Northeast Region",
+    "country": "VN"
+  },
+  {
+    "code": "VN-NW",
+    "name": "Northwest Region",
+    "country": "VN"
+  },
+  {
+    "code": "VN-RRD",
+    "name": "Red River Delta Region",
+    "country": "VN"
+  },
+  {
+    "code": "VN-SCC",
+    "name": "South Central Coast Region",
+    "country": "VN"
+  },
+  {
+    "code": "VN-SE",
+    "name": "Southeast Region",
+    "country": "VN"
+  },
+  {
+    "code": "VN-SW",
+    "name": "Southwest Region",
+    "country": "VN"
+  },
+  {
+    "code": "VU-MAP",
+    "name": "Malampa",
+    "country": "VU"
+  },
+  {
+    "code": "VU-PAM",
+    "name": "Penama",
+    "country": "VU"
+  },
+  {
+    "code": "VU-SAM",
+    "name": "Sanma",
+    "country": "VU"
+  },
+  {
+    "code": "VU-SEE",
+    "name": "Shefa",
+    "country": "VU"
+  },
+  {
+    "code": "VU-TAE",
+    "name": "Tafea",
+    "country": "VU"
+  },
+  {
+    "code": "VU-TOB",
+    "name": "Torba",
+    "country": "VU"
+  },
+  {
+    "code": "WF-U-A",
+    "name": "(unassigned)",
+    "country": "WF"
+  },
+  {
+    "code": "WS-AA",
+    "name": "A'ana District",
+    "country": "WS"
+  },
+  {
+    "code": "XK-01",
+    "name": "Pristina District",
+    "country": "XK"
+  },
+  {
+    "code": "YE-AD",
+    "name": "Aden Governorate",
+    "country": "YE"
+  },
+  {
+    "code": "YE-HD",
+    "name": "Hadhramaut Governorate",
+    "country": "YE"
+  },
+  {
+    "code": "YE-MR",
+    "name": "Al Mahrah Governorate",
+    "country": "YE"
+  },
+  {
+    "code": "YE-SA",
+    "name": "Sanaa Municipality",
+    "country": "YE"
+  },
+  {
+    "code": "YE-SH",
+    "name": "Shabwah Governorate",
+    "country": "YE"
+  },
+  {
+    "code": "YE-SU",
+    "name": "Socotra Archipelago Governorate",
+    "country": "YE"
+  },
+  {
+    "code": "YE-TA",
+    "name": "Taiz Governorate",
+    "country": "YE"
+  },
+  {
+    "code": "YT-U-A",
+    "name": "(unassigned)",
+    "country": "YT"
+  },
+  {
+    "code": "ZA-EC",
+    "name": "Eastern Cape",
+    "country": "ZA"
+  },
+  {
+    "code": "ZA-FS",
+    "name": "Free State",
+    "country": "ZA"
+  },
+  {
+    "code": "ZA-GT",
+    "name": "Gauteng",
+    "country": "ZA"
+  },
+  {
+    "code": "ZA-MP",
+    "name": "Mpumalanga",
+    "country": "ZA"
+  },
+  {
+    "code": "ZA-NC",
+    "name": "Northern Cape",
+    "country": "ZA"
+  },
+  {
+    "code": "ZA-NL",
+    "name": "Kwazulu-Natal",
+    "country": "ZA"
+  },
+  {
+    "code": "ZA-NP",
+    "name": "Limpopo",
+    "country": "ZA"
+  },
+  {
+    "code": "ZA-NW",
+    "name": "North-West",
+    "country": "ZA"
+  },
+  {
+    "code": "ZA-WC",
+    "name": "Western Cape",
+    "country": "ZA"
+  },
+  {
+    "code": "ZM-01",
+    "name": "Western Province",
+    "country": "ZM"
+  },
+  {
+    "code": "ZM-03",
+    "name": "Eastern Province",
+    "country": "ZM"
+  },
+  {
+    "code": "ZM-05",
+    "name": "Northern Province",
+    "country": "ZM"
+  },
+  {
+    "code": "ZM-06",
+    "name": "North-Western Province",
+    "country": "ZM"
+  },
+  {
+    "code": "ZM-07",
+    "name": "Southern Province",
+    "country": "ZM"
+  },
+  {
+    "code": "ZM-08",
+    "name": "Copperbelt Province",
+    "country": "ZM"
+  },
+  {
+    "code": "ZM-09",
+    "name": "Lusaka Province",
+    "country": "ZM"
+  },
+  {
+    "code": "ZW-BU",
+    "name": "Bulawayo Metropolitan Province",
+    "country": "ZW"
+  },
+  {
+    "code": "ZW-HA",
+    "name": "Harare Metropolitan Province",
+    "country": "ZW"
+  },
+  {
+    "code": "ZW-MI",
+    "name": "Midlands Province",
+    "country": "ZW"
+  },
+  {
+    "code": "ZW-MN",
+    "name": "Matabeleland North Province",
+    "country": "ZW"
+  },
+  {
+    "code": "ZW-MV",
+    "name": "Masvingo Province",
+    "country": "ZW"
+  },
+  {
+    "code": "ZW-MW",
+    "name": "Mashonaland West Province",
+    "country": "ZW"
+  }
+]

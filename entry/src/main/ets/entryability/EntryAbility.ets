@@ -2,8 +2,7 @@ import { AbilityConstant, ConfigurationConstant, UIAbility, Want, errorManager }
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { LocationService } from '../services/LocationService';
-import { MapsInitializer } from '@amap/amap_lbs_map3d';
-import { AMapPrivacyShowStatus, AMapPrivacyInfoStatus, AMapPrivacyAgreeStatus } from '@amap/amap_lbs_common';
+
 
 const DOMAIN = 0x0000;
 
@@ -24,22 +23,7 @@ export default class EntryAbility extends UIAbility {
       hilog.error(DOMAIN, 'AppError', 'Failed to register errorManager observer');
     }
 
-    // 初始化高德 SDK 全局 context
-    try {
-      MapsInitializer.initialize(this.context);
-    } catch (e) {
-      hilog.error(DOMAIN, 'testTag', 'MapsInitializer context init error');
-    }
 
-    // 高德 SDK 强制隐私合规声明（必须最先调用，否则 MapViewComponent.aboutToAppear 时 crash）
-    MapsInitializer.updatePrivacyShow(
-      AMapPrivacyShowStatus.DidShow,
-      AMapPrivacyInfoStatus.DidContain,
-      this.context
-    );
-    MapsInitializer.updatePrivacyAgree(AMapPrivacyAgreeStatus.DidAgree, this.context);
-    // 设置 API Key（在 MapView 创建前全局初始化）
-    MapsInitializer.setApiKey('6058c5f8287835ee31c953e15295ace5');
 
     try {
       this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);

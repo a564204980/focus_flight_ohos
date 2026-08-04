@@ -1,3 +1,8 @@
+// @ts-ignore
+import { util } from '@kit.ArkTS';
+// @ts-ignore
+import { common } from '@kit.AbilityKit';
+
 /**
  * AirportModel.ts
  * Focus Flight 机场模型与地理定位算法
@@ -7,8 +12,13 @@ export interface Airport {
   code: string;       // 三字码 (如 PEK)
   name: string;       // 机场名称 (如 北京首都国际机场)
   city: string;       // 城市名 (如 北京)
-  lat: number;        // 纬度
-  lon: number;        // 经度
+  lat: number;        // 纬度 (起飞起点)
+  lon: number;        // 经度 (起飞起点)
+  runwayEndLat?: number; // 跑道第二个坐标点 (跑道末端/离场点纬度)
+  runwayEndLon?: number; // 跑道第二个坐标点 (跑道末端/离场点经度)
+  country?: string;   // 国家代码 (如 CN, US)
+  type?: string;      // 机场等级 (如 large_airport, medium_airport)
+  [key: string]: string | number | undefined;
 }
 
 // 常用与枢纽机场数据库
@@ -20,7 +30,7 @@ export const POPULAR_AIRPORTS: Airport[] = [
   { code: 'CAN', name: '广州白云国际机场', city: '广州', lat: 23.3924, lon: 113.2988 },
   { code: 'SZX', name: '深圳宝安国际机场', city: '深圳', lat: 22.6393, lon: 113.8107 },
   { code: 'TFU', name: '成都天府国际机场', city: '成都', lat: 30.3217, lon: 104.4419 },
-  { code: 'CTU', name: '成都双流国际机场', city: '成都', lat: 30.5785, lon: 103.9471 },
+  { code: 'CTU', name: '成都双流国际机场', city: '成都', lat: 30.560711, lon: 103.942552, runwayEndLat: 30.590087, runwayEndLon: 103.956220 },
   { code: 'HGH', name: '杭州萧山国际机场', city: '杭州', lat: 30.2295, lon: 120.4344 },
   { code: 'WUH', name: '武汉天河国际机场', city: '武汉', lat: 30.7838, lon: 114.2081 },
   { code: 'XIY', name: '西安咸阳国际机场', city: '西安', lat: 34.4471, lon: 108.7516 },
@@ -46,6 +56,54 @@ export const POPULAR_AIRPORTS: Airport[] = [
 ];
 
 /**
+ * 机场全量数据仓储单例类
+ */
+export class AirportRepository {
+  private static cachedAirports: Airport[] = [];
+  private static isLoading: boolean = false;
+
+  /**
+   * 从 rawfile/data/airports.json 异步加载 5165 个全量客运机场
+   */
+  public static async loadAirports(context: common.Context): Promise<Airport[]> {
+    if (AirportRepository.cachedAirports.length > 0) {
+      return AirportRepository.cachedAirports;
+    }
+    if (AirportRepository.isLoading) {
+      return POPULAR_AIRPORTS;
+    }
+    AirportRepository.isLoading = true;
+
+    try {
+      const rm = context.resourceManager;
+      const content = await rm.getRawFileContent('data/airports.json');
+      const textDecoder = util.TextDecoder.create('utf-8');
+      const jsonStr = textDecoder.decodeToString(content);
+      const parsed = JSON.parse(jsonStr) as Airport[];
+      if (parsed && parsed.length > 0) {
+        AirportRepository.cachedAirports = parsed;
+      } else {
+        AirportRepository.cachedAirports = POPULAR_AIRPORTS;
+      }
+    } catch (e) {
+      console.error('Failed to load rawfile data/airports.json, fallback to POPULAR_AIRPORTS');
+      AirportRepository.cachedAirports = POPULAR_AIRPORTS;
+    } finally {
+      AirportRepository.isLoading = false;
+    }
+
+    return AirportRepository.cachedAirports;
+  }
+
+  /**
+   * 获取所有已知机场 (优先返回全量库，未加载则返回热门列表)
+   */
+  public static getAllAirports(): Airport[] {
+    return AirportRepository.cachedAirports.length > 0 ? AirportRepository.cachedAirports : POPULAR_AIRPORTS;
+  }
+}
+
+/**
  * 计算球面大圆物理距离 (单位: 公里 KM)
  */
 export function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -64,9 +122,10 @@ export function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: nu
  */
 export function findNearestAirport(userLat: number, userLon: number): Airport {
   let minDistance = Infinity;
-  let nearestAirport = POPULAR_AIRPORTS[0];
+  const list = AirportRepository.getAllAirports();
+  let nearestAirport = list[0];
 
-  for (const airport of POPULAR_AIRPORTS) {
+  for (const airport of list) {
     const dist = getDistanceKm(userLat, userLon, airport.lat, airport.lon);
     if (dist < minDistance) {
       minDistance = dist;
@@ -81,5 +140,14 @@ export function findNearestAirport(userLat: number, userLon: number): Airport {
  * 根据机场代码查找机场
  */
 export function findAirportByCode(code: string): Airport | undefined {
-  return POPULAR_AIRPORTS.find(a => a.code === code);
+  const list = AirportRepository.getAllAirports();
+  const found = list.find(a => a.code === code);
+  if (!found) return undefined;
+  
+  // 从全量 JSON 数据库中找到后，合并我们在 POPULAR_AIRPORTS 中特调的高级属性（如跑道坐标）
+  const popular = POPULAR_AIRPORTS.find(a => a.code === code);
+  if (popular) {
+    return { ...found, ...popular };
+  }
+  return found;
 }
