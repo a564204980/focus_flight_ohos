@@ -86,42 +86,42 @@ export struct LeftSidebarDock {
       // 侧边核心 Dock 胶囊
       Column({ space: 14 }) {
         Stack({ alignContent: Alignment.Center }) {
-          this.GaugeIcon(this.activeIndex === 0 ? '#38BDF8' : '#F8FAFC')
+          this.GaugeIcon(this.activeIndex === 0 ? '#F59E0B' : '#F8FAFC')
         }
         .width(36)
         .height(36)
         .onClick(() => { this.activeIndex = 0; })
 
         Stack({ alignContent: Alignment.Center }) {
-          this.WrenchIcon(this.activeIndex === 1 ? '#38BDF8' : '#F8FAFC')
+          this.WrenchIcon(this.activeIndex === 1 ? '#F59E0B' : '#F8FAFC')
         }
         .width(36)
         .height(36)
         .onClick(() => { this.activeIndex = 1; })
 
         Stack({ alignContent: Alignment.Center }) {
-          this.HandshakeIcon(this.activeIndex === 2 ? '#38BDF8' : '#F8FAFC')
+          this.HandshakeIcon(this.activeIndex === 2 ? '#F59E0B' : '#F8FAFC')
         }
         .width(36)
         .height(36)
         .onClick(() => { this.activeIndex = 2; })
 
         Stack({ alignContent: Alignment.Center }) {
-          this.VipIcon(this.activeIndex === 3 ? '#38BDF8' : '#F8FAFC')
+          this.VipIcon(this.activeIndex === 3 ? '#F59E0B' : '#F8FAFC')
         }
         .width(36)
         .height(36)
         .onClick(() => { this.activeIndex = 3; })
 
         Stack({ alignContent: Alignment.Center }) {
-          this.BankIcon(this.activeIndex === 4 ? '#38BDF8' : '#F8FAFC')
+          this.BankIcon(this.activeIndex === 4 ? '#F59E0B' : '#F8FAFC')
         }
         .width(36)
         .height(36)
         .onClick(() => { this.activeIndex = 4; })
 
         Stack({ alignContent: Alignment.Center }) {
-          this.GearIcon(this.activeIndex === 5 ? '#38BDF8' : '#F8FAFC')
+          this.GearIcon(this.activeIndex === 5 ? '#F59E0B' : '#F8FAFC')
         }
         .width(36)
         .height(36)

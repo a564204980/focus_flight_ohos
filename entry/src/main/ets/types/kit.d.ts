@@ -4,6 +4,8 @@
  */
 
 declare module '@kit.MapKit' {
+  export const MapComponent: any;
+
   export namespace mapCommon {
     export interface LatLng {
       latitude: number;
@@ -31,12 +33,14 @@ declare module '@kit.MapKit' {
       fillColor?: number;
       strokeColor?: number;
       strokeWidth?: number;
+      zIndex?: number;
     }
     export interface PolylineOptions {
       points: LatLng[];
       width?: number;
       color?: number;
       patterns?: PatternItem[];
+      zIndex?: number;
     }
     export interface MarkerOptions {
       position: LatLng;

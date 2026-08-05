@@ -596,34 +596,34 @@ export struct FocusCheckInCard {
   @Builder
   TrajectoryArrow() {
     Column({ space: 5 }) {
-      // 1. 航班号标识 Badge (极简 Cyber 暗黑玻璃胶囊)
-      Row({ space: 5 }) {
-        Text(this.isDestSelected ? this.flightNo : '搜索真实航班')
-          .fontSize(11)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.isDestSelected ? '#F8FAFC' : '#38BDF8')
-          .letterSpacing(0.6)
+      // 1. 航班号标识 Badge (精细 HUD Cyber 玻璃胶囊)
+      Row({ space: 4 }) {
+        Text(this.isDestSelected ? this.flightNo : 'SEARCH FLIGHT')
+          .fontSize(9)
+          .fontWeight(FontWeight.Bolder)
+          .fontColor(this.isDestSelected ? '#0F172A' : '#0284C7')
+          .letterSpacing(1.2)
 
         Text('🔍')
-          .fontSize(9)
+          .fontSize(8)
           .opacity(0.8)
       }
-      .padding({ left: 10, right: 10, top: 4, bottom: 4 })
-      .backgroundColor('rgba(15, 23, 42, 0.75)')
-      .border({ width: 1, color: 'rgba(56, 189, 248, 0.25)', radius: 12 })
-      .borderRadius(12)
-      .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.4)' })
+      .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+      .backgroundColor('rgba(255, 255, 255, 0.65)')
+      .border({ width: 1, color: 'rgba(255, 255, 255, 0.8)', radius: 10 })
+      .borderRadius(10)
+      .shadow({ radius: 8, color: 'rgba(2, 132, 199, 0.15)' })
       .onClick(() => {
         this.flightSearchController.open();
       })
 
       // 2. 丝滑边缘渐隐向左流光虚线航线 (#fce7cd) + 有机高空气流客机 (#e4a524)
       Stack({ alignContent: Alignment.Center }) {
-        // 向左无缝平滑流动的虚线航线 (#fce7cd)
+        // 向左无缝平滑流动的虚线航线
         Line()
           .startPoint([-20, 10])
           .endPoint([120, 10])
-          .stroke('#fce7cd')
+          .stroke('#0284C7') // 天蓝色虚线
           .strokeWidth(1.5)
           .strokeDashArray([5, 4])
           .width(140)
@@ -636,7 +636,7 @@ export struct FocusCheckInCard {
           .height(20)
           .linearGradient({
             angle: 90,
-            colors: [['rgba(10, 15, 26, 0)', 0], ['rgba(10, 15, 26, 0.95)', 1.0]]
+            colors: [['rgba(255, 255, 255, 0)', 0], ['rgba(255, 255, 255, 1.0)', 1.0]]
           })
           .position({ x: 80, y: 0 })
           .hitTestBehavior(HitTestMode.None)
@@ -647,7 +647,7 @@ export struct FocusCheckInCard {
           .height(20)
           .linearGradient({
             angle: 90,
-            colors: [['rgba(10, 15, 26, 0.95)', 0], ['rgba(10, 15, 26, 0)', 1.0]]
+            colors: [['rgba(255, 255, 255, 1.0)', 0], ['rgba(255, 255, 255, 0)', 1.0]]
           })
           .position({ x: 0, y: 0 })
           .hitTestBehavior(HitTestMode.None)
@@ -677,10 +677,10 @@ export struct FocusCheckInCard {
           Text(this.originCode)
             .fontSize(22)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#F8FAFC')
+            .fontColor('#0F172A')
           Text(this.originCity)
             .fontSize(12)
-            .fontColor('#94A3B8')
+            .fontColor('#475569')
         }
         .alignItems(HorizontalAlign.Start)
         .padding({ left: 4, right: 4, top: 4, bottom: 4 })
@@ -700,13 +700,16 @@ export struct FocusCheckInCard {
         Column({ space: 2 }) {
           Row({ space: 4 }) {
             Text(this.destCode === '---' ? 'DEST' : this.destCode)
-              .fontSize(22)
-              .fontWeight(FontWeight.Bold)
-              .fontColor(this.isDestSelected ? '#F8FAFC' : 'rgba(248, 250, 252, 0.35)')
+              .fontSize(24)
+              .fontWeight(FontWeight.Bolder)
+              .fontColor(this.isDestSelected ? '#0F172A' : 'rgba(15, 23, 42, 0.25)')
+              .letterSpacing(1)
           }
-          Text(this.isDestSelected ? this.destCity : '点击选择 ➔')
-            .fontSize(12)
-            .fontColor(this.isDestSelected ? '#94A3B8' : '#38BDF8')
+          Text(this.isDestSelected ? this.destCity : 'SELECT DEST ➔')
+            .fontSize(10)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.isDestSelected ? '#475569' : '#0284C7')
+            .letterSpacing(0.5)
         }
         .alignItems(HorizontalAlign.End)
         .padding({ left: 4, right: 4, top: 4, bottom: 4 })
@@ -717,7 +720,7 @@ export struct FocusCheckInCard {
       }
       .width('100%')
 
-      Divider().color('rgba(255, 255, 255, 0.08)')
+      Divider().color('rgba(15, 23, 42, 0.08)')
 
       // 切换视图：0: 未值机 (刻度尺) | 1: 卡片原位无弹窗展开图1机舱选座 | 2: 已完成值机锁牌
       if (this.checkInStep === 0) {
@@ -729,13 +732,13 @@ export struct FocusCheckInCard {
                 .fontSize(11)
               Text('专注时长')
                 .fontSize(11)
-                .fontColor('#94A3B8')
+                .fontColor('#475569')
             }
             Blank()
             Text(`${this.focusMinutesVal} 分钟`)
               .fontSize(15)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#38BDF8')
+              .fontColor('#0284C7')
           }
           .width('100%')
 
@@ -751,11 +754,11 @@ export struct FocusCheckInCard {
                       Text(`${minute}`)
                         .fontSize(8)
                         .fontWeight(FontWeight.Medium)
-                        .fontColor(minute === this.focusMinutesVal ? '#38BDF8' : 'rgba(148, 163, 184, 0.5)')
+                        .fontColor(minute === this.focusMinutesVal ? '#0284C7' : 'rgba(71, 85, 105, 0.5)')
                       Column()
                         .width(1.5)
                         .height(10)
-                        .backgroundColor(minute === this.focusMinutesVal ? '#38BDF8' : 'rgba(255, 255, 255, 0.35)')
+                        .backgroundColor(minute === this.focusMinutesVal ? '#0284C7' : 'rgba(15, 23, 42, 0.2)')
                         .borderRadius(1)
                     } else {
                       Text('')
@@ -763,7 +766,7 @@ export struct FocusCheckInCard {
                       Column()
                         .width(1)
                         .height(6)
-                        .backgroundColor(minute === this.focusMinutesVal ? '#38BDF8' : 'rgba(255, 255, 255, 0.15)')
+                        .backgroundColor(minute === this.focusMinutesVal ? '#0284C7' : 'rgba(15, 23, 42, 0.1)')
                         .borderRadius(1)
                     }
                   }
@@ -810,15 +813,15 @@ export struct FocusCheckInCard {
             Column()
               .width(1.5)
               .height(20)
-              .backgroundColor('#38BDF8')
+              .backgroundColor('#0284C7')
               .borderRadius(1)
-              .shadow({ radius: 6, color: 'rgba(255, 255, 255, 0.8)' })
+              .shadow({ radius: 6, color: 'rgba(2, 132, 199, 0.2)' })
               .hitTestBehavior(HitTestMode.Transparent)
           }
           .width('100%')
           .height(30)
-          .backgroundColor('rgba(2, 6, 23, 0.35)')
-          .border({ width: 1, color: 'rgba(255, 255, 255, 0.1)', radius: 8 })
+          .backgroundColor('rgba(255, 255, 255, 0.4)')
+          .border({ width: 1, color: 'rgba(255, 255, 255, 0.6)', radius: 8 })
           .borderRadius(8)
           .clip(true)
         }
@@ -829,11 +832,11 @@ export struct FocusCheckInCard {
           Column({ space: 3 }) {
             Text('预计航程')
               .fontSize(11)
-              .fontColor('#94A3B8')
+              .fontColor('#475569')
             Text(this.estDistance)
               .fontSize(15)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#F8FAFC')
+              .fontColor('#0F172A')
           }
           .alignItems(HorizontalAlign.Start)
 
@@ -957,7 +960,7 @@ export struct FocusCheckInCard {
             }
             Text(`专注航线: ${this.originCode} ➔ ${this.destCode} | 预计航程: ${this.estDistance}`)
               .fontSize(11)
-              .fontColor('#94A3B8')
+              .fontColor('#475569')
           }
           .alignItems(HorizontalAlign.Start)
         }
@@ -968,32 +971,32 @@ export struct FocusCheckInCard {
         .borderRadius(12)
       }
 
-      // 4. 核心 Call-to-Action 按钮 (自定义 Row 精确居中文字与箭头)
-      Row({ space: 6 }) {
-        Text(this.checkInStep === 1 ? `确认选座 (${this.selectedSeat}) 并完成值机` : (this.checkInStep === 2 ? `已选座 ${this.selectedSeat} · 更改选座` : (this.isDestSelected ? '开始值机' : '选择飞行目的地')))
-          .fontSize(14)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.checkInStep === 2 ? '#4ADE80' : '#38BDF8')
-          .textAlign(TextAlign.Center)
+      // 4. 核心 Call-to-Action 按钮 (高奢 HUD 玻璃按钮)
+      Row({ space: 8 }) {
+        Text(this.checkInStep === 1 ? `确认选座 (${this.selectedSeat})` : (this.checkInStep === 2 ? `已选座 ${this.selectedSeat} · 更改选座` : (this.isDestSelected ? 'INITIATE CHECK-IN' : 'SELECT DESTINATION')))
+          .fontSize(13)
+          .fontWeight(FontWeight.Bolder)
+          .fontColor(this.checkInStep === 2 ? '#10B981' : '#0284C7')
+          .letterSpacing(1.5)
 
-        Text('→')
-          .fontSize(14)
+        Text('➔')
+          .fontSize(12)
           .fontWeight(FontWeight.Bold)
-          .fontColor(this.checkInStep === 2 ? '#4ADE80' : '#38BDF8')
-          .lineHeight(14)
+          .fontColor(this.checkInStep === 2 ? '#10B981' : '#0284C7')
       }
       .width('100%')
-      .height(44)
+      .height(48)
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
-      .backgroundColor(this.checkInStep === 2 ? 'rgba(74, 222, 128, 0.22)' : 'rgba(56, 189, 248, 0.22)')
+      .backgroundColor(this.checkInStep === 2 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(2, 132, 199, 0.1)')
       .border({
         width: 1,
-        color: this.checkInStep === 2 ? 'rgba(74, 222, 128, 0.5)' : 'rgba(56, 189, 248, 0.5)',
-        radius: 22
+        color: this.checkInStep === 2 ? 'rgba(16, 185, 129, 0.5)' : 'rgba(2, 132, 199, 0.4)',
+        radius: 24
       })
-      .borderRadius(22)
-      .shadow({ radius: 16, color: this.checkInStep === 2 ? 'rgba(74, 222, 128, 0.3)' : 'rgba(56, 189, 248, 0.3)', offsetY: 4 })
+      .borderRadius(24)
+      .backdropBlur(12)
+      .shadow({ radius: 20, color: this.checkInStep === 2 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(2, 132, 199, 0.15)', offsetY: 6 })
       .onClick(() => {
         if (!this.isDestSelected) {
           this.destDialogController.open();
@@ -1010,10 +1013,11 @@ export struct FocusCheckInCard {
     }
     .width(340)
     .padding(16)
-    .backgroundColor('rgba(10, 15, 26, 0.88)')
-    .border({ width: 1, color: 'rgba(255, 255, 255, 0.14)', radius: 22 })
-    .borderRadius(22)
-    .shadow({ radius: 26, color: 'rgba(0, 0, 0, 0.7)', offsetY: 8 })
+    .backgroundColor('rgba(255, 255, 255, 0.75)')
+    .backdropBlur(30)
+    .border({ width: 1, color: 'rgba(255, 255, 255, 0.9)', radius: 28 })
+    .borderRadius(28)
+    .shadow({ radius: 30, color: 'rgba(2, 132, 199, 0.15)', offsetY: 12 })
   }
 
   private isInlineSeatSelected(seatId: string): boolean {

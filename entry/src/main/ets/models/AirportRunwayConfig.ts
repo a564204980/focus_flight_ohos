@@ -1,4 +1,5 @@
 import { mapCommon } from '@kit.MapKit';
+import { ctuAirportConfig } from './airports/ctu';
 
 /**
  * 跑道四角经纬度多边形数据结构
@@ -16,37 +17,15 @@ export interface AirportRunwayConfig {
   airportCode: string;
   airportName: string;
   runways: RunwayPolygon[];
+  taxiways?: Array<Array<mapCommon.LatLng>>;
 }
 
 /**
  * ✈️ 全局精修机场跑道地理数据库
- * 向更多机场（如 PEK, SHA, PKX 等）扩展跑道只需在此配置集中增加条目即可
+ * 向更多机场（如 PEK, SHA, PKX 等）扩展跑道只需在 airports/ 目录下创建文件并在在此注册即可
  */
 export const CUSTOM_AIRPORT_RUNWAYS: Record<string, AirportRunwayConfig> = {
-  'CTU': {
-    airportCode: 'CTU',
-    airportName: '成都双流国际机场',
-    runways: [
-      {
-        name: '02L/20R',
-        corners: [
-          { latitude: 30.560833, longitude: 103.941889 }, // P0: 入口左角
-          { latitude: 30.591398, longitude: 103.956138 }, // P1: 末端左角
-          { latitude: 30.591245, longitude: 103.956647 }, // P2: 末端右角
-          { latitude: 30.560623, longitude: 103.942425 }  // P3: 入口右角
-        ]
-      },
-      {
-        name: '02R/20L',
-        corners: [
-          { latitude: 30.560229, longitude: 103.943749 }, // P0: 入口左角
-          { latitude: 30.592609, longitude: 103.958881 }, // P1: 末端左角
-          { latitude: 30.592465, longitude: 103.959298 }, // P2: 末端右角
-          { latitude: 30.560064, longitude: 103.944281 }  // P3: 入口右角
-        ]
-      }
-    ]
-  }
+  'CTU': ctuAirportConfig
 };
 
 /**
@@ -65,4 +44,16 @@ export function getCustomRunwaysForAirport(airportCode: string): Array<Array<map
     r.corners[2],
     r.corners[3]
   ]);
+}
+
+/**
+ * 根据机场代码获取对应精修滑行道网络路径
+ * @param airportCode 机场 IATA 代码（如 'CTU'）
+ */
+export function getCustomTaxiwaysForAirport(airportCode: string): Array<Array<mapCommon.LatLng>> | undefined {
+  const config = CUSTOM_AIRPORT_RUNWAYS[airportCode];
+  if (!config || !config.taxiways || config.taxiways.length === 0) {
+    return undefined;
+  }
+  return config.taxiways;
 }

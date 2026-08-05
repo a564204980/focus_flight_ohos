@@ -3,7 +3,7 @@ import animator, { AnimatorResult } from '@ohos.animator';
 import { vibrator } from '@kit.SensorServiceKit';
 import { MapComponent, mapCommon, map } from '@kit.MapKit';
 import { Airport, findAirportByCode } from '../models/AirportModel';
-import { getCustomRunwaysForAirport } from '../models/AirportRunwayConfig';
+import { getCustomRunwaysForAirport, getCustomTaxiwaysForAirport } from '../models/AirportRunwayConfig';
 import {
   generateGreatCirclePoints,
   generateRunwayDepartureRoute,
@@ -223,12 +223,11 @@ struct MapPage {
         }
         
         // 2.5 绘制进出港滑行道网络 (Taxiways)
-        if (this.originAirport.code === 'CTU') {
-          const taxiwayPoints: Array<mapCommon.LatLng> = [
-            { latitude: 30.563363, longitude: 103.943685 },
-            { latitude: 30.562881, longitude: 103.944959 }
-          ];
-          await this.drawTaxiways(controller, taxiwayPoints);
+        const customTaxiways = getCustomTaxiwaysForAirport(this.originAirport.code);
+        if (customTaxiways && customTaxiways.length > 0) {
+          for (let taxiwayPoints of customTaxiways) {
+            await this.drawTaxiways(controller, taxiwayPoints);
+          }
         }
 
         this.updateRunwayLightsZoom(12.5);
@@ -778,15 +777,11 @@ struct MapPage {
       }
       const geobearing = this.lastAppliedRotation < -100 ? targetBearing : interpolateAngle(this.lastAppliedRotation, targetBearing, 0.25);
 
-      // 1. 使用 120ms 的 TranslateAnimation 平滑补帧，实现 120FPS 极致丝滑滑行，彻底解决 100ms 跳跃引致的抽搐感
+      // 1. 直接更新 Marker 位置 (由于外层已使用 100ms 的 setInterval 驱动，位置本身也是随着时间平滑插值的)
       if (this.planeMarker) {
         try {
-          const transAnim = new map.TranslateAnimation(pos);
-          transAnim.setDuration(120);
-          this.planeMarker.setAnimation(transAnim);
-          this.planeMarker.startAnimation();
-        } catch (e) {
           this.planeMarker.setPosition(pos);
+        } catch (e) {
         }
 
         if (Math.abs(geobearing - this.lastAppliedRotation) >= 0.3) {

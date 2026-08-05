@@ -11,7 +11,7 @@ export struct TopHeaderBar {
   BrandLogo() {
     Path()
       .commands('M 12 2 L 2 19 L 12 15 L 22 19 Z')
-      .fill('#38BDF8')
+      .fill('#F8FAFC')
       .width(18)
       .height(18)
   }

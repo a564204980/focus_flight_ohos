@@ -23,35 +23,35 @@ export struct BottomNavBar {
     Row({ space: 4 }) {
       ForEach(this.tabs, (tab: NavTabItem) => {
         Column({ space: 3 }) {
-          // 上：20vp 高清矢量图标 (选中态纯白 #FFFFFF，未选中态柔白 55% 透明度)
+          // 上：20vp 高清矢量图标 (选中态 Flight Ice Blue #0284C7，未选中态灰黑 55% 透明度)
           if (tab.id === 0) {
             Image($r('app.media.ic_airport'))
               .width(20)
               .height(20)
-              .fillColor(this.activeIndex === tab.id ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)')
+              .fillColor(this.activeIndex === tab.id ? '#0284C7' : 'rgba(15, 23, 42, 0.55)')
           } else if (tab.id === 1) {
             Image($r('app.media.ic_logbook'))
               .width(20)
               .height(20)
-              .fillColor(this.activeIndex === tab.id ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)')
+              .fillColor(this.activeIndex === tab.id ? '#0284C7' : 'rgba(15, 23, 42, 0.55)')
           } else {
             Image($r('app.media.ic_hangar'))
               .width(20)
               .height(20)
-              .fillColor(this.activeIndex === tab.id ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)')
+              .fillColor(this.activeIndex === tab.id ? '#0284C7' : 'rgba(15, 23, 42, 0.55)')
           }
 
-          // 下：11fp 舒展文本 (选中态纯白 #FFFFFF，未选中态柔白 55% 透明度)
+          // 下：11fp 舒展文本 (选中态 Flight Ice Blue #0284C7，未选中态灰黑 55% 透明度)
           Text(tab.title)
             .fontSize(11)
-            .fontWeight(this.activeIndex === tab.id ? FontWeight.Bold : FontWeight.Medium)
-            .fontColor(this.activeIndex === tab.id ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)')
+            .fontWeight(this.activeIndex === tab.id ? FontWeight.Bolder : FontWeight.Medium)
+            .fontColor(this.activeIndex === tab.id ? '#0284C7' : 'rgba(15, 23, 42, 0.55)')
         }
         .justifyContent(FlexAlign.Center)
         .alignItems(HorizontalAlign.Center)
         .layoutWeight(1)
         .height(46)
-        .backgroundColor(this.activeIndex === tab.id ? 'rgba(56, 189, 248, 0.18)' : 'transparent')
+        .backgroundColor(this.activeIndex === tab.id ? 'rgba(2, 132, 199, 0.15)' : 'transparent')
         .borderRadius(23) // 同心全胶囊 (46 / 2 = 23vp)
         .onClick(() => {
           this.getUIContext()?.animateTo({ duration: 220, curve: Curve.FastOutSlowIn }, () => {
@@ -64,10 +64,11 @@ export struct BottomNavBar {
     .height(56)
     .alignItems(VerticalAlign.Center)
     .padding({ left: 5, right: 5, top: 5, bottom: 5 })
-    .backgroundColor('rgba(10, 15, 26, 0.88)')
-    .border({ width: 1, color: 'rgba(255, 255, 255, 0.14)', radius: 28 })
+    .backgroundColor('rgba(255, 255, 255, 0.75)')
+    .backdropBlur(30)
+    .border({ width: 1, color: 'rgba(255, 255, 255, 0.9)', radius: 28 })
     .borderRadius(28)
-    .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.65)', offsetY: 6 })
+    .shadow({ radius: 30, color: 'rgba(2, 132, 199, 0.15)', offsetY: 12 })
     .margin({ bottom: 24 })
   }
 }

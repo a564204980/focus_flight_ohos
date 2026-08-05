@@ -15,7 +15,7 @@ export struct RightLayerControls {
   CityIcon() {
     Path()
       .commands('M 12 2 L 2 7 V 22 H 22 V 7 Z M 8 10 H 10 V 13 H 8 Z M 14 10 H 16 V 13 H 14 Z M 8 15 H 10 V 18 H 8 Z M 14 15 H 16 V 18 H 14 Z')
-      .fill('#38BDF8')
+      .fill('#F8FAFC')
       .width(16)
       .height(16)
   }

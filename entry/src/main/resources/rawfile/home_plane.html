@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Focus Flight Home Plane Background</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #020617; /* 深沉背景，与应用底层融合 */
+    }
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    /* 极简加载指示器 (加载完淡出) */
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #38BDF8;
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      opacity: 0.8;
+      transition: opacity 0.5s ease;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <div id="loading">PREPARING AIRCRAFT...</div>
+
+  <!-- 引入 Three.js 和 GLTFLoader -->
+  <script src="js/three.min.js"></script>
+  <script src="js/GLTFLoader.js"></script>
+  <script src="js/OrbitControls.js"></script>
+  <!-- 离线资源库：彻底避免 Webview CORS 问题 -->
+  <script src="js/b737_800_data.js"></script>
+  <script src="js/b737_800_livery_data.js"></script>
+  <script src="js/b737_800_pikachu_data.js"></script>
+
+  <script>
+    let scene, camera, renderer, controls, airplaneMesh = null;
+    let particles = null;
+    let clock = new THREE.Clock();
+
+    function base64ToArrayBuffer(base64) {
+      var binary_string = window.atob(base64);
+      var len = binary_string.length;
+      var bytes = new Uint8Array(len);
+      for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+
+    function init() {
+      const container = document.getElementById('canvas-container');
+
+      // 1. Scene (白天天空场景)
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x7DD3FC); // Sky-300 清爽白天蓝
+      
+      // 添加极少的雾效使远端柔和融入背景
+      scene.fog = new THREE.FogExp2(0x7DD3FC, 0.015);
+
+      // 1.5 沉浸式环境：高空巡航气流 (Particles)
+
+      const particleCount = 1000;
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(particleCount * 3);
+      for(let i=0; i<particleCount; i++) {
+        pos[i*3] = (Math.random() - 0.5) * 300;
+        pos[i*3+1] = (Math.random() - 0.5) * 150;
+        pos[i*3+2] = (Math.random() - 0.5) * 400;
+      }
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const mat = new THREE.PointsMaterial({
+        color: 0xFFFFFF, // 白天云朵/星尘为纯白色
+        size: 0.8,
+        transparent: true,
+        opacity: 0.6,
+        blending: THREE.NormalBlending
+      });
+      particles = new THREE.Points(geo, mat);
+      scene.add(particles);
+
+      // 2. Camera
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+      // 设置一个偏侧前方、略微俯视的经典机库/巡航视角
+      camera.position.set(-18, 5, 25);
+
+      // 3. Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      // 开启色调映射，让高光更柔和
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      container.appendChild(renderer.domElement);
+
+      // 3.5 OrbitControls (支持双指捏合缩放和旋转)
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = false; // 取消惯性，手指松开立刻停止，避免一直转
+      controls.enablePan = false; // 禁止平移，保持飞机在中心
+      controls.minDistance = 15; // 限制缩放最近距离
+      controls.maxDistance = 50; // 限制缩放最远距离
+      // 限制垂直旋转角度，防止飞机翻到底朝天
+      controls.minPolarAngle = Math.PI / 3;
+      controls.maxPolarAngle = Math.PI / 2 + 0.1;
+
+      // 4. Lighting System (明亮白天日光)
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // 降低全局光，避免过曝
+      scene.add(ambientLight);
+
+      // 主阳光 (暖色调)
+      const sunLight = new THREE.DirectionalLight(0xFFF8E7, 1.8);
+      sunLight.position.set(20, 30, 20);
+      scene.add(sunLight);
+
+      // 侧边补光 (稍微带点天蓝色)
+      const fillLight = new THREE.DirectionalLight(0x7DD3FC, 0.6);
+      fillLight.position.set(-20, -5, -15);
+      scene.add(fillLight);
+
+      // 5. Load Texture and Model (From Base64 to avoid local CORS in WebView)
+      if (typeof B737_800_LIVERY_BASE64 === 'undefined' || typeof B737_800_GLB_BASE64 === 'undefined') {
+        document.getElementById('loading').innerText = 'ASSETS DATA NOT READY';
+        document.getElementById('loading').style.color = '#EF4444';
+        return;
+      }
+
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(B737_800_LIVERY_BASE64, function(texture) {
+        texture.flipY = false;
+        // 提高贴图清晰度
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        texture.colorSpace = THREE.SRGBColorSpace;
+
+        const gltfLoader = new THREE.GLTFLoader();
+        const arrayBuffer = base64ToArrayBuffer(B737_800_GLB_BASE64);
+        gltfLoader.parse(arrayBuffer, '', function(gltf) {
+          airplaneMesh = gltf.scene;
+
+          // 居中与缩放
+          const box = new THREE.Box3().setFromObject(airplaneMesh);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          airplaneMesh.position.sub(center);
+
+          const maxDim = Math.max(size.x, size.y, size.z);
+          // 让飞机稍微大一点，充满视线
+          const scaleFactor = 30 / maxDim;
+          airplaneMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+          // 应用材质
+          airplaneMesh.traverse(function(child) {
+            if (child.isMesh && child.material) {
+              child.material.map = texture;
+              child.material.color.setHex(0xffffff);
+              child.material.roughness = 0.5;
+              child.material.metalness = 0.4;
+              child.material.needsUpdate = true;
+            }
+          });
+
+          // 将飞机放入一个外层 Group 以便做呼吸和旋转动画
+          const group = new THREE.Group();
+          group.add(airplaneMesh);
+          
+          // 初始姿态调整，使得机头朝向右前方，略微抬头
+          group.rotation.y = -Math.PI / 6; // 偏右
+          group.rotation.z = Math.PI / 24; // 稍微抬头
+          group.rotation.x = -Math.PI / 36; // 轻微倾斜
+          
+          scene.add(group);
+          airplaneMesh = group; // 让后续动画作用在 group 上
+
+          document.getElementById('loading').style.opacity = '0';
+          
+          camera.lookAt(0, 0, 0);
+
+        }, function(error) {
+          console.error('Model load error:', error);
+          document.getElementById('loading').innerText = 'MODEL PARSE FAILED';
+          document.getElementById('loading').style.color = '#EF4444';
+        });
+      }, undefined, function(error) {
+        console.error('Texture load error:', error);
+        document.getElementById('loading').innerText = 'TEXTURE LOAD FAILED';
+        document.getElementById('loading').style.color = '#EF4444';
+      });
+
+      window.addEventListener('resize', onWindowResize, false);
+      animate();
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      if (controls) {
+        controls.update();
+      }
+
+      if (particles) {
+        // 让气流粒子迎面扑来，产生高速飞行的巡航感
+        const positions = particles.geometry.attributes.position.array;
+        for(let i=0; i<1000; i++) {
+          positions[i*3+2] += 1.2; // Z 轴向镜头移动
+          if(positions[i*3+2] > 100) {
+            positions[i*3+2] = -300; // 回收至远方
+          }
+        }
+        particles.geometry.attributes.position.needsUpdate = true;
+      }
+
+      if (airplaneMesh) {
+        const t = clock.getElapsedTime();
+        // 非常缓慢的有机呼吸浮动 (巡航感)
+        airplaneMesh.position.y = Math.sin(t * 0.8) * 0.8;
+        // 极其微小的左右摇摆姿态
+        airplaneMesh.rotation.z = Math.PI / 24 + Math.sin(t * 0.5) * 0.02;
+        airplaneMesh.rotation.x = -Math.PI / 36 + Math.cos(t * 0.4) * 0.015;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    init();
+
+    // 暴露给 ArkTS 调用的换装方法
+    window.changeLivery = function(liveryId) {
+      if (!airplaneMesh) return;
+      
+      let base64Data = B737_800_LIVERY_BASE64; // default
+      if (liveryId === 'pikachu') {
+        base64Data = B737_800_PIKACHU_BASE64;
+      }
+
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(base64Data, function(texture) {
+        texture.flipY = (liveryId === 'pikachu'); // 修复皮卡丘涂装的 Y 轴反转问题
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        texture.colorSpace = THREE.SRGBColorSpace;
+        
+        airplaneMesh.traverse(function(child) {
+          if (child.isMesh && child.material) {
+            child.material.map = texture;
+            child.material.needsUpdate = true;
+          }
+        });
+      });
+    };
+  </script>
+</body>
+</html>

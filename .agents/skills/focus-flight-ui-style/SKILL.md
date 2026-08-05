@@ -25,11 +25,10 @@ description: >
 1. **色彩系统 (Color System - 航空高奢战术 Token)**:
    - **深虚空夜色底板 (Midnight Void)**: `#050914` / `#0A0F1D` (飞行员舱位夜色)
    - **玻璃拟态容器 (Glass Panel)**: `#0D1322` / `rgba(13, 19, 34, 0.88)`
-   - **发丝发光线框 (Hairline Border)**: `1px solid rgba(14, 165, 233, 0.25)` 或 `1px solid #1E293B`
-   - **高奢品牌电光主色 (Flight Ice Blue)**: `#0EA5E9` (极地电光冰蓝 / 取代普通天蓝)
-   - **翡翠仪表绿 (Emerald Flight Green)**: `#10B981` (对标高级跑道/准点状态绿，取代刺眼普通绿)
-   - **琥珀战术黄 (Amber Gold)**: `#F59E0B` (仪表盘 Warning 与延误提示)
-   - **文本颜色**: 标题主字 `#F8FAFC` (纯白)，次要字与图标 `#94A3B8` / `#64748B` (板岩灰)
+   - **发丝发光线框 (Hairline Border)**: `1px solid rgba(255, 255, 255, 0.15)` 或 `1px solid #1E293B`
+   - **高奢仪表金 (Cockpit Amber Gold)**: `#F59E0B` (仪表盘主高亮 / 核心战术色)
+   - **翡翠仪表绿 (Emerald Flight Green)**: `#10B981` (跑道状态绿 / 准点完成)
+   - **钛银冰白 (Titanium Frost White)**: `#F8FAFC` (主文字与高奢图标) / `#94A3B8` (板岩灰)
 
 2. **圆角与阴影 (Radius & Elevation)**:
    - 悬浮外壳胶囊: `borderRadius(20)` ~ `borderRadius(28)`
@@ -56,9 +55,7 @@ Row() { ... }
 .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.6)', offsetY: 6 })
 ```
 
-### 2. 选中态与未选中态 Tab 样式
-- **选中态**: `.backgroundColor('rgba(56, 189, 248, 0.14)')` + `.border({ width: 1, color: 'rgba(56, 189, 248, 0.35)', radius: 14 })` + `#38BDF8` 电光蓝矢量图标与加粗文本。
-- **未选中态**: 透明背景，`#F8FAFC` 或 `#94A3B8` 板岩灰图标。
+
 
 ### 3. 矢量图标绘制规范
 - 使用原生 ArkTS `Path()` 组合，统一宽度高度为 `18` ~ `22` vp。
@@ -68,6 +65,7 @@ Row() { ... }
 - 严禁加入与专注体验无关的商业资金（如 `$83,049K`）、机票销售等商业游戏化杂质。
 - 严禁在全屏暗黑 3D 地球背景上使用纯白实色塑料块 (`#FFFFFF`)。
 - 确保所有 `animateTo` 均使用 `this.getUIContext()?.animateTo(...)` 避免 API 告警。
+- **严格遵循最小改动原则 (Minimal Modification & Code Protection)**: 修改代码时仅更改与当前需求直接相关的最小必要行，**绝不重置或覆盖用户手动微调过的代码/坐标**（如 `translate` 偏移、自定义控件尺寸与阴影位置），只做局部增量替换。
 
 ---
 
