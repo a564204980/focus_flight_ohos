@@ -1,8 +1,17 @@
-import { router } from '@kit.ArkUI';
+import { promptAction, router } from '@kit.ArkUI';
 import { vibrator } from '@kit.SensorServiceKit';
 import { MapComponent, mapCommon, map } from '@kit.MapKit';
-import { getCustomRunwaysForAirport, getCustomTaxiwaysForAirport } from '../models/AirportRunwayConfig';
-import { generateGreatCirclePoints, LatLngPoint } from '../utils/GeodesicUtils';
+import { getCustomRunwaysForAirport, getCustomTaxiwaysForAirport, getAirportTakeoffRunway } from '../models/AirportRunwayConfig';
+import { generateGreatCirclePoints, LatLngPoint, calculateBearing, interpolateLatLng, calculateCameraTargetForAnchor } from '../utils/GeodesicUtils';
+import { FlightSessionStore, FlightSessionData } from '../services/FlightSessionStore';
+
+// ✈️ 从机场配置动态读取 CTU 起飞跑道数据
+const _ctuRunway = getAirportTakeoffRunway('CTU');
+const CTU_RUNWAY_START: LatLngPoint = _ctuRunway?.start ?? { latitude: 30.561173, longitude: 103.942350 };
+const CTU_RUNWAY_END: LatLngPoint = _ctuRunway?.end ?? { latitude: 30.589161, longitude: 103.955371 };
+const CTU_RUNWAY_BEARING: number = calculateBearing(CTU_RUNWAY_START, CTU_RUNWAY_END);
+// 物理级镜头对齐：使跑道起点红点 (30.561173, 103.942350) 居于画面中心偏下方 80px 适中视角！
+const CTU_CAMERA_TARGET: LatLngPoint = calculateCameraTargetForAnchor(CTU_RUNWAY_START, CTU_RUNWAY_END, 80, 17.2);
 
 /**
  * SeatSelectionPage.ets
@@ -42,11 +51,11 @@ struct SeatSelectionPage {
   private huaweiMapOptions: mapCommon.MapOptions = {
     position: {
       target: {
-        latitude: 30.561432,
-        longitude: 103.942466
+        latitude: CTU_CAMERA_TARGET.latitude,
+        longitude: CTU_CAMERA_TARGET.longitude
       },
-      zoom: 15.0,
-      bearing: 25.5,
+      zoom: 17.2,
+      bearing: CTU_RUNWAY_BEARING,
       tilt: 0
     },
     mapType: mapCommon.MapType.SATELLITE,
@@ -56,15 +65,56 @@ struct SeatSelectionPage {
     zoomGesturesEnabled: true
   };
 
+  private applyRunwayCameraOrientation(controller?: map.MapComponentController): void {
+    const mapCtrl = controller || this.huaweiMapController;
+    if (mapCtrl) {
+      try {
+        mapCtrl.moveCamera(map.newCameraPosition({
+          target: {
+            latitude: CTU_CAMERA_TARGET.latitude,
+            longitude: CTU_CAMERA_TARGET.longitude
+          },
+          zoom: 17.2,
+          bearing: CTU_RUNWAY_BEARING,
+          tilt: 0
+        }));
+      } catch (e) {
+        console.error('SeatSelectionPage applyRunwayCameraOrientation error:', JSON.stringify(e));
+      }
+    }
+  }
+
   private huaweiMapCallback = (err: Error, controller: map.MapComponentController) => {
     if (!err) {
       this.huaweiMapController = controller;
       this.setupHuaweiMap(controller);
+      setTimeout(() => {
+        this.applyRunwayCameraOrientation(controller);
+      }, 150);
+      setTimeout(() => {
+        this.applyRunwayCameraOrientation(controller);
+      }, 650);
     }
   };
 
   private async setupHuaweiMap(controller: map.MapComponentController): Promise<void> {
     try {
+      // 0a. 强制将地图镜头平移与旋转至跑道垂直朝上对齐视角！
+      this.applyRunwayCameraOrientation(controller);
+
+      // 0b. 监听地图点击事件，实时输出并弹窗提示经纬度坐标点
+      controller.on('mapClick', (latLng: mapCommon.LatLng) => {
+        const latStr = latLng.latitude.toFixed(6);
+        const lonStr = latLng.longitude.toFixed(6);
+        console.info(`[SeatSelectionPage MapClick] Lat: ${latStr}, Lon: ${lonStr}`);
+        try {
+          promptAction.showToast({
+            message: `📍 选点坐标: ${latStr}, ${lonStr}`,
+            duration: 4000
+          });
+        } catch (e) {}
+      });
+
       // 1. 绘制 CTU 精修跑道
       const customRunwayPolygons = getCustomRunwaysForAirport('CTU');
       if (customRunwayPolygons) {
@@ -90,27 +140,29 @@ struct SeatSelectionPage {
         }
       }
 
-      // 3. 绘制弧形大圆测地线航线
-      const originPt: LatLngPoint = { latitude: 30.561432, longitude: 103.942466 };
-      const destPt: LatLngPoint = { latitude: 40.0801, longitude: 116.5846 };
-      const routePoints = generateGreatCirclePoints(originPt, destPt, 200);
-
+      // 3. 将滑行道的两个点使用标准 Cyber 航线样式在地图最顶层连结呈现！
+      const taxiwayRoutePoints = generateGreatCirclePoints(CTU_RUNWAY_START, CTU_RUNWAY_END, 120);
       await controller.addPolyline({
-        points: routePoints,
-        width: 4,
+        points: taxiwayRoutePoints,
+        width: 16,
+        color: 0x6638BDF8
+      });
+      await controller.addPolyline({
+        points: taxiwayRoutePoints,
+        width: 6,
         color: 0xFF38BDF8
       });
-
-      // 4. 跑道起点战机 Marker
-      await controller.addMarker({
-        position: routePoints[0],
-        icon: $r('app.media.b737_800_top_3'),
-        anchorU: 0.5,
-        anchorV: 0.5,
-        flat: true,
-        rotation: 45,
-        zIndex: 100
+      await controller.addPolyline({
+        points: taxiwayRoutePoints,
+        width: 3,
+        color: 0xFFFFFFFF,
+        patterns: [
+          { type: mapCommon.PatternItemType.DASH, length: 12 },
+          { type: mapCommon.PatternItemType.GAP, length: 8 }
+        ]
       });
+
+
     } catch (e) {
       console.error('SeatSelectionPage Petal Map setup error:', JSON.stringify(e));
     }
@@ -570,16 +622,22 @@ struct SeatSelectionPage {
         .shadow({ radius: 16, color: 'rgba(74, 222, 128, 0.45)', offsetY: 4 })
         .onClick(() => {
           this.triggerHaptic();
+          const startTimeMs = Date.now();
+          const sessionData: FlightSessionData = {
+            isFlightActive: true,
+            flightNo: this.flightNo,
+            seatId: this.selectedSeatId,
+            taskTitle: '💻 深度编程',
+            durationMin: this.focusMinutesVal,
+            originCode: this.originCode,
+            destCode: this.destCode,
+            startTimeMs: startTimeMs
+          };
+          FlightSessionStore.saveSession(sessionData);
+
           router.pushUrl({
-            url: 'pages/MapPage',
-            params: {
-              flightNo: this.flightNo,
-              seatId: this.selectedSeatId,
-              taskTitle: '💻 深度编程',
-              durationMin: this.focusMinutesVal,
-              originCode: this.originCode,
-              destCode: this.destCode
-            }
+            url: 'pages/Index',
+            params: sessionData
           });
         })
       }

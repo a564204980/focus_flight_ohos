@@ -6,7 +6,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@kit.MapKit": ["./entry/src/main/ets/types/kit.d.ts"]
+      "@kit/*": ["./entry/src/main/ets/types/kit.d.ts"],
+      "@kit.*": ["./entry/src/main/ets/types/kit.d.ts"]
     }
   },
   "include": [

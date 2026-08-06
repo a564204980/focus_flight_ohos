@@ -1,7 +1,49 @@
 /**
  * Antigravity IDE / TypeScript Language Server 特效类型补充声明
- * 用于为 @kit.MapKit 及原生 Kit 模块提供 IDE 代码高亮与智能感知支持
+ * 用于为 @kit.* 及 ArkUI 原生 Kit 模块提供 IDE 代码高亮与智能感知支持
  */
+
+declare class AppStorage {
+  static get<T>(key: string): T | undefined;
+  static setOrCreate<T>(key: string, value: T): boolean;
+  static set<T>(key: string, value: T): boolean;
+  static has(key: string): boolean;
+  static delete(key: string): boolean;
+}
+
+declare module '@kit.AbilityKit' {
+  export namespace common {
+    export type UIAbilityContext = any;
+    export type Context = any;
+  }
+  export type Permissions = string;
+  export namespace abilityAccessCtrl {
+    export function createAtManager(): any;
+  }
+}
+
+declare module '@kit.LocationKit' {
+  export namespace geoLocationManager {
+    export interface SingleLocationRequest {
+      locatingTimeoutMs?: number;
+      locatingPriority?: number;
+    }
+    export enum LocatingPriority {
+      PRIORITY_LOCATING_SPEED = 0,
+      PRIORITY_ACCURACY = 1
+    }
+    export function getCurrentLocation(requestInfo?: SingleLocationRequest): Promise<any>;
+  }
+}
+
+declare module '@kit.PerformanceAnalysisKit' {
+  export namespace hilog {
+    export function info(domain: number, tag: string, format: string, ...args: any[]): void;
+    export function warn(domain: number, tag: string, format: string, ...args: any[]): void;
+    export function error(domain: number, tag: string, format: string, ...args: any[]): void;
+    export function debug(domain: number, tag: string, format: string, ...args: any[]): void;
+  }
+}
 
 declare module '@kit.MapKit' {
   export const MapComponent: any;
@@ -40,6 +82,14 @@ declare module '@kit.MapKit' {
       width?: number;
       color?: number;
       patterns?: PatternItem[];
+      zIndex?: number;
+    }
+    export interface CircleOptions {
+      center: LatLng;
+      radius: number;
+      fillColor?: number;
+      strokeColor?: number;
+      strokeWidth?: number;
       zIndex?: number;
     }
     export interface MarkerOptions {
@@ -97,13 +147,26 @@ declare module '@kit.MapKit' {
     export class MapComponentController {
       addPolygon(options: mapCommon.PolygonOptions): Promise<void>;
       addPolyline(options: mapCommon.PolylineOptions): Promise<object>;
+      addCircle(options: mapCommon.CircleOptions): Promise<void>;
       addMarker(options: mapCommon.MarkerOptions): Promise<Marker>;
       moveCamera(update: mapCommon.CameraPosition): void;
       animateCamera(update: mapCommon.CameraPosition, duration?: number): void;
       getCameraPosition(): mapCommon.CameraPosition;
       setMapType(type: mapCommon.MapType): void;
       setDayNightMode(mode: mapCommon.DayNightMode): void;
-      on(type: string, callback: any): void;
+      on(type: string, callback: (data: Object) => void): void;
+    }
+    export interface DynamicMapController {
+      addPolygon(options: mapCommon.PolygonOptions): Promise<void>;
+      addPolyline(options: mapCommon.PolylineOptions): Promise<object>;
+      addCircle(options: mapCommon.CircleOptions): Promise<void>;
+      addMarker(options: mapCommon.MarkerOptions): Promise<Marker>;
+      moveCamera(update: mapCommon.CameraPosition): void;
+      animateCamera(update: mapCommon.CameraPosition, duration?: number): void;
+      getCameraPosition(): mapCommon.CameraPosition;
+      setMapType(type: mapCommon.MapType): void;
+      setDayNightMode(mode: mapCommon.DayNightMode): void;
+      on(type: string, callback: (data: Object) => void): void;
     }
   }
 }

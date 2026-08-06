@@ -11,13 +11,27 @@ export interface RunwayPolygon {
 }
 
 /**
+ * 起飞滑行跑道数据（用于地图镜头对齐与航线连线）
+ * start: 滑行起点经纬度（飞机出发位置）
+ * end:   滑行终点经纬度（起飞拉起位置）
+ */
+export interface TakeoffRunway {
+  runwayName: string; // 起飞跑道编号（如 "02L"）
+  start: mapCommon.LatLng;
+  end: mapCommon.LatLng;
+  cameraRatio?: number;
+}
+
+/**
  * 机场跑道完整配置接口
  */
 export interface AirportRunwayConfig {
   airportCode: string;
   airportName: string;
+  runwayAngle?: number; // 跑道专属对齐角度 (如 158 度)
   runways: RunwayPolygon[];
   taxiways?: Array<Array<mapCommon.LatLng>>;
+  takeoffRunway?: TakeoffRunway; // 当前起飞跑道（用于地图锚定与航线连线）
 }
 
 /**
@@ -56,4 +70,13 @@ export function getCustomTaxiwaysForAirport(airportCode: string): Array<Array<ma
     return undefined;
   }
   return config.taxiways;
+}
+
+/**
+ * 获取机场当前起飞跑道的起终点坐标
+ * @param airportCode 机场 IATA 代码（如 'CTU'）
+ */
+export function getAirportTakeoffRunway(airportCode: string): TakeoffRunway | undefined {
+  const config = CUSTOM_AIRPORT_RUNWAYS[airportCode];
+  return config?.takeoffRunway;
 }

@@ -1,15 +1,12 @@
 import { mapCommon } from '@kit.MapKit';
 
 /**
- * GeodesicUtils.ts
+ * GeodesicUtils.ets
  * 地球测地线 / 大圆航线算法工具 (Great Circle / Slerp Interpolation)
  * 包含跑道 ICAO 战术灯光标线几何插值计算函数 (ZebraStripes, TouchdownZone, PAPI, RunwayPoint)
  */
 
-export interface LatLngPoint {
-  latitude: number;
-  longitude: number;
-}
+export type LatLngPoint = mapCommon.LatLng;
 
 /**
  * 根据起点和终点，基于大圆算法 (Great Circle Interpolation) 生成自然光滑的弧线点集
@@ -336,6 +333,11 @@ export function generatePAPILightPoints(
   return points;
 }
 
+export interface RunwayEdgeBeads {
+  leftBeads: Array<mapCommon.LatLng>;
+  rightBeads: Array<mapCommon.LatLng>;
+}
+
 /**
  * 生成跑道两侧高密度边缘暖金灯珠阵列 (Runway Edge Light Beads) 坐标集合
  * @param polygon 跑道四角经纬度
@@ -344,7 +346,7 @@ export function generatePAPILightPoints(
 export function generateRunwayEdgeLightBeads(
   polygon: Array<mapCommon.LatLng>,
   countPerSide: number = 24
-): { leftBeads: Array<mapCommon.LatLng>; rightBeads: Array<mapCommon.LatLng> } {
+): RunwayEdgeBeads {
   const leftBeads: Array<mapCommon.LatLng> = [];
   const rightBeads: Array<mapCommon.LatLng> = [];
 
@@ -354,5 +356,55 @@ export function generateRunwayEdgeLightBeads(
     rightBeads.push(interpolateRunwayPoint(polygon, 1.0, v));
   }
 
-  return { leftBeads, rightBeads };
+  const res: RunwayEdgeBeads = { leftBeads: leftBeads, rightBeads: rightBeads };
+  return res;
 }
+
+/**
+ * 线性插值计算两点间指定比例的经纬度点
+ */
+export function interpolateLatLng(start: LatLngPoint, end: LatLngPoint, ratio: number): LatLngPoint {
+  return {
+    latitude: start.latitude + (end.latitude - start.latitude) * ratio,
+    longitude: start.longitude + (end.longitude - start.longitude) * ratio
+  };
+}
+
+/**
+ * ✈️ 物理级地图镜头对齐计算器 (Physical Map Camera Anchor Calculator)
+ * 根据跑道起点/终点坐标以及屏幕 UI 偏移 (offsetY px)，精准计算地图镜头 Target 坐标。
+ * 确保跑道起点 (start) 100% 精准落于屏幕指定的 UI 偏移位置（如 planeY = 170px 飞机正底下）。
+ *
+ * @param start 跑道起点经纬度 (P1)
+ * @param end 跑道终点经纬度 (P2)
+ * @param offsetYPx 屏幕中心向下的像素偏移量 (如 170px)
+ * @param zoom 地图缩放级别，默认 17.2
+ */
+export function calculateCameraTargetForAnchor(
+  start: LatLngPoint,
+  end: LatLngPoint,
+  offsetYPx: number = 170,
+  zoom: number = 17.2
+): LatLngPoint {
+  const bearing = calculateBearing(start, end);
+  const bearingRad = (bearing * Math.PI) / 180.0;
+
+  // 17.2 缩放级别下，赤道 m/px ≈ 156543.03392 * cos(lat) / (2^zoom)
+  const latRad = (start.latitude * Math.PI) / 180.0;
+  const metersPerPixel = (156543.03392 * Math.cos(latRad)) / Math.pow(2, zoom);
+
+  // 沿跑道方向向上移动的物理距离（米）
+  const distMeters = offsetYPx * metersPerPixel;
+
+  // 转换为地理经纬度偏移（地球半径 R ≈ 6,371,000 米）
+  const R = 6371000.0;
+  const dLat = (distMeters * Math.cos(bearingRad)) / R * (180.0 / Math.PI);
+  const dLon = (distMeters * Math.sin(bearingRad)) / (R * Math.cos(latRad)) * (180.0 / Math.PI);
+
+  return {
+    latitude: start.latitude + dLat,
+    longitude: start.longitude + dLon
+  };
+}
+
+

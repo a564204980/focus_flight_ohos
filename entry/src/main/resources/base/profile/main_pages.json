@@ -1,7 +1,6 @@
 {
   "src": [
     "pages/Index",
-    "pages/SeatSelectionPage",
-    "pages/MapPage"
+    "pages/SeatSelectionPage"
   ]
 }

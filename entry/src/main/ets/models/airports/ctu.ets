@@ -1,4 +1,4 @@
-import { AirportRunwayConfig } from '../AirportRunwayConfig';
+import { AirportRunwayConfig, TakeoffRunway } from '../AirportRunwayConfig';
 
 /**
  * 成都双流国际机场 (CTU) 精修跑道与滑行道地理网格数据
@@ -6,6 +6,7 @@ import { AirportRunwayConfig } from '../AirportRunwayConfig';
 export const ctuAirportConfig: AirportRunwayConfig = {
   airportCode: 'CTU',
   airportName: '成都双流国际机场',
+  runwayAngle: 158, // 双流国际机场跑道角度设置为 158 度
   runways: [
     {
       name: '02L/20R',
@@ -214,5 +215,11 @@ export const ctuAirportConfig: AirportRunwayConfig = {
       { latitude: 30.546023, longitude: 103.948514 }
     ],
    
-  ]
+  ],
+  takeoffRunway: {
+    runwayName: '02L',
+    start: { latitude: 30.592085, longitude: 103.958889 }, // 02L 跑道滑行起点
+    end: { latitude: 30.570222, longitude: 103.948708 },   // 02L 跑道拉起终点
+    cameraRatio: 0.046  // 实机精准校正：使跑道起点 (30.561173, 103.942350) 精准对齐 planeY = 170 飞机位置
+  } as TakeoffRunway
 };

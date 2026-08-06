@@ -1,5 +1,5 @@
 /**
- * LocationService.ts
+ * LocationService.ets
  * Focus Flight 位置权限申请与定位匹配服务
  */
 
@@ -33,7 +33,7 @@ export class LocationService {
         const grantStatus = await atManager.requestPermissionsFromUser(context, permissions);
         hilog.info(DOMAIN, 'LocationService', `requestPermissionsFromUser result: ${JSON.stringify(grantStatus.authResults)}`);
         
-        const isGranted = grantStatus.authResults.some(result => result === 0);
+        const isGranted = grantStatus.authResults.some((result: number) => result === 0);
         if (!isGranted) {
           hilog.warn(DOMAIN, 'LocationService', 'User denied location permission request');
           return null;

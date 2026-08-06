@@ -3,21 +3,42 @@ import { vibrator } from '@kit.SensorServiceKit';
 import { MapComponent, mapCommon, map } from '@kit.MapKit';
 import { HomeFocusPanel } from '../components/HomeFocusPanel';
 import { CabinInteriorOverlay } from '../components/CabinInteriorOverlay';
-import { getCustomRunwaysForAirport, getCustomTaxiwaysForAirport } from '../models/AirportRunwayConfig';
+import { getCustomRunwaysForAirport, getCustomTaxiwaysForAirport, getAirportTakeoffRunway } from '../models/AirportRunwayConfig';
+import { FlightSessionStore, FlightSessionData } from '../services/FlightSessionStore';
 import {
   generateThresholdZebraStripes,
   generateTouchdownZoneMarkings,
   interpolateRunwayPoint,
   generatePAPILightPoints,
-  LatLngPoint
+  generateGreatCirclePoints,
+  LatLngPoint,
+  calculateBearing,
+  interpolateLatLng,
+  calculateCameraTargetForAnchor
 } from '../utils/GeodesicUtils';
+
+
+
+import { ctuAirportConfig } from '../models/airports/ctu';
+
+// ✈️ 从机场配置动态读取 CTU 起飞跑道数据与跑道角度 (158度)
+const _ctuRunway = getAirportTakeoffRunway('CTU');
+const CTU_RUNWAY_START: LatLngPoint = _ctuRunway?.start ?? { latitude: 30.561173, longitude: 103.942350 };
+const CTU_RUNWAY_END: LatLngPoint = _ctuRunway?.end ?? { latitude: 30.589161, longitude: 103.955371 };
+const CTU_RUNWAY_BEARING: number = ctuAirportConfig.runwayAngle ?? 158;
+// 物理级镜头对齐：将跑道起点 (30.561173, 103.942350) 100% 锁于屏幕水平与垂直正中心！
+const CTU_CAMERA_TARGET: LatLngPoint = CTU_RUNWAY_START;
+
 
 @Entry
 @Component
 struct Index {
   // === 沉浸式物理刹停与停靠动画状态 ===
   @State planeY: number = -45;                   // 飞机及阴影纵向位置（固定原位）
+  @State planeX: number = 0;                     // 飞机及阴影横向对齐偏移（地图模式对齐跑道红点）
   @State planeScale: number = 1.0;               // 飞机与阴影原位 3D 缩放比例
+  @State isPlaneMarkerActive: boolean = false;   // 动画完成后是否交接给地图原生 Marker
+  @State currentZoomScale: number = 1.0;         // 随地图 Zoom 级别动态计算的物理比例 (2^(zoom - 17.2))
   @State isFullFocusMode: boolean = false;       // 11.8倍极简沉浸专注模式（隐藏所有UI）
   @State isCabinExposed: boolean = false;        // 飞机放大后机身外壳剖开状态
   @State shellSplitOffset: number = 0;           // 机壳剖开向两侧滑移偏移量
@@ -31,19 +52,23 @@ struct Index {
   @State isFuelTruckDeparting: boolean = false;  // 加油车正在驶离标志
   @State honkToastText: string = '';             // 提示文本
   @State isHonkToastVisible: boolean = false;    // 提示框显隐
+  @State currentZoomLevel: number = 17.2;        // 当前地图缩放级别 Zoom
+  @State currentMapBearing: number = CTU_RUNWAY_BEARING; // 当前地图方位角度 Bearing
+  @State planeMarkerRotation: number = 0;        // Marker 标记当前旋转角度 (默认0度)
 
+  private currentPlaneMarker?: map.Marker;       // 地图原生 Marker 实例
   private animTimer: number = -1;
   private huaweiMapController?: map.MapComponentController;
 
-  // 华为花瓣地图初始配置：默认卫星图 SATELLITE + 精修 CTU 机场跑道/滑行道
+  // 华为花瓣地图初始配置：默认卫星图 SATELLITE + 精修 CTU 跑道垂直朝上对齐视角
   private huaweiMapOptions: mapCommon.MapOptions = {
     position: {
       target: {
-        latitude: 30.561432,
-        longitude: 103.942466
+        latitude: CTU_CAMERA_TARGET.latitude,
+        longitude: CTU_CAMERA_TARGET.longitude
       },
-      zoom: 16.5,
-      bearing: 25.5,
+      zoom: 17.2,
+      bearing: CTU_RUNWAY_BEARING,
       tilt: 0
     },
     mapType: mapCommon.MapType.SATELLITE,
@@ -53,15 +78,174 @@ struct Index {
     zoomGesturesEnabled: true
   };
 
+  private applyRunwayCameraOrientation(controller?: map.MapComponentController): void {
+    const mapCtrl = controller || this.huaweiMapController;
+    if (mapCtrl) {
+      try {
+        console.info(`[CTU Camera] target=(${CTU_CAMERA_TARGET.latitude}, ${CTU_CAMERA_TARGET.longitude}) bearing=${CTU_RUNWAY_BEARING}`);
+        mapCtrl.moveCamera(map.newCameraPosition({
+          target: {
+            latitude: CTU_CAMERA_TARGET.latitude,
+            longitude: CTU_CAMERA_TARGET.longitude
+          },
+          zoom: 17.2,
+          bearing: CTU_RUNWAY_BEARING,
+          tilt: 0
+        }));
+      } catch (e) {
+        console.error('applyRunwayCameraOrientation error:', JSON.stringify(e));
+      }
+    }
+  }
+
   private huaweiMapCallback = (err: Error, controller: map.MapComponentController) => {
     if (!err) {
       this.huaweiMapController = controller;
       this.setupHuaweiMap(controller);
+      // 双重保障：在 MapComponent 渲染表面完全稳定后强行平移并旋转地图视角！
+      setTimeout(() => {
+        this.applyRunwayCameraOrientation(controller);
+      }, 150);
+      setTimeout(() => {
+        this.applyRunwayCameraOrientation(controller);
+      }, 650);
     }
   };
 
+  /**
+   * ✈️ 将滑行道的两个点使用标准赛博发光航线样式连结
+   */
+  private async drawTaxiwayFlightRoute(controller: map.MapComponentController): Promise<void> {
+    const p1: mapCommon.LatLng = CTU_RUNWAY_START;
+    const p2: mapCommon.LatLng = CTU_RUNWAY_END;
+    const routePoints = generateGreatCirclePoints(p1, p2, 120);
+
+    // 1. 底层赛博蓝霓虹发光晕
+    await controller.addPolyline({ points: routePoints, width: 16, color: 0x6638BDF8 });
+    // 2. 中层极光蓝亮线
+    await controller.addPolyline({ points: routePoints, width: 6, color: 0xFF38BDF8 });
+    // 3. 顶层白金流光虚线
+    await controller.addPolyline({
+      points: routePoints,
+      width: 3,
+      color: 0xFFFFFFFF,
+      patterns: [
+        { type: mapCommon.PatternItemType.DASH, length: 12 },
+        { type: mapCommon.PatternItemType.GAP, length: 8 }
+      ]
+    });
+
+
+  }
+
+  /**
+   * 🧭 旋转地图视角 90° (平滑动画过渡)
+   */
+  private rotateMapNextAngle(): void {
+    this.triggerHapticFeedback();
+    this.currentMapBearing = Math.round((this.currentMapBearing + 90) % 360);
+    if (this.huaweiMapController) {
+      try {
+        const currentCam = this.huaweiMapController.getCameraPosition();
+        this.huaweiMapController.animateCamera(map.newCameraPosition({
+          target: currentCam?.target || CTU_CAMERA_TARGET,
+          zoom: currentCam?.zoom || 17.2,
+          bearing: this.currentMapBearing,
+          tilt: 0
+        }), 500);
+        this.honkToastText = `🧭 地图视角已旋转至 ${this.currentMapBearing}°`;
+        this.isHonkToastVisible = true;
+        setTimeout(() => {
+          this.isHonkToastVisible = false;
+        }, 2000);
+      } catch (e) {
+        console.error('rotateMapNextAngle error:', JSON.stringify(e));
+      }
+    }
+  }
+
+  /**
+   * 📐 微调地图视角 Bearing 角度 (±1°)
+   */
+  private tweakMapBearing(deltaDeg: number): void {
+    this.triggerHapticFeedback();
+    this.currentMapBearing = Math.round((this.currentMapBearing + deltaDeg + 360) % 360);
+    if (this.huaweiMapController) {
+      try {
+        const currentCam = this.huaweiMapController.getCameraPosition();
+        this.huaweiMapController.moveCamera(map.newCameraPosition({
+          target: currentCam?.target || CTU_CAMERA_TARGET,
+          zoom: currentCam?.zoom || 17.2,
+          bearing: this.currentMapBearing,
+          tilt: 0
+        }));
+      } catch (e) {
+        console.error('tweakMapBearing error:', JSON.stringify(e));
+      }
+    }
+    this.honkToastText = `📐 地图视角已微调至 ${this.currentMapBearing}°`;
+    this.isHonkToastVisible = true;
+    setTimeout(() => {
+      this.isHonkToastVisible = false;
+    }, 1200);
+  }
+
+  /**
+   * ✈️ 微调飞机 Marker 点标记角度 (±1° 或 ±90°)
+   */
+  private tweakMarkerRotation(deltaDeg: number): void {
+    this.triggerHapticFeedback();
+    this.planeMarkerRotation = Math.round((this.planeMarkerRotation + deltaDeg + 360) % 360);
+    if (this.currentPlaneMarker) {
+      try {
+        this.currentPlaneMarker.setRotation(this.planeMarkerRotation);
+      } catch (e) {
+        console.error('setRotation error:', JSON.stringify(e));
+      }
+    }
+    this.honkToastText = `✈️ 飞机 Marker 角度已调整至 ${this.planeMarkerRotation}°`;
+    this.isHonkToastVisible = true;
+    setTimeout(() => {
+      this.isHonkToastVisible = false;
+    }, 1200);
+  }
+
   private async setupHuaweiMap(controller: map.MapComponentController): Promise<void> {
     try {
+      // 0a. 立即强制将地图镜头平移与旋转至跑道垂直朝上对齐视角！
+      this.applyRunwayCameraOrientation(controller);
+
+      // 0b. 监听地图点击事件，实时输出并弹窗提示经纬度坐标点
+      controller.on('mapClick', (data: Object) => {
+        const latLng = data as mapCommon.LatLng;
+        if (latLng && latLng.latitude !== undefined && latLng.longitude !== undefined) {
+          const latStr = latLng.latitude.toFixed(6);
+          const lonStr = latLng.longitude.toFixed(6);
+          console.info(`[MapClick] Lat: ${latStr}, Lon: ${lonStr}`);
+          this.honkToastText = `📍 选点坐标: ${latStr}, ${lonStr}`;
+          this.isHonkToastVisible = true;
+          setTimeout(() => {
+            this.isHonkToastVisible = false;
+          }, 4500);
+        }
+      });
+
+      // 0c. 监听地图缩放与镜头变换，获取最新 cameraPosition.zoom，使飞机尺寸与地图 100% 等比缩放！
+      try {
+        controller.on('cameraChange', (_data: Object) => {
+          const cam = controller.getCameraPosition();
+          if (cam && cam.zoom !== undefined) {
+            this.currentZoomLevel = parseFloat(cam.zoom.toFixed(1));
+            const baseZoom = 17.2;
+            const factor = Math.pow(2, cam.zoom - baseZoom);
+            this.currentZoomScale = Math.min(Math.max(factor, 0.35), 8.0);
+          }
+          if (cam && cam.bearing !== undefined) {
+            this.currentMapBearing = Math.round(cam.bearing);
+          }
+        });
+      } catch (e) { }
+
       // 1. 绘制 CTU 成都双流精修跑道多边形 (双平行跑道 + ICAO 战术标线与灯光阵列)
       const customRunwayPolygons = getCustomRunwaysForAirport('CTU');
       if (customRunwayPolygons) {
@@ -76,6 +260,22 @@ struct Index {
         for (const taxiway of customTaxiways) {
           await this.drawTaxiways(controller, taxiway);
         }
+      }
+
+      // 3. 最后绘制滑行道航线连线（必须在所有多边形之后，否则被跑道黑色填充遮盖）
+      await this.drawTaxiwayFlightRoute(controller);
+
+      // 4. 若在进入页面前已激活 Marker 状态或开启地图背景，绘制机头垂直对准12点方向的原生 Marker
+      if (this.isPlaneMarkerActive || this.isMapBackgroundVisible) {
+        this.currentPlaneMarker = await controller.addMarker({
+          position: CTU_RUNWAY_START,
+          icon: $r('app.media.b737_800_top_3_medium'),
+          anchorU: 0.5,
+          anchorV: 0.5,
+          flat: false,
+          rotation: this.planeMarkerRotation,
+          clickable: false
+        });
       }
     } catch (e) {
       console.error('Index Petal Map setup error:', JSON.stringify(e));
@@ -261,11 +461,53 @@ struct Index {
   }
 
   aboutToAppear() {
+    this.checkAndRestoreActiveSession();
     this.startAnimationSequence();
   }
 
   onPageShow() {
+    this.checkAndRestoreActiveSession();
     this.startAnimationSequence();
+  }
+
+  private async checkAndRestoreActiveSession(): Promise<void> {
+    try {
+      const params = router.getParams() as Record<string, Object>;
+      if (params && params.startFlight) {
+        this.isCabinExposed = false;
+        this.isFullFocusMode = false;
+        this.isMapBackgroundVisible = true;
+        this.planeScale = 0.45;
+        this.planeY = 0;
+        this.planeX = 0;
+        this.isVehiclesDocked = true;
+        this.isHudVisible = true;
+        return;
+      }
+
+      const session = await FlightSessionStore.getSession();
+      if (session && session.isFlightActive && session.startTimeMs > 0) {
+        const elapsedMs = Date.now() - session.startTimeMs;
+        const totalMs = (session.durationMin || 25) * 60 * 1000;
+        if (elapsedMs < totalMs) {
+          // 自动在当前 Index 页面恢复沉浸飞行视界（飞机缩小 3 倍）！
+          this.isCabinExposed = false;
+          this.isFullFocusMode = false;
+          this.isMapBackgroundVisible = true;
+          this.planeScale = 0.45;
+          this.planeY = 0;
+          this.planeX = 0;
+          this.isVehiclesDocked = true;
+          this.isHudVisible = true;
+          return;
+        } else {
+          // 飞行已在后台自然完成
+          FlightSessionStore.clearSession();
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
   }
 
   /**
@@ -284,16 +526,28 @@ struct Index {
       this.shellSplitOffset = 0;
     });
 
-    // 2. 0.35 秒后隐藏机舱透视，飞机平滑 3D 缩小至原大小，背后的华为 Petal Maps 地图无缝淡入浮现！
+    // 2. 0.35 秒后隐藏机舱透视，飞机平滑 3D 缩小至 1/3 (0.33)，背后的华为 Petal Maps 地图无缝淡入浮现！
     setTimeout(() => {
       this.isCabinExposed = false;
       this.isFullFocusMode = false;
       this.isMapBackgroundVisible = true; // 背后华为花瓣地图无缝出现！
 
-      // 飞机在当前页面平滑 3D 缩小至 1.0 倍
+      if (this.huaweiMapController) {
+        try {
+          this.huaweiMapController.animateCamera(map.newCameraPosition({
+            target: { latitude: CTU_CAMERA_TARGET.latitude, longitude: CTU_CAMERA_TARGET.longitude },
+            zoom: 17.2,
+            bearing: CTU_RUNWAY_BEARING,
+            tilt: 0
+          }), 1200);
+        } catch (e) { }
+      }
+
+      // 飞机在当前页面平滑 3D 缩小至 0.45 比例（与适中 Marker 100% 尺寸对齐）
       this.getUIContext()?.animateTo({ duration: 1600, curve: Curve.FastOutSlowIn }, () => {
-        this.planeScale = 1.0;
-        this.planeY = -45;
+        this.planeScale = 0.45;
+        this.planeY = 0;
+        this.planeX = 0;
       });
 
       // 恢复周围地勤设备与 HUD 界面
@@ -301,6 +555,26 @@ struct Index {
         this.isVehiclesDocked = true;
         this.isHudVisible = true;
       });
+
+      // 3. 1600ms 物理缩小动效落定瞬间：无缝交接给贴地随地图同比例缩放的原生 Marker！
+      setTimeout(async () => {
+        if (this.huaweiMapController) {
+          try {
+            this.currentPlaneMarker = await this.huaweiMapController.addMarker({
+              position: CTU_RUNWAY_START,
+              icon: $r('app.media.b737_800_top_3_medium'),
+              anchorU: 0.5,
+              anchorV: 0.5,
+              flat: false,
+              rotation: this.planeMarkerRotation,
+              clickable: false
+            });
+          } catch (e) { }
+        }
+        this.getUIContext()?.animateTo({ duration: 250, curve: Curve.EaseOut }, () => {
+          this.isPlaneMarkerActive = true;
+        });
+      }, 1600);
     }, 350);
   }
 
@@ -395,6 +669,8 @@ struct Index {
    */
   private startAnimationSequence() {
     this.planeY = 450;
+    this.planeX = 0;
+    this.isPlaneMarkerActive = false;
     this.isVehiclesDocked = false;
     this.fuelTruckX = -350;
     this.fuelTruckY = 220;
@@ -612,14 +888,14 @@ struct Index {
         })
         .animation({ duration: 800, curve: Curve.EaseOut })
 
-      // 4. 飞机本体地面阴影（1.0 满不透明度，暗部浓郁沉浸）
+      // 4. 飞机本体地面阴影
       Image($r('app.media.b737_800_top_3_shadow'))
         .width(315)
         .height(450.1)
         .objectFit(ImageFit.Contain)
-        .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1.0)
+        .opacity((this.isPlaneMarkerActive || (this.isMapBackgroundVisible && !this.isCabinExposed)) ? 0 : 1.0)
         .scale({ x: this.planeScale, y: this.planeScale })
-        .translate({ x: 8, y: this.planeY + 20 })
+        .translate({ x: this.planeX + 8, y: this.planeY + 20 })
         .hitTestBehavior(HitTestMode.None)
 
       // === 实体层 ===
@@ -656,13 +932,17 @@ struct Index {
           this.onTractorClick();
         })
 
-      // 3. 飞机本体
+      // 3. 飞机 3D 标志图层 (随地图 Zoom 级别 100% 物理同步缩放，在单纯地图模式时隐藏，选座时保持可见)
       Image($r('app.media.b737_800_top_3'))
         .width(315)
         .height(450.1)
         .objectFit(ImageFit.Contain)
-        .scale({ x: this.planeScale, y: this.planeScale })
-        .translate({ y: this.planeY })
+        .opacity((this.isPlaneMarkerActive || (this.isMapBackgroundVisible && !this.isCabinExposed)) ? 0 : 1.0)
+        .scale({
+          x: this.planeScale * (this.isMapBackgroundVisible ? this.currentZoomScale : 1.0),
+          y: this.planeScale * (this.isMapBackgroundVisible ? this.currentZoomScale : 1.0)
+        })
+        .translate({ x: this.planeX, y: this.planeY })
         .hitTestBehavior(HitTestMode.Transparent)
 
       // 3b. 放大后的机身无缝剖开与透视机舱 layer
@@ -779,6 +1059,81 @@ struct Index {
         .onClick(() => {
           this.triggerPureScaleAnimation();
         })
+      }
+
+      // 7. 地图模式下的右上角 Cyber HUD 双维度控制组：缩放 + 地图角度微调 + 飞机 Marker 角度微调
+      if (this.isMapBackgroundVisible && !this.isCabinExposed) {
+        Column({ space: 6 }) {
+          // 第一排：地图视角控制 (缩放倍率 + 地图角度微调 + 90°旋转)
+          Row({ space: 6 }) {
+            // 缩放
+            Row({ space: 4 }) {
+              Text('🔍').fontSize(11)
+              Text(`${this.currentZoomLevel.toFixed(1)}x`).fontSize(12).fontWeight(FontWeight.Bold).fontColor('#38BDF8')
+            }
+            .padding({ left: 8, right: 9, top: 7, bottom: 7 })
+            .backgroundColor('rgba(10, 15, 26, 0.85)')
+            .border({ width: 1, color: 'rgba(56, 189, 248, 0.35)', radius: 18 })
+
+            // 地图视角角度与微调
+            Row({ space: 3 }) {
+              Text('🗺️').fontSize(11)
+              Text(`${Math.round(this.currentMapBearing)}°`).fontSize(12).fontWeight(FontWeight.Bold).fontColor('#38BDF8')
+              Text('-1°').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#F8FAFC')
+                .padding({ left: 4, right: 4, top: 2, bottom: 2 }).backgroundColor('rgba(255, 255, 255, 0.18)').borderRadius(6)
+                .onClick(() => { this.tweakMapBearing(-1); })
+              Text('+1°').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#F8FAFC')
+                .padding({ left: 4, right: 4, top: 2, bottom: 2 }).backgroundColor('rgba(255, 255, 255, 0.18)').borderRadius(6)
+                .onClick(() => { this.tweakMapBearing(1); })
+            }
+            .padding({ left: 7, right: 7, top: 7, bottom: 7 })
+            .backgroundColor('rgba(10, 15, 26, 0.85)')
+            .border({ width: 1, color: 'rgba(56, 189, 248, 0.35)', radius: 18 })
+
+            // 地图 90° 旋转
+            Row({ space: 3 }) {
+              Text('🧭').fontSize(11)
+              Text('旋转').fontSize(12).fontWeight(FontWeight.Bold).fontColor('#F8FAFC')
+            }
+            .padding({ left: 8, right: 10, top: 7, bottom: 7 })
+            .backgroundColor('rgba(10, 15, 26, 0.85)')
+            .border({ width: 1, color: 'rgba(255, 255, 255, 0.25)', radius: 18 })
+            .onClick(() => { this.rotateMapNextAngle(); })
+          }
+
+          // 第二排：飞机 Marker 点标记角度独立微调与控制组
+          Row({ space: 6 }) {
+            Row({ space: 4 }) {
+              Text('✈️').fontSize(11)
+              Text(`飞机: ${this.planeMarkerRotation}°`).fontSize(12).fontWeight(FontWeight.Bold).fontColor('#4ADE80')
+
+              Text('-1°').fontSize(11).fontWeight(FontWeight.Bold).fontColor('#F8FAFC')
+                .padding({ left: 6, right: 6, top: 3, bottom: 3 }).backgroundColor('rgba(255, 255, 255, 0.18)').borderRadius(8).margin({ left: 4 })
+                .onClick(() => { this.tweakMarkerRotation(-1); })
+
+              Text('+1°').fontSize(11).fontWeight(FontWeight.Bold).fontColor('#F8FAFC')
+                .padding({ left: 6, right: 6, top: 3, bottom: 3 }).backgroundColor('rgba(255, 255, 255, 0.18)').borderRadius(8)
+                .onClick(() => { this.tweakMarkerRotation(1); })
+
+              Text('-90°').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#38BDF8')
+                .padding({ left: 5, right: 5, top: 3, bottom: 3 }).backgroundColor('rgba(56, 189, 248, 0.2)').borderRadius(8)
+                .onClick(() => { this.tweakMarkerRotation(-90); })
+
+              Text('+90°').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#38BDF8')
+                .padding({ left: 5, right: 5, top: 3, bottom: 3 }).backgroundColor('rgba(56, 189, 248, 0.2)').borderRadius(8)
+                .onClick(() => { this.tweakMarkerRotation(90); })
+            }
+            .padding({ left: 10, right: 10, top: 7, bottom: 7 })
+            .backgroundColor('rgba(10, 15, 26, 0.88)')
+            .border({ width: 1, color: 'rgba(74, 222, 128, 0.4)', radius: 18 })
+            .shadow({ radius: 12, color: 'rgba(74, 222, 128, 0.25)', offsetY: 2 })
+          }
+          .alignSelf(ItemAlign.End)
+        }
+        .position({ x: '100%', y: 44 })
+        .markAnchor({ x: '100%', y: 0 })
+        .margin({ right: 14 })
+        .zIndex(200)
       }
     }
     .width('100%')
