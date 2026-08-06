@@ -6,7 +6,7 @@
 
 @Component
 export struct TimeRulerPicker {
-  @Link timerMinutes: number; // 双向绑定当前选择的专注时长
+  @Prop timerMinutes: number = 45; // 当前选择的专注时长
 
   private scroller: Scroller = new Scroller();
 

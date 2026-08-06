@@ -1,4 +1,5 @@
 import { promptAction, router } from '@kit.ArkUI';
+import { vibrator } from '@kit.SensorServiceKit';
 import { MapComponent, mapCommon, map } from '@kit.MapKit';
 import { HomeFocusPanel } from '../components/HomeFocusPanel';
 import { CabinInteriorOverlay } from '../components/CabinInteriorOverlay';
@@ -303,6 +304,92 @@ struct Index {
     }, 350);
   }
 
+  private triggerHapticFeedback(): void {
+    try {
+      vibrator.startVibration({
+        type: 'time',
+        duration: 30
+      }, {
+        id: 0,
+        usage: 'touch'
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  private runFuelTruckDepartureAnimation() {
+    if (this.isFuelTruckDeparting) return;
+    this.isFuelTruckDeparting = true;
+    this.isFuelTruckParked = false;
+
+    this.triggerHapticFeedback();
+    this.honkToastText = '⛽ 航油已加满！加油车打火启动，从翼下驶离停机坪...';
+    this.isHonkToastVisible = true;
+    setTimeout(() => {
+      this.isHonkToastVisible = false;
+    }, 3200);
+
+    const duration = 3500;
+    const startTime = Date.now();
+
+    const startX = this.fuelTruckX;
+    const startY = this.fuelTruckY;
+
+    // 离场三阶贝塞尔路径：从飞机翼下停靠点转向，从机翼腹部下方滑过并驶离屏幕
+    const p0x = startX, p0y = startY;
+    const p1x = -10,   p1y = -160;
+    const p2x = 180,   p2y = -260;
+    const p3x = 480,   p3y = -360;
+
+    let departureTimer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      let rawT = elapsed / duration;
+
+      if (rawT >= 1.0) {
+        rawT = 1.0;
+        clearInterval(departureTimer);
+      }
+
+      let t = rawT;
+      const mt = 1 - t;
+      const x = mt * mt * mt * p0x + 3 * mt * mt * t * p1x + 3 * mt * t * t * p2x + t * t * t * p3x;
+      const y = mt * mt * mt * p0y + 3 * mt * mt * t * p1y + 3 * mt * t * t * p2y + t * t * t * p3y;
+
+      const dx = 3 * mt * mt * (p1x - p0x) + 6 * mt * t * (p2x - p1x) + 3 * t * t * (p3x - p2x);
+      const dy = 3 * mt * mt * (p1y - p0y) + 6 * mt * t * (p2y - p1y) + 3 * t * t * (p3y - p2y);
+
+      const angleRad = Math.atan2(dy, dx);
+      const angleDeg = angleRad * (180 / Math.PI) + 90;
+
+      this.fuelTruckX = x;
+      this.fuelTruckY = y;
+      this.fuelTruckRotate = angleDeg;
+    }, 16);
+  }
+
+  private onFuelTruckClick(): void {
+    if (!this.isFuelTruckDeparting) {
+      this.runFuelTruckDepartureAnimation();
+    } else {
+      this.triggerHapticFeedback();
+      this.honkToastText = '⛽ 勤务加油车已完成任务并驶离停机坪';
+      this.isHonkToastVisible = true;
+      setTimeout(() => {
+        this.isHonkToastVisible = false;
+      }, 2500);
+    }
+  }
+
+  private onTractorClick(): void {
+    this.triggerHapticFeedback();
+    this.honkToastText = '🚜 勤务牵引车就绪 · 轮档已撤除，随时准备离港后推！';
+    this.isHonkToastVisible = true;
+    setTimeout(() => {
+      this.isHonkToastVisible = false;
+    }, 3000);
+  }
+
   /**
    * 启动开场动画
    */
@@ -464,7 +551,7 @@ struct Index {
         }
       }
       .width('100%')
-      .padding({ left: 20, right: 20, top: 16 })
+      .padding({ left: 20, right: 20, top: 50, bottom: 8 })
       .position({ y: 0 })
       .opacity((this.isHudVisible && !this.isFullFocusMode && !this.isMapBackgroundVisible) ? 1 : 0)
       .animation({ duration: 800, curve: Curve.EaseOut })
@@ -483,7 +570,7 @@ struct Index {
         .border({ width: 1, color: '#38BDF8', radius: 20 })
         .borderRadius(20)
         .shadow({ radius: 16, color: 'rgba(56, 189, 248, 0.5)', offsetY: 4 })
-        .position({ y: 80 })
+        .position({ y: 110 })
         .zIndex(300)
       }
 
@@ -492,11 +579,10 @@ struct Index {
         .width(90)
         .height(90)
         .objectFit(ImageFit.Contain)
-        .blur(6)
-        .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1)
+        .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1.0)
         .translate({
-          x: (this.isVehiclesDocked ? -125 : -340) + 6,
-          y: (this.isVehiclesDocked ? -90 : 120) + 8
+          x: (this.isVehiclesDocked ? -125 : -340) + 2,
+          y: (this.isVehiclesDocked ? -90 : 120)+3
         })
         .rotate({ angle: this.isVehiclesDocked ? 0 : 45 })
         .animation({ duration: 800, curve: Curve.EaseOut })
@@ -506,37 +592,34 @@ struct Index {
         .width(110)
         .height(110)
         .objectFit(ImageFit.Contain)
-        .blur(6)
-        .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1)
+        .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1.0)
         .translate({
-          x: this.fuelTruckX + 8,
-          y: this.fuelTruckY + 10
+          x: this.fuelTruckX + 4,
+          y: this.fuelTruckY + 4
         })
         .rotate({ angle: this.fuelTruckRotate })
         .animation({ duration: 800, curve: Curve.EaseOut })
 
-      // 3. 廊桥阴影
+      // 3. 廊桥阴影（1.0 满不透明度，还原图 2 极富立体感的浓重暗部阴影）
       Image($r('app.media.langqiao_shadow'))
         .width(320)
         .height(163.6)
         .objectFit(ImageFit.Contain)
-        .blur(4)
-        .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 0.6)
+        .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1.0)
         .translate({
-          x: (this.isVehiclesDocked ? -150 : -380) + 8,
-          y: -160 + 8
+          x: (this.isVehiclesDocked ? -150 : -380) +36,
+          y: -160 + 18
         })
         .animation({ duration: 800, curve: Curve.EaseOut })
 
-      // 4. 飞机本体地面阴影
+      // 4. 飞机本体地面阴影（1.0 满不透明度，暗部浓郁沉浸）
       Image($r('app.media.b737_800_top_3_shadow'))
         .width(315)
         .height(450.1)
         .objectFit(ImageFit.Contain)
-        .blur(4)
-        .opacity(this.isFullFocusMode ? 0 : 0.65)
+        .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1.0)
         .scale({ x: this.planeScale, y: this.planeScale })
-        .translate({ x: 10, y: this.planeY + 10 })
+        .translate({ x: 8, y: this.planeY + 20 })
         .hitTestBehavior(HitTestMode.None)
 
       // === 实体层 ===
@@ -553,6 +636,9 @@ struct Index {
         })
         .rotate({ angle: this.fuelTruckRotate })
         .animation({ duration: 800, curve: Curve.EaseOut })
+        .onClick(() => {
+          this.onFuelTruckClick();
+        })
 
       // 2. 地面勤务车辆（牵引车）
       Image($r('app.media.qiangyingche'))
@@ -566,6 +652,9 @@ struct Index {
         })
         .rotate({ angle: this.isVehiclesDocked ? 0 : 45 })
         .animation({ duration: 800, curve: Curve.EaseOut })
+        .onClick(() => {
+          this.onTractorClick();
+        })
 
       // 3. 飞机本体
       Image($r('app.media.b737_800_top_3'))

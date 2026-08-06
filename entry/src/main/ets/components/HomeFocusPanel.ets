@@ -47,7 +47,7 @@ export struct HomeFocusPanel {
   build() {
     Column() {
       // 1. 专注时间交互刻度尺 (绝对居中中轴线指针 + 36vp 醒目大数字)
-      TimeRulerPicker({ timerMinutes: $timerMinutes })
+      TimeRulerPicker({ timerMinutes: this.timerMinutes })
 
       // 2. 专注时间（分钟）子标题
       Text('专注时间（分钟）')
@@ -161,13 +161,13 @@ export struct HomeFocusPanel {
       .padding({ left: 32, right: 32 })
     }
     .width('100%')
-    .padding({ top: 20, bottom: 20 })
+    .padding({ top: 45, bottom: 20 })
     .linearGradient({
       angle: 180,
       colors: [
         ['rgba(225, 215, 207, 0.0)', 0.0],
-        ['rgba(225, 215, 207, 0.88)', 0.15],
-        ['rgba(225, 215, 207, 0.98)', 0.28],
+        ['rgba(225, 215, 207, 0.95)', 0.08],
+        ['rgba(225, 215, 207, 0.98)', 0.22],
         ['rgba(232, 225, 218, 1.0)', 1.0]
       ]
     })
