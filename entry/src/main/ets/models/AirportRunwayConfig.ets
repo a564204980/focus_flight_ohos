@@ -1,5 +1,6 @@
 import { mapCommon } from '@kit.MapKit';
 import { ctuAirportConfig } from './airports/ctu';
+import { pekAirportConfig } from './airports/pek';
 
 /**
  * 跑道四角经纬度多边形数据结构
@@ -39,7 +40,8 @@ export interface AirportRunwayConfig {
  * 向更多机场（如 PEK, SHA, PKX 等）扩展跑道只需在 airports/ 目录下创建文件并在在此注册即可
  */
 export const CUSTOM_AIRPORT_RUNWAYS: Record<string, AirportRunwayConfig> = {
-  'CTU': ctuAirportConfig
+  'CTU': ctuAirportConfig,
+  'PEK': pekAirportConfig
 };
 
 /**

@@ -219,7 +219,7 @@ export const ctuAirportConfig: AirportRunwayConfig = {
   takeoffRunway: {
     runwayName: '02L',
     start: { latitude: 30.592085, longitude: 103.958889 }, // 02L 跑道滑行起点
-    end: { latitude: 30.570222, longitude: 103.948708 },   // 02L 跑道拉起终点
+    end: { latitude: 30.562957, longitude: 103.945340 },   // 02L 跑道拉起终点
     cameraRatio: 0.046  // 实机精准校正：使跑道起点 (30.561173, 103.942350) 精准对齐 planeY = 170 飞机位置
   } as TakeoffRunway
 };

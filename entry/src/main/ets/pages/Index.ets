@@ -11,6 +11,9 @@ import {
   interpolateRunwayPoint,
   generatePAPILightPoints,
   generateGreatCirclePoints,
+  generateCubicBezierPoints,
+  generateQuadraticBezierPoints,
+  chaikinSmoothPath,
   LatLngPoint,
   calculateBearing,
   interpolateLatLng,
@@ -20,14 +23,27 @@ import {
 
 
 import { ctuAirportConfig } from '../models/airports/ctu';
+import { pekAirportConfig } from '../models/airports/pek';
 
-// ✈️ 从机场配置动态读取 CTU 起飞跑道数据与跑道角度 (158度)
-const _ctuRunway = getAirportTakeoffRunway('CTU');
-const CTU_RUNWAY_START: LatLngPoint = _ctuRunway?.start ?? { latitude: 30.561173, longitude: 103.942350 };
-const CTU_RUNWAY_END: LatLngPoint = _ctuRunway?.end ?? { latitude: 30.589161, longitude: 103.955371 };
+// ✈️ 动态从 ctuAirportConfig 直接读取起飞跑道起点与终点，100% 实时响应 ctu.ets 的任何修改！
+function getCtuRunwayStart(): LatLngPoint {
+  return ctuAirportConfig.takeoffRunway?.start || { latitude: 30.592085, longitude: 103.958889 };
+}
+
+function getCtuRunwayEnd(): LatLngPoint {
+  return ctuAirportConfig.takeoffRunway?.end || { latitude: 30.562957, longitude: 103.945340 };
+}
+
 const CTU_RUNWAY_BEARING: number = ctuAirportConfig.runwayAngle ?? 158;
-// 物理级镜头对齐：将跑道起点 (30.561173, 103.942350) 100% 锁于屏幕水平与垂直正中心！
-const CTU_CAMERA_TARGET: LatLngPoint = CTU_RUNWAY_START;
+
+// ✈️ 默认飞行终点：北京首都国际机场 (PEK) 跑道数据（用于三阶段航线无缝连接）
+function getPekRunwayStart(): LatLngPoint {
+  return pekAirportConfig.takeoffRunway?.start || { latitude: 40.079857, longitude: 116.603114 };
+}
+
+function getPekRunwayEnd(): LatLngPoint {
+  return pekAirportConfig.takeoffRunway?.end || { latitude: 40.091200, longitude: 116.615000 };
+}
 
 
 @Entry
@@ -64,8 +80,8 @@ struct Index {
   private huaweiMapOptions: mapCommon.MapOptions = {
     position: {
       target: {
-        latitude: CTU_CAMERA_TARGET.latitude,
-        longitude: CTU_CAMERA_TARGET.longitude
+        latitude: getCtuRunwayStart().latitude,
+        longitude: getCtuRunwayStart().longitude
       },
       zoom: 17.2,
       bearing: CTU_RUNWAY_BEARING,
@@ -82,11 +98,12 @@ struct Index {
     const mapCtrl = controller || this.huaweiMapController;
     if (mapCtrl) {
       try {
-        console.info(`[CTU Camera] target=(${CTU_CAMERA_TARGET.latitude}, ${CTU_CAMERA_TARGET.longitude}) bearing=${CTU_RUNWAY_BEARING}`);
+        const targetPos = getCtuRunwayStart();
+        console.info(`[CTU Camera] target=(${targetPos.latitude}, ${targetPos.longitude}) bearing=${CTU_RUNWAY_BEARING}`);
         mapCtrl.moveCamera(map.newCameraPosition({
           target: {
-            latitude: CTU_CAMERA_TARGET.latitude,
-            longitude: CTU_CAMERA_TARGET.longitude
+            latitude: targetPos.latitude,
+            longitude: targetPos.longitude
           },
           zoom: 17.2,
           bearing: CTU_RUNWAY_BEARING,
@@ -113,20 +130,63 @@ struct Index {
   };
 
   /**
-   * ✈️ 将滑行道的两个点使用标准赛博发光航线样式连结
+   * ✈️ 采用二次贝塞尔倒角圆弧 (Quadratic Bézier Fillet Arc) 与大圆航线算法
+   * 绘制 100% 自然光滑、大弧度倒角顺滑的无死角全图战术航线
    */
-  private async drawTaxiwayFlightRoute(controller: map.MapComponentController): Promise<void> {
-    const p1: mapCommon.LatLng = CTU_RUNWAY_START;
-    const p2: mapCommon.LatLng = CTU_RUNWAY_END;
-    const routePoints = generateGreatCirclePoints(p1, p2, 120);
+  private async drawThreePhaseFlightRoute(controller: map.MapComponentController): Promise<void> {
+    const ctuStart = getCtuRunwayStart();
+    const ctuVertex = getCtuRunwayEnd();
+    const pekVertex = getPekRunwayStart();
+    const pekEnd = getPekRunwayEnd();
 
-    // 1. 底层赛博蓝霓虹发光晕
-    await controller.addPolyline({ points: routePoints, width: 16, color: 0x6638BDF8 });
-    // 2. 中层极光蓝亮线
-    await controller.addPolyline({ points: routePoints, width: 6, color: 0xFF38BDF8 });
-    // 3. 顶层白金流光虚线
+    // 1. 成都双流 (CTU) 离场大圆弧关键点计算
+    // 跑道直飞段：沿跑道中线直飞 65% 距离 (约 2.2km 跑道中线直线滑跑)
+    const turnStartPoint = interpolateLatLng(ctuStart, ctuVertex, 0.65);
+    // 离场倒角控制点：大幅延伸至跑道末端外侧 170% 处 (空中爬升远端控制点，向上冲出更远)
+    const departureControlPoint = interpolateLatLng(ctuStart, ctuVertex, 1.70);
+    // 高空巡航线切入点：扩展至远端 0.02 处 (约 30km 空中切入点，打造超大半径、极尽广阔宏伟的巨型离场大圆弧)
+    const turnEndPoint = interpolateLatLng(ctuVertex, pekVertex, 0.02);
+
+    // 2. 北京首都 (PEK) 进近大圆弧关键点计算
+    const landingStartPoint = interpolateLatLng(ctuVertex, pekVertex, 0.98);
+    const arrivalControlPoint = interpolateLatLng(pekVertex, pekEnd, -0.7);
+    const landingEndPoint = interpolateLatLng(pekVertex, pekEnd, 0.65);
+
+    // 3. 构造航线各段点集
+    // (1) 跑道滑跑直飞段 (65% 跑道中线)
+    const taxiSegment = generateGreatCirclePoints(ctuStart, turnStartPoint, 20);
+    // (2) 巨型宏伟离场二次贝塞尔切线圆弧 (100 点高密度、超大弧度真圆弧)
+    const departureArc = generateQuadraticBezierPoints(turnStartPoint, departureControlPoint, turnEndPoint, 100);
+    // (3) 高空巡航大圆航线段
+    const cruiseSegment = generateGreatCirclePoints(turnEndPoint, landingStartPoint, 150);
+    // (4) 巨型宏伟进近二次贝塞尔切线圆弧 (100 点高密度、超大弧度真圆弧)
+    const arrivalArc = generateQuadraticBezierPoints(landingStartPoint, arrivalControlPoint, landingEndPoint, 100);
+    // (5) 降落跑道接地接地段
+    const landingSegment = generateGreatCirclePoints(landingEndPoint, pekEnd, 15);
+
+    // 4. 按功能和视觉主题划分为三阶段发光航线
+    // 阶段 1：跑道离地 & 离场爬升大圆弧 (Cyber Cyan 蓝光)
+    const phase1Points = [
+      ...taxiSegment,
+      ...departureArc.slice(1)
+    ];
+
+    // 阶段 2：高空大圆巡航 (Amber Gold 琥珀金)
+    const phase2Points = cruiseSegment;
+
+    // 阶段 3：进近切入 & 跑道接地接地 (Emerald Green 翡翠绿)
+    const phase3Points = [
+      ...arrivalArc,
+      ...landingSegment.slice(1)
+    ];
+
+    // ----------------------------------------------------
+    // 阶段 1：跑道离地蓝光发光线条 (Cyber Cyan)
+    // ----------------------------------------------------
+    await controller.addPolyline({ points: phase1Points, width: 16, color: 0x6638BDF8 });
+    await controller.addPolyline({ points: phase1Points, width: 6, color: 0xFF38BDF8 });
     await controller.addPolyline({
-      points: routePoints,
+      points: phase1Points,
       width: 3,
       color: 0xFFFFFFFF,
       patterns: [
@@ -135,7 +195,35 @@ struct Index {
       ]
     });
 
+    // ----------------------------------------------------
+    // 阶段 2：高空巡航琥珀金发光线条 (Amber Gold)
+    // ----------------------------------------------------
+    await controller.addPolyline({ points: phase2Points, width: 12, color: 0x66F59E0B });
+    await controller.addPolyline({ points: phase2Points, width: 5, color: 0xFFF59E0B });
+    await controller.addPolyline({
+      points: phase2Points,
+      width: 3,
+      color: 0xFFFFFFFF,
+      patterns: [
+        { type: mapCommon.PatternItemType.DASH, length: 16 },
+        { type: mapCommon.PatternItemType.GAP, length: 10 }
+      ]
+    });
 
+    // ----------------------------------------------------
+    // 阶段 3：北京接地翡翠绿发光线条 (Emerald Green)
+    // ----------------------------------------------------
+    await controller.addPolyline({ points: phase3Points, width: 14, color: 0x664ADE80 });
+    await controller.addPolyline({ points: phase3Points, width: 6, color: 0xFF4ADE80 });
+    await controller.addPolyline({
+      points: phase3Points,
+      width: 3,
+      color: 0xFFFFFFFF,
+      patterns: [
+        { type: mapCommon.PatternItemType.DASH, length: 10 },
+        { type: mapCommon.PatternItemType.GAP, length: 6 }
+      ]
+    });
   }
 
   /**
@@ -148,7 +236,7 @@ struct Index {
       try {
         const currentCam = this.huaweiMapController.getCameraPosition();
         this.huaweiMapController.animateCamera(map.newCameraPosition({
-          target: currentCam?.target || CTU_CAMERA_TARGET,
+          target: currentCam?.target || getCtuRunwayStart(),
           zoom: currentCam?.zoom || 17.2,
           bearing: this.currentMapBearing,
           tilt: 0
@@ -174,7 +262,7 @@ struct Index {
       try {
         const currentCam = this.huaweiMapController.getCameraPosition();
         this.huaweiMapController.moveCamera(map.newCameraPosition({
-          target: currentCam?.target || CTU_CAMERA_TARGET,
+          target: currentCam?.target || getCtuRunwayStart(),
           zoom: currentCam?.zoom || 17.2,
           bearing: this.currentMapBearing,
           tilt: 0
@@ -262,13 +350,13 @@ struct Index {
         }
       }
 
-      // 3. 最后绘制滑行道航线连线（必须在所有多边形之后，否则被跑道黑色填充遮盖）
-      await this.drawTaxiwayFlightRoute(controller);
+      // 3. 绘制无缝连贯三阶段战术航线 (滑行段 -> 高空大圆巡航段 -> 北京降落进近段)
+      await this.drawThreePhaseFlightRoute(controller);
 
       // 4. 若在进入页面前已激活 Marker 状态或开启地图背景，绘制机头垂直对准12点方向的原生 Marker
       if (this.isPlaneMarkerActive || this.isMapBackgroundVisible) {
         this.currentPlaneMarker = await controller.addMarker({
-          position: CTU_RUNWAY_START,
+          position: getCtuRunwayStart(),
           icon: $r('app.media.b737_800_top_3_medium'),
           anchorU: 0.5,
           anchorV: 0.5,
@@ -535,7 +623,7 @@ struct Index {
       if (this.huaweiMapController) {
         try {
           this.huaweiMapController.animateCamera(map.newCameraPosition({
-            target: { latitude: CTU_CAMERA_TARGET.latitude, longitude: CTU_CAMERA_TARGET.longitude },
+            target: getCtuRunwayStart(),
             zoom: 17.2,
             bearing: CTU_RUNWAY_BEARING,
             tilt: 0
@@ -561,7 +649,7 @@ struct Index {
         if (this.huaweiMapController) {
           try {
             this.currentPlaneMarker = await this.huaweiMapController.addMarker({
-              position: CTU_RUNWAY_START,
+              position: getCtuRunwayStart(),
               icon: $r('app.media.b737_800_top_3_medium'),
               anchorU: 0.5,
               anchorV: 0.5,
@@ -643,6 +731,7 @@ struct Index {
   }
 
   private onFuelTruckClick(): void {
+    if (this.isMapBackgroundVisible || this.isFullFocusMode) return;
     if (!this.isFuelTruckDeparting) {
       this.runFuelTruckDepartureAnimation();
     } else {
@@ -656,6 +745,7 @@ struct Index {
   }
 
   private onTractorClick(): void {
+    if (this.isMapBackgroundVisible || this.isFullFocusMode) return;
     this.triggerHapticFeedback();
     this.honkToastText = '🚜 勤务牵引车就绪 · 轮档已撤除，随时准备离港后推！';
     this.isHonkToastVisible = true;
@@ -830,6 +920,7 @@ struct Index {
       .padding({ left: 20, right: 20, top: 50, bottom: 8 })
       .position({ y: 0 })
       .opacity((this.isHudVisible && !this.isFullFocusMode && !this.isMapBackgroundVisible) ? 1 : 0)
+      .hitTestBehavior((this.isFullFocusMode || this.isMapBackgroundVisible) ? HitTestMode.None : HitTestMode.Default)
       .animation({ duration: 800, curve: Curve.EaseOut })
       .zIndex(50)
 
@@ -906,6 +997,7 @@ struct Index {
         .height(110)
         .objectFit(ImageFit.Contain)
         .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1)
+        .hitTestBehavior((this.isFullFocusMode || this.isMapBackgroundVisible) ? HitTestMode.None : HitTestMode.Default)
         .translate({
           x: this.fuelTruckX,
           y: this.fuelTruckY
@@ -922,6 +1014,7 @@ struct Index {
         .height(90)
         .objectFit(ImageFit.Contain)
         .opacity((this.isFullFocusMode || this.isMapBackgroundVisible) ? 0 : 1)
+        .hitTestBehavior((this.isFullFocusMode || this.isMapBackgroundVisible) ? HitTestMode.None : HitTestMode.Default)
         .translate({
           x: this.isVehiclesDocked ? -125 : -340,
           y: this.isVehiclesDocked ? -90 : 120
@@ -943,7 +1036,7 @@ struct Index {
           y: this.planeScale * (this.isMapBackgroundVisible ? this.currentZoomScale : 1.0)
         })
         .translate({ x: this.planeX, y: this.planeY })
-        .hitTestBehavior(HitTestMode.Transparent)
+        .hitTestBehavior((this.isMapBackgroundVisible && !this.isCabinExposed) ? HitTestMode.None : HitTestMode.Transparent)
 
       // 3b. 放大后的机身无缝剖开与透视机舱 layer
       if (this.isCabinExposed) {
@@ -1139,7 +1232,8 @@ struct Index {
     .width('100%')
     .height('100%')
     .onClick(() => {
-      if (this.isFullFocusMode) {
+      // 🛡️ 只有在非地图模式下才响应全屏点击收起逻辑，防止地图操作被穿透触发模式切换！
+      if (this.isFullFocusMode && !this.isMapBackgroundVisible && !this.isCabinExposed) {
         this.triggerPureScaleAnimation();
       }
     })

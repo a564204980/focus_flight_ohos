@@ -76,6 +76,105 @@ export function generateGreatCirclePoints(
 }
 
 /**
+ * 🌀 工业级三阶贝塞尔曲线插值算法 (Cubic Bézier Interpolation)
+ * 专门用于消除航线在跑道拉起/高空转向处的折角，生成圆润自然的切线光滑弧线
+ * @param p0 弧线起点
+ * @param p1 第一控制点 (切线控制)
+ * @param p2 第二控制点 (切线控制)
+ * @param p3 弧线终点
+ * @param numPoints 细分采样点密度
+ */
+export function generateCubicBezierPoints(
+  p0: LatLngPoint,
+  p1: LatLngPoint,
+  p2: LatLngPoint,
+  p3: LatLngPoint,
+  numPoints: number = 50
+): Array<mapCommon.LatLng> {
+  const points: Array<mapCommon.LatLng> = [];
+  for (let i = 0; i <= numPoints; i++) {
+    const t = i / numPoints;
+    const mt = 1 - t;
+    const mt2 = mt * mt;
+    const mt3 = mt2 * mt;
+    const t2 = t * t;
+    const t3 = t2 * t;
+
+    const lat = mt3 * p0.latitude + 3 * mt2 * t * p1.latitude + 3 * mt * t2 * p2.latitude + t3 * p3.latitude;
+    const lon = mt3 * p0.longitude + 3 * mt2 * t * p1.longitude + 3 * mt * t2 * p2.longitude + t3 * p3.longitude;
+    points.push({ latitude: lat, longitude: lon });
+  }
+  return points;
+}
+
+/**
+ * 🌀 工业级二次贝塞尔倒角弧线插值算法 (Quadratic Bézier Fillet Arc)
+ * 采用起点 p0、折角顶点 v、终点 p2 进行单凸包约束插值，100% 保证绝对圆润相切且无任何过冲或死角折边
+ */
+export function generateQuadraticBezierPoints(
+  p0: LatLngPoint,
+  v: LatLngPoint,
+  p2: LatLngPoint,
+  numPoints: number = 40
+): Array<mapCommon.LatLng> {
+  const points: Array<mapCommon.LatLng> = [];
+  for (let i = 0; i <= numPoints; i++) {
+    const t = i / numPoints;
+    const mt = 1 - t;
+    const lat = mt * mt * p0.latitude + 2 * mt * t * v.latitude + t * t * p2.latitude;
+    const lon = mt * mt * p0.longitude + 2 * mt * t * v.longitude + t * t * p2.longitude;
+    points.push({ latitude: lat, longitude: lon });
+  }
+  return points;
+}
+
+/**
+ * 🌀 工业开源级 Chaikin 拐角切削圆润算法 (Chaikin's Corner Cutting Algorithm)
+ * Turf.js / OpenLayers 等开源 GIS 库标准的折线圆润化算法
+ * 将任何尖锐死角与硬折角递归切削为极其光滑、圆润的大弧度流线型弯道
+ * @param inputPoints 骨架控制点集
+ * @param iterations 迭代平滑细化轮次 (默认 4 次)
+ */
+export function chaikinSmoothPath(
+  inputPoints: Array<mapCommon.LatLng>,
+  iterations: number = 4
+): Array<mapCommon.LatLng> {
+  if (inputPoints.length < 3) {
+    return inputPoints;
+  }
+
+  let points = inputPoints;
+
+  for (let iter = 0; iter < iterations; iter++) {
+    const nextPoints: Array<mapCommon.LatLng> = [];
+    nextPoints.push(points[0]);
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i];
+      const p1 = points[i + 1];
+
+      const q: mapCommon.LatLng = {
+        latitude: 0.75 * p0.latitude + 0.25 * p1.latitude,
+        longitude: 0.75 * p0.longitude + 0.25 * p1.longitude
+      };
+
+      const r: mapCommon.LatLng = {
+        latitude: 0.25 * p0.latitude + 0.75 * p1.latitude,
+        longitude: 0.25 * p0.longitude + 0.75 * p1.longitude
+      };
+
+      nextPoints.push(q);
+      nextPoints.push(r);
+    }
+
+    nextPoints.push(points[points.length - 1]);
+    points = nextPoints;
+  }
+
+  return points;
+}
+
+/**
  * 计算两个经纬度点之间的切线方位角 (Bearing In Degrees 0..360)
  */
 export function calculateBearing(start: LatLngPoint, end: LatLngPoint): number {
