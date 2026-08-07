@@ -14,7 +14,7 @@ export struct HomeFocusPanel {
   @State isRunning: boolean = false;
   @State routeDistanceKm: number = 1650; // 绝对安全的默认航程状态 (成都➔上海 1650 公里)
   
-  onStartFlight?: () => void;
+  onStartFlight?: (minutes: number) => void;
 
   aboutToAppear() {
     this.calculateRouteDistance();
@@ -47,7 +47,12 @@ export struct HomeFocusPanel {
   build() {
     Column() {
       // 1. 专注时间交互刻度尺 (绝对居中中轴线指针 + 36vp 醒目大数字)
-      TimeRulerPicker({ timerMinutes: this.timerMinutes })
+      TimeRulerPicker({
+        timerMinutes: this.timerMinutes,
+        onTimeChange: (min: number) => {
+          this.timerMinutes = min;
+        }
+      })
 
       // 2. 专注时间（分钟）子标题
       Text('专注时间（分钟）')
@@ -74,7 +79,7 @@ export struct HomeFocusPanel {
       .onClick(() => {
         this.isRunning = !this.isRunning;
         if (this.onStartFlight) {
-          this.onStartFlight();
+          this.onStartFlight(this.timerMinutes);
         } else {
           promptAction.showToast({
             message: this.isRunning ? '🛫 航班起飞，进入巡航专注！' : '🛬 专注结束，回到停机坪！',

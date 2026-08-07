@@ -103,16 +103,19 @@ struct SeatSelectionPage {
       this.applyRunwayCameraOrientation(controller);
 
       // 0b. 监听地图点击事件，实时输出并弹窗提示经纬度坐标点
-      controller.on('mapClick', (latLng: mapCommon.LatLng) => {
-        const latStr = latLng.latitude.toFixed(6);
-        const lonStr = latLng.longitude.toFixed(6);
-        console.info(`[SeatSelectionPage MapClick] Lat: ${latStr}, Lon: ${lonStr}`);
-        try {
-          promptAction.showToast({
-            message: `📍 选点坐标: ${latStr}, ${lonStr}`,
-            duration: 4000
-          });
-        } catch (e) {}
+      controller.on('mapClick', (data: Object) => {
+        const latLng = data as mapCommon.LatLng;
+        if (latLng && latLng.latitude !== undefined && latLng.longitude !== undefined) {
+          const latStr = latLng.latitude.toFixed(6);
+          const lonStr = latLng.longitude.toFixed(6);
+          console.info(`[SeatSelectionPage MapClick] Lat: ${latStr}, Lon: ${lonStr}`);
+          try {
+            promptAction.showToast({
+              message: `📍 选点坐标: ${latStr}, ${lonStr}`,
+              duration: 4000
+            });
+          } catch (e) {}
+        }
       });
 
       // 1. 绘制 CTU 精修跑道

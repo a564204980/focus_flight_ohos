@@ -7,6 +7,7 @@
 @Component
 export struct TimeRulerPicker {
   @Prop timerMinutes: number = 45; // 当前选择的专注时长
+  onTimeChange?: (minutes: number) => void; // 选定时间变更回调
 
   private scroller: Scroller = new Scroller();
 
@@ -40,7 +41,13 @@ export struct TimeRulerPicker {
   // 安全设置 timerMinutes 防止 NaN
   private safeUpdateMinutes(min: number) {
     if (!isNaN(min) && min >= this.minMinutes && min <= this.maxMinutes) {
-      this.timerMinutes = Math.round(min);
+      const rounded = Math.round(min);
+      if (this.timerMinutes !== rounded) {
+        this.timerMinutes = rounded;
+        if (this.onTimeChange) {
+          this.onTimeChange(this.timerMinutes);
+        }
+      }
     }
   }
 
