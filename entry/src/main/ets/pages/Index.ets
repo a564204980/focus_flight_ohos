@@ -530,6 +530,7 @@ struct Index {
       this.flightPauseSegmentStartTime = Date.now();
       this.isFlightPaused = false;
 
+      let firstTickFired = false; // 跳过 interval 首次 tick 的 Marker API 调用，消除 2s 边界闪烁
       this.flightAnimationTimerId = setInterval(() => {
         if (this.isFlightPaused) {
           return;
@@ -590,7 +591,10 @@ struct Index {
         }
 
         // 🚀 零 State 刷新开销！直接调用原生 Marker API，极尽丝滑！
-        if (this.currentPlaneMarker) {
+        // 首次 tick 跳过 setPosition/setRotation（marker 已静止在起点），避免 SDK 内部重建触发闪烁
+        if (!firstTickFired) {
+          firstTickFired = true;
+        } else if (this.currentPlaneMarker) {
           try {
             this.currentPlaneMarker.setPosition(interpPos);
             this.currentPlaneMarker.setRotation(this.planeMarkerRotation);
