@@ -226,9 +226,9 @@ export class MapRenderHelper {
     const landingEndPoint = interpolateLatLng(pekVertex, pekEnd, 0.65);
 
     const taxiSegment: mapCommon.LatLng[] = generateGreatCirclePoints(ctuStart, turnStartPoint, 20);
-    const departureArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(turnStartPoint, departureControlPoint, turnEndPoint, 100);
+    const departureArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(turnStartPoint, departureControlPoint, turnEndPoint, 300);
     const cruiseSegment: mapCommon.LatLng[] = generateGreatCirclePoints(turnEndPoint, landingStartPoint, 150);
-    const arrivalArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(landingStartPoint, arrivalControlPoint, landingEndPoint, 100);
+    const arrivalArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(landingStartPoint, arrivalControlPoint, landingEndPoint, 300);
     const landingSegment: mapCommon.LatLng[] = generateGreatCirclePoints(landingEndPoint, pekEnd, 15);
 
     const phase1Points: mapCommon.LatLng[] = taxiSegment.concat(departureArc.slice(1));
@@ -311,9 +311,9 @@ export class MapRenderHelper {
     const landingEndPoint = interpolateLatLng(pekVertex, pekEnd, 0.65);
 
     const taxiSegment: mapCommon.LatLng[] = generateGreatCirclePoints(ctuStart, turnStartPoint, 20);
-    const departureArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(turnStartPoint, departureControlPoint, turnEndPoint, 100);
+    const departureArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(turnStartPoint, departureControlPoint, turnEndPoint, 300);
     const cruiseSegment: mapCommon.LatLng[] = generateGreatCirclePoints(turnEndPoint, landingStartPoint, 150);
-    const arrivalArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(landingStartPoint, arrivalControlPoint, landingEndPoint, 100);
+    const arrivalArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(landingStartPoint, arrivalControlPoint, landingEndPoint, 300);
     const landingSegment: mapCommon.LatLng[] = generateGreatCirclePoints(landingEndPoint, pekEnd, 15);
 
     return taxiSegment

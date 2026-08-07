@@ -525,7 +525,6 @@ struct Index {
       const totalFlightDurationMs = durationMinutes * 60 * 1000;
       const startTime = Date.now();
 
-      let lastCameraMoveTime = 0;
       this.flightPauseElapsedMs = 0;
       this.flightPauseSegmentStartTime = Date.now();
       this.isFlightPaused = false;
@@ -564,16 +563,12 @@ struct Index {
         const currentLng = pStart.longitude + (pEnd.longitude - pStart.longitude) * segProgress;
         const interpPos: mapCommon.LatLng = { latitude: currentLat, longitude: currentLng };
 
-        // 🧲 40ms (25 FPS) 脉冲 zero-stutter 精确镜头跟随（受 isCameraFollowLocked 控制）
-        // 🧭 航向朝上 Heading-Up 模式：bearing 跟随飞机实时航向，marker 永远指向屏幕正上方
-        if (this.huaweiMapController && this.isCameraFollowLocked && (now - lastCameraMoveTime >= 40)) {
-          lastCameraMoveTime = now;
+        // 🧭 航向朝上 Heading-Up 同频跟随：与 marker 同为 16ms tick，camera 与飞机零延迟同步
+        if (this.huaweiMapController && this.isCameraFollowLocked) {
           try {
             const zoomLevel = (this.currentZoomLevel && this.currentZoomLevel > 3.0) ? this.currentZoomLevel : (segIndex < 20 ? 16.5 : (segIndex > points.length - 20 ? 16.5 : 15.2));
-            // 航向朝上：Petal Maps bearing 是地图顺时针旋转量，屏幕正上方 = 360° - bearing
-            // 故让飞机航向 H 朝上需：bearing = (360 - H) % 360
             const headingUpBearing = (360 - this.planeMarkerRotation + 360) % 360;
-            this.currentMapBearing = Math.round(headingUpBearing);
+            this.currentMapBearing = headingUpBearing;
             this.huaweiMapController.moveCamera(map.newCameraPosition({
               target: interpPos,
               zoom: zoomLevel,
@@ -583,15 +578,27 @@ struct Index {
           } catch (e) { }
         }
 
-        // 算目标角度：起飞直线跑道段 (segIndex < 20) 100% 坚如磐石锁死 202.5 度 (彻底消灭差值缓动引起的 200ms 抖动)，巡航弯道段启用平滑 Lerp
+        // 算目标角度：起飞直线跑道段锁死 202.5°；巡航段改用前视加权平均 bearing 提前感知转弯
         if (segIndex < 20) {
           this.planeMarkerRotation = 202.5;
         } else {
-          const targetRotation = MapRenderHelper.calculateBearing(pStart, pEnd);
+          // 前视 8 点加权平均：越近权重越高，提前预判转弯、平滑预旋，消除直线-急转-直线的僵硬感
+          const lookAhead = 8;
+          let sinSum = 0;
+          let cosSum = 0;
+          for (let k = 0; k < lookAhead; k++) {
+            const idxA = Math.min(points.length - 2, segIndex + k);
+            const idxB = Math.min(points.length - 1, idxA + 1);
+            const b = MapRenderHelper.calculateBearing(points[idxA], points[idxB]);
+            const w = lookAhead - k; // 近点权重大，远点权重小
+            sinSum += Math.sin(b * Math.PI / 180) * w;
+            cosSum += Math.cos(b * Math.PI / 180) * w;
+          }
+          const targetRotation = (Math.atan2(sinSum, cosSum) * 180 / Math.PI + 360) % 360;
           let angleDiff = targetRotation - this.planeMarkerRotation;
           while (angleDiff < -180) angleDiff += 360;
           while (angleDiff > 180) angleDiff -= 360;
-          this.planeMarkerRotation = this.planeMarkerRotation + angleDiff * 0.15;
+          this.planeMarkerRotation = this.planeMarkerRotation + angleDiff * 0.25;
         }
 
         // 🚀 零 State 刷新开销！直接调用原生 Marker API，极尽丝滑！
