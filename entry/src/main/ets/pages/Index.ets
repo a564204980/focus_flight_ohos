@@ -564,16 +564,20 @@ struct Index {
         const currentLng = pStart.longitude + (pEnd.longitude - pStart.longitude) * segProgress;
         const interpPos: mapCommon.LatLng = { latitude: currentLat, longitude: currentLng };
 
-        // 🧲 40ms (25 FPS) 脉冲 zero-stutter 精确镜头跟随（受 isCameraFollowLocked 控制，且 100% 保持视角角度 bearing 绝不重置归零）
+        // 🧲 40ms (25 FPS) 脉冲 zero-stutter 精确镜头跟随（受 isCameraFollowLocked 控制）
+        // 🧭 航向朝上 Heading-Up 模式：bearing 跟随飞机实时航向，marker 永远指向屏幕正上方
         if (this.huaweiMapController && this.isCameraFollowLocked && (now - lastCameraMoveTime >= 40)) {
           lastCameraMoveTime = now;
           try {
             const zoomLevel = (this.currentZoomLevel && this.currentZoomLevel > 3.0) ? this.currentZoomLevel : (segIndex < 20 ? 16.5 : (segIndex > points.length - 20 ? 16.5 : 15.2));
-            const currentMapAngle = (this.currentMapBearing !== undefined && !isNaN(this.currentMapBearing)) ? this.currentMapBearing : CTU_RUNWAY_BEARING;
+            // 航向朝上：Petal Maps bearing 是地图顺时针旋转量，屏幕正上方 = 360° - bearing
+            // 故让飞机航向 H 朝上需：bearing = (360 - H) % 360
+            const headingUpBearing = (360 - this.planeMarkerRotation + 360) % 360;
+            this.currentMapBearing = Math.round(headingUpBearing);
             this.huaweiMapController.moveCamera(map.newCameraPosition({
               target: interpPos,
               zoom: zoomLevel,
-              bearing: currentMapAngle,
+              bearing: headingUpBearing,
               tilt: 0
             }));
           } catch (e) { }
