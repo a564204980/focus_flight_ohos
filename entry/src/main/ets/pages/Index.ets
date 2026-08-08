@@ -257,7 +257,8 @@ struct Index {
         controller.on('cameraChange', (_data: Object) => {
           const cam = controller.getCameraPosition();
           if (cam) {
-            if (cam.zoom !== undefined) {
+            // ⚠️ 仅在 zoom 有效时更新，防止 SDK 偶发 zoom=0 污染 currentZoomLevel 导致起飞瞬间镜头骤缩
+            if (cam.zoom !== undefined && cam.zoom > 3.0) {
               this.currentZoomLevel = parseFloat(cam.zoom.toFixed(1));
               const baseZoom = 17.2;
               this.currentZoomScale = Math.pow(2, cam.zoom - baseZoom);
@@ -563,22 +564,8 @@ struct Index {
         const currentLng = pStart.longitude + (pEnd.longitude - pStart.longitude) * segProgress;
         const interpPos: mapCommon.LatLng = { latitude: currentLat, longitude: currentLng };
 
-        // 🧭 航向朝上 Heading-Up 同频跟随：与 marker 同为 16ms tick，camera 与飞机零延迟同步
-        if (this.huaweiMapController && this.isCameraFollowLocked) {
-          try {
-            const zoomLevel = (this.currentZoomLevel && this.currentZoomLevel > 3.0) ? this.currentZoomLevel : (segIndex < 20 ? 16.5 : (segIndex > points.length - 20 ? 16.5 : 15.2));
-            const headingUpBearing = (360 - this.planeMarkerRotation + 360) % 360;
-            this.currentMapBearing = headingUpBearing;
-            this.huaweiMapController.moveCamera(map.newCameraPosition({
-              target: interpPos,
-              zoom: zoomLevel,
-              bearing: headingUpBearing,
-              tilt: 0
-            }));
-          } catch (e) { }
-        }
-
-        // 算目标角度：起飞直线跑道段锁死 202.5°；巡航段改用前视加权平均 bearing 提前感知转弯
+        // 【先】算目标角度，确保 Camera 与 Marker 同帧使用同一旋转角，消除 1 帧偏差导致的滑行抽帧
+        // 起飞直线跑道段锁死 202.5°；巡航段改用前视加权平均 bearing 提前感知转弯
         if (segIndex < 20) {
           this.planeMarkerRotation = 202.5;
         } else {
@@ -599,6 +586,21 @@ struct Index {
           while (angleDiff < -180) angleDiff += 360;
           while (angleDiff > 180) angleDiff -= 360;
           this.planeMarkerRotation = this.planeMarkerRotation + angleDiff * 0.25;
+        }
+
+        // 🧭 航向朝上 Heading-Up 同频跟随：与 marker 同为 16ms tick，camera 与飞机零延迟同步
+        // currentMapBearing 由 cameraChange 回调更新，此处不重复赋值，避免多余 @State 重绘
+        if (this.huaweiMapController && this.isCameraFollowLocked) {
+          try {
+            const zoomLevel = (this.currentZoomLevel && this.currentZoomLevel > 3.0) ? this.currentZoomLevel : (segIndex < 20 ? 16.5 : (segIndex > points.length - 20 ? 16.5 : 15.2));
+            const headingUpBearing = (360 - this.planeMarkerRotation + 360) % 360;
+            this.huaweiMapController.moveCamera(map.newCameraPosition({
+              target: interpPos,
+              zoom: zoomLevel,
+              bearing: headingUpBearing,
+              tilt: 0
+            }));
+          } catch (e) { }
         }
 
         // 🚀 零 State 刷新开销！直接调用原生 Marker API，极尽丝滑！
