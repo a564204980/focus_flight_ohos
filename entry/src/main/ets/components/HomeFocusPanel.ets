@@ -5,31 +5,41 @@
 
 import { router, promptAction } from '@kit.ArkUI';
 import { TimeRulerPicker } from './TimeRulerPicker';
-import { findAirportByCode, getDistanceKm } from '../models/AirportModel';
+import { Airport, findAirportByCode, getDistanceKm } from '../models/AirportModel';
+import { DestinationSelectDialog } from './DestinationSelectDialog';
+import { FlightMapSelectOverlay } from './FlightMapSelectOverlay';
 
 @Component
 export struct HomeFocusPanel {
   @State selectedTab: number = 0;
   @State timerMinutes: number = 45;
   @State isRunning: boolean = false;
-  @State routeDistanceKm: number = 1650; // 绝对安全的默认航程状态 (成都➔上海 1650 公里)
+  @State selectedDestination?: Airport = undefined; // 默认不指定目的地，等待用户自主选择
+  @State routeDistanceKm: number = 0;
   
   onStartFlight?: (minutes: number) => void;
 
-  aboutToAppear() {
-    this.calculateRouteDistance();
-  }
+  destinationDialogController: CustomDialogController = new CustomDialogController({
+    builder: FlightMapSelectOverlay({
+      selectedCode: this.selectedDestination ? this.selectedDestination.code : '',
+      onDestinationSelected: (airport: Airport) => {
+        this.selectedDestination = airport;
+        this.calculateRouteDistance(airport);
+      }
+    }),
+    alignment: DialogAlignment.Bottom,
+    customStyle: true
+  });
 
-  // 使用项目真实机场经纬度数据库计算出来的实际大圆航线里程 (KM)
-  private calculateRouteDistance() {
+  private calculateRouteDistance(destAirport?: Airport) {
+    if (!destAirport) return;
     try {
       const origin = findAirportByCode('CTU');
-      const dest = findAirportByCode('SHA');
-      if (origin && dest && origin.lat !== undefined && dest.lat !== undefined) {
+      if (origin && destAirport.lat !== undefined && destAirport.lon !== undefined) {
         const lat1 = Number(origin.lat);
         const lon1 = Number(origin.lon);
-        const lat2 = Number(dest.lat);
-        const lon2 = Number(dest.lon);
+        const lat2 = Number(destAirport.lat);
+        const lon2 = Number(destAirport.lon);
         if (!isNaN(lat1) && !isNaN(lon1) && !isNaN(lat2) && !isNaN(lon2)) {
           const dist = getDistanceKm(lat1, lon1, lat2, lon2);
           if (!isNaN(dist) && dist > 0) {
@@ -41,7 +51,6 @@ export struct HomeFocusPanel {
     } catch (e) {
       // fallback
     }
-    this.routeDistanceKm = 1650;
   }
 
   build() {
@@ -62,7 +71,7 @@ export struct HomeFocusPanel {
         .letterSpacing(1)
         .margin({ top: 6, bottom: 14 })
 
-      // 3. Start Flight 暖珊瑚红胶囊按钮
+      // 3. Start Flight 暖珊瑚红主按钮 (绝对核心 CTA)
       Button() {
         Row({ space: 8 }) {
           Text(this.isRunning ? '飞行中...' : '开始飞行')
@@ -75,8 +84,16 @@ export struct HomeFocusPanel {
       .height(52)
       .backgroundColor('#FA6B56')
       .borderRadius(26)
-      .shadow({ radius: 16, color: 'rgba(250, 107, 86, 0.38)', offsetY: 6 })
+      .shadow({ radius: 16, color: 'rgba(250, 107, 86, 0.35)', offsetY: 6 })
       .onClick(() => {
+        if (!this.selectedDestination) {
+          promptAction.showToast({
+            message: '✈️ 请先选择您的飞行目的地',
+            duration: 2000
+          });
+          this.destinationDialogController.open();
+          return;
+        }
         this.isRunning = !this.isRunning;
         if (this.onStartFlight) {
           this.onStartFlight(this.timerMinutes);
@@ -88,32 +105,49 @@ export struct HomeFocusPanel {
         }
       })
 
-      // 4. 航线与时长路线指示
-      Row({ space: 8 }) {
+      // 4. 次级轻量化航线指示器 (低调半透明温润胶囊，不与主按钮争夺焦点)
+      Row({ space: 6 }) {
         Text('成都')
           .fontSize(13)
-          .fontWeight(FontWeight.Bold)
+          .fontWeight(FontWeight.Medium)
           .fontColor('#475569')
 
-        Text('➔')
-          .fontSize(12)
-          .fontColor('#94A3B8')
+        Image($r('app.media.ic_airport'))
+          .width(12)
+          .height(12)
+          .fillColor('#FA6B56')
 
-        Text('上海')
-          .fontSize(13)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#475569')
-
-        Text('•')
-          .fontSize(13)
-          .fontColor('#CBD5E1')
-
-        Text(`${this.routeDistanceKm} 公里`)
+        Text(this.selectedDestination ? this.selectedDestination.city : '选择目的地')
           .fontSize(13)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#64748B')
+          .fontColor(this.selectedDestination ? '#1E293B' : '#FA6B56')
+
+        if (this.selectedDestination) {
+          Text('•')
+            .fontSize(12)
+            .fontColor('#CBD5E1')
+
+          Text(`${this.routeDistanceKm}km`)
+            .fontSize(12)
+            .fontColor('#64748B')
+        }
+
+        Image($r('app.media.ic_chevron'))
+          .width(10)
+          .height(10)
+          .fillColor(this.selectedDestination ? '#94A3B8' : '#FA6B56')
+          .margin({ left: 1 })
       }
-      .margin({ top: 14, bottom: 22 })
+      .height(34)
+      .padding({ left: 14, right: 12, top: 6, bottom: 6 })
+      .backgroundColor('rgba(255, 255, 255, 0.65)')
+      .border({ width: 1, color: this.selectedDestination ? 'rgba(0, 0, 0, 0.06)' : 'rgba(250, 107, 86, 0.22)', radius: 17 })
+      .borderRadius(17)
+      .shadow({ radius: 6, color: 'rgba(0, 0, 0, 0.03)', offsetY: 2 })
+      .margin({ top: 12, bottom: 18 })
+      .onClick(() => {
+        this.destinationDialogController.open();
+      })
 
       // 5. 底部三图标导航栏
       Row() {
@@ -170,9 +204,10 @@ export struct HomeFocusPanel {
     .linearGradient({
       angle: 180,
       colors: [
-        ['rgba(225, 215, 207, 0.0)', 0.0],
-        ['rgba(225, 215, 207, 0.95)', 0.08],
-        ['rgba(225, 215, 207, 0.98)', 0.22],
+        ['rgba(232, 225, 218, 0.0)', 0.0],
+        ['rgba(232, 225, 218, 0.0)', 0.18], // 顶部透明区域向下延伸至刻度尺下方
+        ['rgba(232, 225, 218, 0.65)', 0.38], // 柔和自然地向下过渡
+        ['rgba(232, 225, 218, 0.95)', 0.58], // 按钮区域开始提供清晰的温和背景
         ['rgba(232, 225, 218, 1.0)', 1.0]
       ]
     })

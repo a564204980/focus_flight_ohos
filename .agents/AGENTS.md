@@ -1,19 +1,13 @@
-# Focus Flight Project Rules
+# Focus Flight 项目规范
 
-## UI & Design System Guidelines
-- **UI Style Standard**: All UI components in this workspace MUST follow the `focus-flight-ui-style` Dark Glassmorphism Cyber HUD design system.
-- **Color Tokens**:
-  - Panel Background: `rgba(10, 15, 26, 0.82-0.88)`
-  - Border: `1px solid rgba(255, 255, 255, 0.12-0.15)`
-  - Accent Color: `#38BDF8` (Cyber Cyan)
-  - Success Color: `#4ADE80`
-  - Text: Primary `#F8FAFC`, Secondary `#94A3B8`
-- **Domain Purpose & Metaphor**: Focus Flight fundamentally is a gamified focus/pomodoro productivity application. The "flight" element is an immersive experiential packaging (Route = Focus Goal, Takeoff/Cruising = Focus Session, Landing = Completion, Cabin/Seats = Immersion Ritual). Do NOT insert unrelated commercial airline elements (such as ticket sales or money `$83,049K`). Keep the interface pure, immersive, and focus-centered.
+## UI 与设计系统指南
+- **UI 风格标准**: 本工作区内所有的 UI 组件必须遵循 `focus-flight-ui-style` 里面定义的温馨、可爱、轻量化的设计系统。
+- **领域目标与隐喻**: Focus Flight 本质上是一款游戏化的专注/番茄钟生产力应用。“飞行”元素是一种沉浸式的体验包装（航线 = 专注目标，起飞/巡航 = 专注过程，降落 = 完成，机舱/座位 = 沉浸仪式感）。绝对不要插入无关的商业航空元素（如售票或金钱 `$83,049K`）。保持界面纯粹、沉浸并以专注为核心。
 
-## File Architecture & Minimal Edit Guidelines
-- **Minimal Modification & User Code Protection (最小改动与保护用户微调代码)**: Strictly follow the minimal modification principle. NEVER overwrite files containing user fine-tuned parameters (such as `translate` offsets, custom layout positions, shadow coordinates, etc.). Only modify the minimal necessary lines relevant to the current user request, preserving all user-customized variables and layout coordinates.
-- **Rawfile Resource Structure**: Never dump JS, CSS, models, images, or JSON files directly into the root of `rawfile/`. Group them into subfolders: `css/`, `js/`, `models/`, `textures/`, `data/`. Keep only HTML entry files in `rawfile/` root.
-- **Clean Modular Code**: Keep code clean and modular. Never create bloated monolithic files. Split complex UI or logic into focused components and helper modules. Never create redundant or temporary scratch files.
+## 文件架构与最小修改指南
+- **最小改动与保护用户微调代码**: 严格遵循最小改动原则。永远不要覆盖包含用户微调参数的文件（例如 `translate` 偏移量、自定义布局位置、阴影坐标等）。仅修改与当前用户请求直接相关的最小必要行，保留所有用户自定义的变量和布局坐标。
+- **Rawfile 资源结构**: 绝对不要将 JS、CSS、模型、图片或 JSON 文件直接堆放在 `rawfile/` 根目录下。将它们分组归类到子文件夹中：`css/`、`js/`、`models/`、`textures/`、`data/`。`rawfile/` 根目录仅保留 HTML 入口文件。
+- **整洁的模块化代码**: 保持代码整洁且模块化。永远不要创建臃肿的单体文件。将复杂的 UI 或逻辑拆分为功能集中的组件和辅助模块。永远不要创建多余或临时的草稿文件。
 
-## HDC Real-Time Screen Capture & Self-Verification Rule (自动化截图对比自我校验法则)
-- **Auto-Verification Requirement**: After deploying any UI or Map Marker visual updates, the agent MUST run HDC `uitest screenCap` to capture the real-time screen (`screen.png`), inspect the captured image via `view_file`, and perform self-comparison to verify heading alignment, red dot indicator position, and UI placement BEFORE reporting back to the user.
+## HDC 实时屏幕截图与自我校验法则
+- **自动化截图对比自我校验法则**: 在部署任何 UI 或地图标记视觉更新后，Agent 必须运行 HDC `uitest screenCap` 以捕获实时屏幕 (`screen.png`)，通过 `view_file` 检查捕获的图像，并在向用户汇报之前执行自我对比，以校验航向对齐、红点指示器位置以及 UI 放置是否正确。
