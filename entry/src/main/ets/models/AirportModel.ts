@@ -144,10 +144,70 @@ export function findAirportByCode(code: string): Airport | undefined {
   const found = list.find(a => a.code === code);
   if (!found) return undefined;
   
-  // 从全量 JSON 数据库中找到后，合并我们在 POPULAR_AIRPORTS 中特调的高级属性（如跑道坐标）
   const popular = POPULAR_AIRPORTS.find(a => a.code === code);
   if (popular) {
     return { ...found, ...popular };
   }
   return found;
+}
+
+// 示例已被解锁的初始核心枢纽城市集合
+const UNLOCKED_SET: Set<string> = new Set(['CTU', 'TFU', 'MIG', 'PEK', 'PVG', 'CAN', 'SZX', 'HND', 'HKG']);
+
+/**
+ * 校验机场是否已被解锁打卡
+ */
+export function isAirportUnlocked(code: string): boolean {
+  return UNLOCKED_SET.has(code);
+}
+
+/**
+ * 解锁新机场城市并颁发印章
+ */
+export function unlockAirportCode(code: string): void {
+  if (code) {
+    UNLOCKED_SET.add(code);
+  }
+}
+
+/**
+ * 获取已解锁机场总数
+ */
+export function getUnlockedCount(): number {
+  return UNLOCKED_SET.size;
+}
+
+/**
+ * 根据机场三字码与地名生成古风水墨特色印章全称
+ */
+export function getAirportStampTitle(code: string, cityName?: string): string {
+  const airport = findAirportByCode(code);
+  const city = cityName || airport?.city || code;
+
+  const stampMap: Record<string, string> = {
+    'BZX': '【巴中恩阳 · 巴山水墨印章 🏵️】',
+    'MIG': '【绵阳南郊 · 越王古楼印章 🏯】',
+    'JZH': '【九寨黄龙 · 翠海叠瀑印章 🏔️】',
+    'CTU': '【成都双流 · 锦官古蜀印章 🐼】',
+    'TFU': '【成都天府 · 太阳神鸟印章 🦅】',
+    'PEK': '【北京首都 · 帝都长城印章 🏯】',
+    'PKX': '【北京大兴 · 凤凰展翅印章 🪶】',
+    'PVG': '【上海浦东 · 东方明珠印章 🌆】',
+    'KHG': '【喀什古城 · 丝路风情印章 🐫】',
+    'LXA': '【拉萨贡嘎 · 圣地雪域印章 🏔️】',
+    'HND': '【东京羽田 · 富士樱花印章 🌸】',
+    'CAN': '【广州白云 · 羊城粤韵印章 🍵】',
+    'SZX': '【深圳宝安 · 鹏城海浪印章 🌊】',
+    'CKG': '【重庆江北 · 雾都山水印章 🌶️】',
+    'XIY': '【西安咸阳 · 古都兵马印章 ⚔️】',
+    'LZO': '【泸州云龙 · 酒城水墨印章 🍶】',
+    'YBP': '【宜宾五粮 · 竹海叙府印章 🎋】',
+    'LZG': '【阆中古城 · 汉风三国印章 📜】',
+    'NAO': '【南充高坪 · 丝绸源点印章 🧵】'
+  };
+
+  if (stampMap[code]) {
+    return stampMap[code];
+  }
+  return `【${city} · 古风水墨地标印章 🏵️】`;
 }

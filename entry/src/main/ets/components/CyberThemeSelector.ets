@@ -21,7 +21,8 @@ export struct ThemeSelectDialog {
     new ThemeItem('戴竹蜻蜓蓝色胖子', $r('app.media.theme_doraemon')),
     new ThemeItem('空港幻想', $r('app.media.theme_skyreverie')),
     new ThemeItem('机修大队', $r('app.media.skymechacrev')),
-    new ThemeItem('星港先锋', $r('app.media.starportvanguard'))
+    new ThemeItem('星港先锋', $r('app.media.starportvanguard')),
+    new ThemeItem('苍穹机甲', $r('app.media.skyframe'))
   ];
 
   @State tempSelectedIndex: number = this.currentThemeIndex;
@@ -164,7 +165,7 @@ export struct ThemeSelectDialog {
 @Component
 export struct CyberThemeSelector {
   @Link currentThemeIndex: number;
-  private readonly themeNames: string[] = ['默认', '晴空航迹', '云鲸航线', '戴竹蜻蜓蓝色胖子', '空港幻想', '机修大队', '星港先锋'];
+  private readonly themeNames: string[] = ['默认', '晴空航迹', '云鲸航线', '戴竹蜻蜓蓝色胖子', '空港幻想', '机修大队', '星港先锋', '苍穹机甲'];
 
   dialogController: CustomDialogController = new CustomDialogController({
     builder: ThemeSelectDialog({ 

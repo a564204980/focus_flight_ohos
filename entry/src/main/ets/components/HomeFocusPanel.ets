@@ -22,9 +22,12 @@ export struct HomeFocusPanel {
   destinationDialogController: CustomDialogController = new CustomDialogController({
     builder: FlightMapSelectOverlay({
       selectedCode: this.selectedDestination ? this.selectedDestination.code : '',
-      onDestinationSelected: (airport: Airport) => {
+      onDestinationSelected: (airport: Airport, minutes?: number) => {
         this.selectedDestination = airport;
         this.calculateRouteDistance(airport);
+        if (minutes && minutes > 0) {
+          this.timerMinutes = minutes;
+        }
       }
     }),
     alignment: DialogAlignment.Bottom,

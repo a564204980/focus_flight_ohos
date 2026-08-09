@@ -95,6 +95,8 @@ declare module '@kit.MapKit' {
     export interface MarkerOptions {
       position: LatLng;
       icon?: any;
+      title?: string;
+      snippet?: string;
       anchorU?: number;
       anchorV?: number;
       flat?: boolean;

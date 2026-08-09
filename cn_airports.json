@@ -1,0 +1,2842 @@
+[
+  {
+    "code": "AXF",
+    "name": "Alxa Left Banner Bayanhot 机场",
+    "city": "Bayanhot",
+    "lat": 38.7483,
+    "lon": 105.5842,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "axf alxa left banner bayanhot 机场 bayanhot alxa left banner bayanhot airport bayanhot"
+  },
+  {
+    "code": "BZX",
+    "name": "巴中恩阳机场",
+    "city": "巴中",
+    "lat": 31.7384,
+    "lon": 106.6449,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bzx 巴中恩阳机场 巴中 bazhong enyang airport bazhong"
+  },
+  {
+    "code": "HSC",
+    "name": "韶关丹霞机场",
+    "city": "韶关",
+    "lat": 24.9786,
+    "lon": 113.421,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hsc 韶关丹霞机场 韶关 shaoguan danxia airport shaoguan"
+  },
+  {
+    "code": "JGS",
+    "name": "井冈山机场",
+    "city": "吉安/井冈山",
+    "lat": 26.8569,
+    "lon": 114.737,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jgs 井冈山机场 吉安/井冈山 jinggangshan airport ji'an"
+  },
+  {
+    "code": "HNG",
+    "name": "Hainanzhou Gonghe 机场",
+    "city": "Hainan",
+    "lat": 36.3367,
+    "lon": 100.48,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hng hainanzhou gonghe 机场 hainan hainanzhou gonghe airport hainan (gonghe)"
+  },
+  {
+    "code": "JNH",
+    "name": "Jiaxing Nanhu 机场",
+    "city": "Xiuzhou, Hangzhou",
+    "lat": 30.6981,
+    "lon": 120.6631,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jnh jiaxing nanhu 机场 xiuzhou, hangzhou jiaxing nanhu airport xiuzhou, hangzhou"
+  },
+  {
+    "code": "WHN",
+    "name": "Wuhan Hannan Municipal 机场",
+    "city": "Wuhan",
+    "lat": 30.2552,
+    "lon": 114.0628,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "whn wuhan hannan municipal 机场 wuhan wuhan hannan municipal airport wuhan (hannan)"
+  },
+  {
+    "code": "DDR",
+    "name": "Shigatse Tingri 机场",
+    "city": "Xigazê",
+    "lat": 28.6046,
+    "lon": 86.798,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ddr shigatse tingri 机场 xigazê shigatse tingri airport xigazê (dingri)"
+  },
+  {
+    "code": "HQL",
+    "name": "Tashikuergan Hongqilafu 机场",
+    "city": "Tashikuergan",
+    "lat": 37.6613,
+    "lon": 75.2889,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hql tashikuergan hongqilafu 机场 tashikuergan tashikuergan hongqilafu airport tashikuergan"
+  },
+  {
+    "code": "LSG",
+    "name": "Leshan 机场",
+    "city": "Leshan",
+    "lat": 29.4386,
+    "lon": 103.7492,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lsg leshan 机场 leshan leshan airport leshan (wutongqiao)"
+  },
+  {
+    "code": "JDE",
+    "name": "Jiande Qiandaohu General 机场",
+    "city": "Hangzhou",
+    "lat": 29.3609,
+    "lon": 119.1808,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jde jiande qiandaohu general 机场 hangzhou jiande qiandaohu general airport hangzhou"
+  },
+  {
+    "code": "APJ",
+    "name": "Ali Pulan 机场",
+    "city": "Burang Town",
+    "lat": 30.3979,
+    "lon": 81.1332,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "apj ali pulan 机场 burang town ali pulan airport burang town"
+  },
+  {
+    "code": "ZFL",
+    "name": "Zhaosu Tianma 机场",
+    "city": "Zhaosu",
+    "lat": 43.0885,
+    "lon": 81.223,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "zfl zhaosu tianma 机场 zhaosu zhaosu tianma airport zhaosu"
+  },
+  {
+    "code": "HJB",
+    "name": "Hejing Bayinbuluke 机场",
+    "city": "Hejing",
+    "lat": 42.9764,
+    "lon": 83.9955,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "hjb hejing bayinbuluke 机场 hejing hejing bayinbuluke airport hejing"
+  },
+  {
+    "code": "JBK",
+    "name": "Qitai Jiangbulake 机场",
+    "city": "Qitai",
+    "lat": 44.1661,
+    "lon": 89.5501,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "jbk qitai jiangbulake 机场 qitai qitai jiangbulake airport qitai"
+  },
+  {
+    "code": "ZAT",
+    "name": "Zhaotong Zhaoyang 机场 （Not fully opened)",
+    "city": "Zhaotong",
+    "lat": 27.2058,
+    "lon": 103.6915,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "zat zhaotong zhaoyang 机场 （not fully opened) zhaotong zhaotong zhaoyang airport （not fully opened) zhaotong"
+  },
+  {
+    "code": "BFY",
+    "name": "Bengbu Tenghu 机场",
+    "city": "Bengbu",
+    "lat": 33.1663,
+    "lon": 117.0583,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bfy bengbu tenghu 机场 bengbu bengbu tenghu airport bengbu"
+  },
+  {
+    "code": "HZU",
+    "name": "Chengdu Huaizhou 机场",
+    "city": "Chengdu",
+    "lat": 30.6773,
+    "lon": 104.5294,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hzu chengdu huaizhou 机场 chengdu chengdu huaizhou airport chengdu (jintang)"
+  },
+  {
+    "code": "JUH",
+    "name": "池州九华山机场",
+    "city": "池州/九华山",
+    "lat": 30.7403,
+    "lon": 117.6856,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "juh 池州九华山机场 池州/九华山 chizhou jiuhuashan airport chizhou"
+  },
+  {
+    "code": "LZG",
+    "name": "Langzhong Gucheng 机场",
+    "city": "Nanchong",
+    "lat": 31.5019,
+    "lon": 106.0344,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lzg langzhong gucheng 机场 nanchong langzhong gucheng airport nanchong (langzhong)"
+  },
+  {
+    "code": "NLH",
+    "name": "Ninglang Luguhu 机场",
+    "city": "Ninglang",
+    "lat": 27.5403,
+    "lon": 100.7593,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "nlh ninglang luguhu 机场 ninglang ninglang luguhu airport ninglang"
+  },
+  {
+    "code": "KNH",
+    "name": "Kinmen 机场",
+    "city": "Shang-I",
+    "lat": 24.4279,
+    "lon": 118.359,
+    "country": "TW",
+    "type": "medium_airport",
+    "keywords": "knh kinmen 机场 shang-i kinmen airport shang-i"
+  },
+  {
+    "code": "LZN",
+    "name": "Matsu Nangan 机场",
+    "city": "Matsu",
+    "lat": 26.1597,
+    "lon": 119.9584,
+    "country": "TW",
+    "type": "medium_airport",
+    "keywords": "lzn matsu nangan 机场 matsu matsu nangan airport matsu (nangan)"
+  },
+  {
+    "code": "TTT",
+    "name": "Taitung 机场",
+    "city": "Taitung City",
+    "lat": 22.7549,
+    "lon": 121.1018,
+    "country": "TW",
+    "type": "medium_airport",
+    "keywords": "ttt taitung 机场 taitung city taitung airport taitung city"
+  },
+  {
+    "code": "KHH",
+    "name": "Kaohsiung 国际 机场",
+    "city": "Kaohsiung",
+    "lat": 22.5771,
+    "lon": 120.35,
+    "country": "TW",
+    "type": "large_airport",
+    "keywords": "khh kaohsiung 国际 机场 kaohsiung kaohsiung international airport kaohsiung (xiaogang)"
+  },
+  {
+    "code": "CYI",
+    "name": "Chiayi 机场",
+    "city": "Shuishang",
+    "lat": 23.4626,
+    "lon": 120.3905,
+    "country": "TW",
+    "type": "medium_airport",
+    "keywords": "cyi chiayi 机场 shuishang chiayi airport shuishang"
+  },
+  {
+    "code": "HCN",
+    "name": "Hengchun 机场",
+    "city": "Hengchun",
+    "lat": 22.0411,
+    "lon": 120.73,
+    "country": "TW",
+    "type": "medium_airport",
+    "keywords": "hcn hengchun 机场 hengchun hengchun airport hengchun"
+  },
+  {
+    "code": "KYD",
+    "name": "Lanyu 机场",
+    "city": "Orchid Island",
+    "lat": 22.027,
+    "lon": 121.535,
+    "country": "TW",
+    "type": "medium_airport",
+    "keywords": "kyd lanyu 机场 orchid island lanyu airport orchid island"
+  },
+  {
+    "code": "MFK",
+    "name": "Matsu Beigan 机场",
+    "city": "Matsu",
+    "lat": 26.2241,
+    "lon": 120.0027,
+    "country": "TW",
+    "type": "medium_airport",
+    "keywords": "mfk matsu beigan 机场 matsu matsu beigan airport matsu (beigan)"
+  },
+  {
+    "code": "MZG",
+    "name": "Penghu Magong 机场",
+    "city": "Huxi",
+    "lat": 23.5687,
+    "lon": 119.628,
+    "country": "TW",
+    "type": "large_airport",
+    "keywords": "mzg penghu magong 机场 huxi penghu magong airport huxi"
+  },
+  {
+    "code": "TSA",
+    "name": "Taipei Songshan 国际 机场",
+    "city": "Taipei",
+    "lat": 25.0672,
+    "lon": 121.5528,
+    "country": "TW",
+    "type": "large_airport",
+    "keywords": "tsa taipei songshan 国际 机场 taipei taipei songshan international airport taipei (songshan)"
+  },
+  {
+    "code": "TPE",
+    "name": "台湾桃园国际机场",
+    "city": "台北",
+    "lat": 25.0777,
+    "lon": 121.233,
+    "country": "TW",
+    "type": "large_airport",
+    "keywords": "tpe 台湾桃园国际机场 台北 taiwan taoyuan international airport taoyuan"
+  },
+  {
+    "code": "HUN",
+    "name": "Hualien Chiashan 机场",
+    "city": "Hualien City",
+    "lat": 24.0232,
+    "lon": 121.618,
+    "country": "TW",
+    "type": "large_airport",
+    "keywords": "hun hualien chiashan 机场 hualien city hualien chiashan airport hualien city"
+  },
+  {
+    "code": "RHT",
+    "name": "Alxa Right Banner Badanjilin 机场",
+    "city": "Badanjilin",
+    "lat": 39.225,
+    "lon": 101.546,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "rht alxa right banner badanjilin 机场 badanjilin alxa right banner badanjilin airport badanjilin"
+  },
+  {
+    "code": "TWC",
+    "name": "Tumxuk Tangwangcheng 机场",
+    "city": "Tumxuk",
+    "lat": 39.8867,
+    "lon": 79.2334,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "twc tumxuk tangwangcheng 机场 tumxuk tumxuk tangwangcheng airport tumxuk"
+  },
+  {
+    "code": "HKG",
+    "name": "香港国际机场",
+    "city": "香港",
+    "lat": 22.3118,
+    "lon": 113.9149,
+    "country": "HK",
+    "type": "large_airport",
+    "keywords": "hkg 香港国际机场 香港 hong kong international airport hong kong"
+  },
+  {
+    "code": "MFM",
+    "name": "澳门国际机场",
+    "city": "澳门",
+    "lat": 22.1496,
+    "lon": 113.592,
+    "country": "MO",
+    "type": "large_airport",
+    "keywords": "mfm 澳门国际机场 澳门 macau international airport nossa senhora do carmo"
+  },
+  {
+    "code": "PEK",
+    "name": "北京首都国际机场",
+    "city": "北京",
+    "lat": 40.0773,
+    "lon": 116.5967,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "pek 北京首都国际机场 北京 beijing capital international airport beijing"
+  },
+  {
+    "code": "PKX",
+    "name": "北京大兴国际机场",
+    "city": "北京",
+    "lat": 39.5013,
+    "lon": 116.414,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "pkx 北京大兴国际机场 北京 beijing daxing international airport beijing"
+  },
+  {
+    "code": "CDE",
+    "name": "Chengde Puning 机场",
+    "city": "Chengde",
+    "lat": 41.1225,
+    "lon": 118.0739,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "cde chengde puning 机场 chengde chengde puning airport chengde"
+  },
+  {
+    "code": "CIF",
+    "name": "Chifeng Yulong 机场",
+    "city": "Chifeng",
+    "lat": 42.1597,
+    "lon": 118.841,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "cif chifeng yulong 机场 chifeng chifeng yulong airport chifeng"
+  },
+  {
+    "code": "CIH",
+    "name": "Changzhi Wangcun 机场",
+    "city": "Changzhi",
+    "lat": 36.2475,
+    "lon": 113.126,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "cih changzhi wangcun 机场 changzhi changzhi wangcun airport changzhi"
+  },
+  {
+    "code": "BPE",
+    "name": "Qinhuangdao Beidaihe 机场",
+    "city": "Qinhuangdao",
+    "lat": 39.6664,
+    "lon": 119.0614,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bpe qinhuangdao beidaihe 机场 qinhuangdao qinhuangdao beidaihe airport qinhuangdao (changli)"
+  },
+  {
+    "code": "DSN",
+    "name": "Ordos Ejin Horo 国际 机场",
+    "city": "Ordos",
+    "lat": 39.4935,
+    "lon": 109.8599,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "dsn ordos ejin horo 国际 机场 ordos ordos ejin horo international airport ordos"
+  },
+  {
+    "code": "DAT",
+    "name": "Datong Yungang 国际 机场",
+    "city": "Datong",
+    "lat": 40.0614,
+    "lon": 113.4805,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "dat datong yungang 国际 机场 datong datong yungang international airport datong"
+  },
+  {
+    "code": "ERL",
+    "name": "Erenhot Saiwusu 国际 机场",
+    "city": "Erenhot",
+    "lat": 43.4241,
+    "lon": 112.0911,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "erl erenhot saiwusu 国际 机场 erenhot erenhot saiwusu international airport erenhot"
+  },
+  {
+    "code": "YIE",
+    "name": "Arxan Yi'ershi 机场",
+    "city": "Arxan",
+    "lat": 47.3106,
+    "lon": 119.9117,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "yie arxan yi'ershi 机场 arxan arxan yi'ershi airport arxan"
+  },
+  {
+    "code": "HDG",
+    "name": "Handan 机场",
+    "city": "Handan",
+    "lat": 36.5248,
+    "lon": 114.4241,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hdg handan 机场 handan handan airport handan"
+  },
+  {
+    "code": "HET",
+    "name": "呼和浩特白塔国际机场",
+    "city": "呼和浩特",
+    "lat": 40.8497,
+    "lon": 111.8246,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "het 呼和浩特白塔国际机场 呼和浩特 hohhot baita international airport hohhot"
+  },
+  {
+    "code": "HUO",
+    "name": "Holingol Huolinhe 机场",
+    "city": "Holingol",
+    "lat": 45.4872,
+    "lon": 119.4072,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "huo holingol huolinhe 机场 holingol holingol huolinhe airport holingol"
+  },
+  {
+    "code": "HLD",
+    "name": "Hulunbuir Hailar 机场",
+    "city": "Hailar",
+    "lat": 49.2086,
+    "lon": 119.8223,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "hld hulunbuir hailar 机场 hailar hulunbuir hailar airport hailar"
+  },
+  {
+    "code": "LFQ",
+    "name": "Linfen Yaodu 机场",
+    "city": "Linfen",
+    "lat": 36.1326,
+    "lon": 111.6412,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lfq linfen yaodu 机场 linfen linfen yaodu airport linfen (yaodu)"
+  },
+  {
+    "code": "LLV",
+    "name": "Lüliang Dawu 机场",
+    "city": "Lüliang",
+    "lat": 37.6833,
+    "lon": 111.1428,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "llv lüliang dawu 机场 lüliang lüliang dawu airport lüliang"
+  },
+  {
+    "code": "NZH",
+    "name": "Manzhouli Xijiao 机场",
+    "city": "Manzhouli",
+    "lat": 49.5667,
+    "lon": 117.33,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "nzh manzhouli xijiao 机场 manzhouli manzhouli xijiao airport manzhouli"
+  },
+  {
+    "code": "BAV",
+    "name": "Baotou Donghe 国际 机场",
+    "city": "Baotou",
+    "lat": 40.56,
+    "lon": 109.997,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "bav baotou donghe 国际 机场 baotou baotou donghe international airport baotou"
+  },
+  {
+    "code": "SZH",
+    "name": "Shuozhou Zirun 机场",
+    "city": "Shuozhou",
+    "lat": 39.2732,
+    "lon": 112.6916,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "szh shuozhou zirun 机场 shuozhou shuozhou zirun airport shuozhou"
+  },
+  {
+    "code": "SJW",
+    "name": "石家庄正定国际机场",
+    "city": "石家庄",
+    "lat": 38.2807,
+    "lon": 114.697,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "sjw 石家庄正定国际机场 石家庄 shijiazhuang zhengding international airport shijiazhuang"
+  },
+  {
+    "code": "TVS",
+    "name": "Tangshan Sannühe 机场",
+    "city": "Tangshan",
+    "lat": 39.7178,
+    "lon": 118.0026,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "tvs tangshan sannühe 机场 tangshan tangshan sannühe airport tangshan (fengrun)"
+  },
+  {
+    "code": "TSN",
+    "name": "天津滨海国际机场",
+    "city": "天津",
+    "lat": 39.1244,
+    "lon": 117.346,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "tsn 天津滨海国际机场 天津 tianjin binhai international airport tianjin"
+  },
+  {
+    "code": "TGO",
+    "name": "Tongliao 机场",
+    "city": "Tongliao",
+    "lat": 43.5567,
+    "lon": 122.2,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "tgo tongliao 机场 tongliao tongliao airport tongliao"
+  },
+  {
+    "code": "UCB",
+    "name": "Ulanqab Jining 机场",
+    "city": "Ulanqab",
+    "lat": 41.1303,
+    "lon": 113.1073,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ucb ulanqab jining 机场 ulanqab ulanqab jining airport ulanqab"
+  },
+  {
+    "code": "WUA",
+    "name": "Wuhai 机场",
+    "city": "Wuhai",
+    "lat": 39.7934,
+    "lon": 106.7993,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "wua wuhai 机场 wuhai wuhai airport wuhai"
+  },
+  {
+    "code": "HLH",
+    "name": "Ulanhot Yilelite 机场",
+    "city": "Ulanhot",
+    "lat": 46.1953,
+    "lon": 122.0083,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "hlh ulanhot yilelite 机场 ulanhot ulanhot yilelite airport ulanhot"
+  },
+  {
+    "code": "XIL",
+    "name": "Xilinhot 机场",
+    "city": "Xilinhot",
+    "lat": 43.9156,
+    "lon": 115.964,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "xil xilinhot 机场 xilinhot xilinhot airport xilinhot"
+  },
+  {
+    "code": "WUT",
+    "name": "Xinzhou Wutaishan 机场",
+    "city": "Xinzhou",
+    "lat": 38.5975,
+    "lon": 112.9692,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "wut xinzhou wutaishan 机场 xinzhou xinzhou wutaishan airport xinzhou"
+  },
+  {
+    "code": "YCU",
+    "name": "Yuncheng Yanhu 国际 机场",
+    "city": "Yuncheng",
+    "lat": 35.1178,
+    "lon": 111.034,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ycu yuncheng yanhu 国际 机场 yuncheng yuncheng yanhu international airport yuncheng (yanhu)"
+  },
+  {
+    "code": "TYN",
+    "name": "太原武宿国际机场",
+    "city": "太原",
+    "lat": 37.7469,
+    "lon": 112.628,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "tyn 太原武宿国际机场 太原 taiyuan wusu international airport taiyuan"
+  },
+  {
+    "code": "RLK",
+    "name": "Bayannur Tianjitai 机场",
+    "city": "Bayannur",
+    "lat": 40.9264,
+    "lon": 107.7409,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "rlk bayannur tianjitai 机场 bayannur bayannur tianjitai airport bayannur"
+  },
+  {
+    "code": "ZQZ",
+    "name": "Zhangjiakou Ningyuan 机场",
+    "city": "Zhangjiakou",
+    "lat": 40.7387,
+    "lon": 114.9334,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "zqz zhangjiakou ningyuan 机场 zhangjiakou zhangjiakou ningyuan airport zhangjiakou"
+  },
+  {
+    "code": "NZL",
+    "name": "Zhalantun Genghis Khan 机场",
+    "city": "Zhalantun",
+    "lat": 47.8659,
+    "lon": 122.7687,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "nzl zhalantun genghis khan 机场 zhalantun zhalantun genghis khan airport zhalantun"
+  },
+  {
+    "code": "BHY",
+    "name": "Beihai Fucheng 机场",
+    "city": "Beihai",
+    "lat": 21.5387,
+    "lon": 109.2937,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bhy beihai fucheng 机场 beihai beihai fucheng airport beihai"
+  },
+  {
+    "code": "AEB",
+    "name": "Baise (Bose) Bama 机场",
+    "city": "Baise",
+    "lat": 23.7206,
+    "lon": 106.96,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "aeb baise (bose) bama 机场 baise baise (bose) bama airport baise (tianyang)"
+  },
+  {
+    "code": "CGD",
+    "name": "常德桃花源机场",
+    "city": "常德",
+    "lat": 28.9189,
+    "lon": 111.64,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "cgd 常德桃花源机场 常德 changde taohuayuan airport changde (dingcheng)"
+  },
+  {
+    "code": "HJJ",
+    "name": "怀化芷江机场",
+    "city": "怀化",
+    "lat": 27.4431,
+    "lon": 109.7047,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hjj 怀化芷江机场 怀化 huaihua zhijiang airport huaihua"
+  },
+  {
+    "code": "HCZ",
+    "name": "Chenzhou Beihu 机场",
+    "city": "Chenzhou",
+    "lat": 25.7534,
+    "lon": 112.8454,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hcz chenzhou beihu 机场 chenzhou chenzhou beihu airport chenzhou"
+  },
+  {
+    "code": "DYG",
+    "name": "张家界荷花国际机场",
+    "city": "张家界",
+    "lat": 29.1047,
+    "lon": 110.4428,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "dyg 张家界荷花国际机场 张家界 zhangjiajie hehua international airport zhangjiajie (yongding)"
+  },
+  {
+    "code": "FUO",
+    "name": "佛山沙堤机场",
+    "city": "佛山",
+    "lat": 23.0825,
+    "lon": 113.0708,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "fuo 佛山沙堤机场 佛山 foshan shadi airport foshan (nanhai)"
+  },
+  {
+    "code": "CAN",
+    "name": "广州白云国际机场",
+    "city": "广州",
+    "lat": 23.3924,
+    "lon": 113.299,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "can 广州白云国际机场 广州 guangzhou baiyun international airport guangzhou (huadu)"
+  },
+  {
+    "code": "CSX",
+    "name": "长沙黄花国际机场",
+    "city": "长沙",
+    "lat": 28.1892,
+    "lon": 113.22,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "csx 长沙黄花国际机场 长沙 changsha huanghua international airport changsha (changsha)"
+  },
+  {
+    "code": "HCJ",
+    "name": "Hechi Jinchengjiang 机场",
+    "city": "Hechi",
+    "lat": 24.8043,
+    "lon": 107.7108,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hcj hechi jinchengjiang 机场 hechi hechi jinchengjiang airport hechi (jinchengjiang)"
+  },
+  {
+    "code": "HNY",
+    "name": "衡阳南岳机场",
+    "city": "衡阳",
+    "lat": 26.7221,
+    "lon": 112.618,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "hny 衡阳南岳机场 衡阳 hengyang nanyue airport hengyang"
+  },
+  {
+    "code": "HUZ",
+    "name": "Huizhou Pingtan 机场",
+    "city": "Huizhou",
+    "lat": 23.05,
+    "lon": 114.6,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "huz huizhou pingtan 机场 huizhou huizhou pingtan airport huizhou (pingtan)"
+  },
+  {
+    "code": "KWL",
+    "name": "桂林两江国际机场",
+    "city": "桂林",
+    "lat": 25.2198,
+    "lon": 110.0396,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "kwl 桂林两江国际机场 桂林 guilin liangjiang international airport guilin (lingui)"
+  },
+  {
+    "code": "LLF",
+    "name": "永州零陵机场",
+    "city": "永州",
+    "lat": 26.3387,
+    "lon": 111.61,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "llf 永州零陵机场 永州 yongzhou lingling airport yongzhou"
+  },
+  {
+    "code": "MXZ",
+    "name": "梅州梅县机场",
+    "city": "梅州",
+    "lat": 24.2634,
+    "lon": 116.0979,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "mxz 梅州梅县机场 梅州 meizhou meixian changgangji international airport meizhou (meixian)"
+  },
+  {
+    "code": "NNG",
+    "name": "南宁吴圩国际机场",
+    "city": "南宁",
+    "lat": 22.5981,
+    "lon": 108.1819,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "nng 南宁吴圩国际机场 南宁 nanning wuxu international airport nanning (jiangnan)"
+  },
+  {
+    "code": "SWA",
+    "name": "揭阳潮汕国际机场",
+    "city": "揭阳/潮州/汕头",
+    "lat": 23.552,
+    "lon": 116.5033,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "swa 揭阳潮汕国际机场 揭阳/潮州/汕头 jieyang chaoshan international airport jieyang (rongcheng)"
+  },
+  {
+    "code": "ZUH",
+    "name": "珠海金湾机场",
+    "city": "珠海",
+    "lat": 22.0064,
+    "lon": 113.376,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "zuh 珠海金湾机场 珠海 zhuhai jinwan airport zhuhai (jinwan)"
+  },
+  {
+    "code": "WGN",
+    "name": "武冈机场",
+    "city": "邵阳",
+    "lat": 26.8061,
+    "lon": 110.641,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "wgn 武冈机场 邵阳 shaoyang wugang airport shaoyang (wugang)"
+  },
+  {
+    "code": "SZX",
+    "name": "深圳宝安国际机场",
+    "city": "深圳",
+    "lat": 22.6395,
+    "lon": 113.8033,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "szx 深圳宝安国际机场 深圳 shenzhen bao'an international airport shenzhen"
+  },
+  {
+    "code": "WUZ",
+    "name": "Wuzhou Xijiang 机场",
+    "city": "Tangbu",
+    "lat": 23.4032,
+    "lon": 111.0933,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "wuz wuzhou xijiang 机场 tangbu wuzhou xijiang airport tangbu"
+  },
+  {
+    "code": "DXJ",
+    "name": "Xiangxi Biancheng 机场",
+    "city": "Xiangxi",
+    "lat": 28.4972,
+    "lon": 109.5218,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "dxj xiangxi biancheng 机场 xiangxi xiangxi biancheng airport xiangxi"
+  },
+  {
+    "code": "YLX",
+    "name": "Yulin Fumian 机场",
+    "city": "Yulin",
+    "lat": 22.433,
+    "lon": 110.12,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ylx yulin fumian 机场 yulin yulin fumian airport yulin"
+  },
+  {
+    "code": "YYA",
+    "name": "Yueyang Sanhe 机场",
+    "city": "Yueyang",
+    "lat": 29.3117,
+    "lon": 113.2816,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "yya yueyang sanhe 机场 yueyang yueyang sanhe airport yueyang (yueyanglou)"
+  },
+  {
+    "code": "ZHA",
+    "name": "湛江吴川机场",
+    "city": "湛江",
+    "lat": 21.4817,
+    "lon": 110.5903,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "zha 湛江吴川机场 湛江 zhanjiang wuchuan international airport zhanjiang"
+  },
+  {
+    "code": "CGO",
+    "name": "郑州新郑国际机场",
+    "city": "郑州",
+    "lat": 34.5265,
+    "lon": 113.8492,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "cgo 郑州新郑国际机场 郑州 zhengzhou xinzheng international airport zhengzhou"
+  },
+  {
+    "code": "EHU",
+    "name": "鄂州花湖国际机场",
+    "city": "鄂州",
+    "lat": 30.3412,
+    "lon": 115.0393,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ehu 鄂州花湖国际机场 鄂州 ezhou huahu international airport ezhou"
+  },
+  {
+    "code": "ENH",
+    "name": "恩施许家坪机场",
+    "city": "恩施",
+    "lat": 30.3203,
+    "lon": 109.485,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "enh 恩施许家坪机场 恩施 enshi xujiaping airport enshi (enshi)"
+  },
+  {
+    "code": "WUH",
+    "name": "武汉天河国际机场",
+    "city": "武汉",
+    "lat": 30.7748,
+    "lon": 114.2137,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "wuh 武汉天河国际机场 武汉 wuhan tianhe international airport wuhan (huangpi)"
+  },
+  {
+    "code": "SHS",
+    "name": "Jingzhou Shashi 机场",
+    "city": "Jingzhou",
+    "lat": 30.2928,
+    "lon": 112.4485,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "shs jingzhou shashi 机场 jingzhou jingzhou shashi airport jingzhou (shashi)"
+  },
+  {
+    "code": "LYA",
+    "name": "Luoyang Beijiao 机场",
+    "city": "Luoyang",
+    "lat": 34.7411,
+    "lon": 112.388,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "lya luoyang beijiao 机场 luoyang luoyang beijiao airport luoyang (laocheng)"
+  },
+  {
+    "code": "NNY",
+    "name": "Nanyang Jiangying 机场",
+    "city": "Nanyang",
+    "lat": 32.9827,
+    "lon": 112.6175,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "nny nanyang jiangying 机场 nanyang nanyang jiangying airport nanyang (wancheng)"
+  },
+  {
+    "code": "HQQ",
+    "name": "Anyang Hongqiqu 机场",
+    "city": "Anyang",
+    "lat": 35.8708,
+    "lon": 114.4619,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "hqq anyang hongqiqu 机场 anyang anyang hongqiqu airport anyang"
+  },
+  {
+    "code": "HPG",
+    "name": "神农架红坪机场",
+    "city": "神农架",
+    "lat": 31.626,
+    "lon": 110.34,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hpg 神农架红坪机场 神农架 shennongjia hongping airport shennongjia (hongping)"
+  },
+  {
+    "code": "WDS",
+    "name": "Shiyan Wudangshan 机场",
+    "city": "Shiyan",
+    "lat": 32.5929,
+    "lon": 110.9063,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "wds shiyan wudangshan 机场 shiyan shiyan wudangshan airport shiyan (maojian)"
+  },
+  {
+    "code": "XFN",
+    "name": "襄阳刘集机场",
+    "city": "襄阳",
+    "lat": 32.1522,
+    "lon": 112.2917,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "xfn 襄阳刘集机场 襄阳 xiangyang liuji airport xiangyang (xiangzhou)"
+  },
+  {
+    "code": "XAI",
+    "name": "Xinyang Minggang 机场",
+    "city": "Xinyang",
+    "lat": 32.5408,
+    "lon": 114.0791,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "xai xinyang minggang 机场 xinyang xinyang minggang airport xinyang"
+  },
+  {
+    "code": "YIH",
+    "name": "宜昌三峡机场",
+    "city": "宜昌",
+    "lat": 30.5541,
+    "lon": 111.4826,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "yih 宜昌三峡机场 宜昌 yichang sanxia airport yichang (xiaoting)"
+  },
+  {
+    "code": "HAK",
+    "name": "海口美兰国际机场",
+    "city": "海口",
+    "lat": 19.9349,
+    "lon": 110.459,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "hak 海口美兰国际机场 海口 haikou meilan international airport haikou (meilan)"
+  },
+  {
+    "code": "BAR",
+    "name": "Qionghai Bo'ao 机场",
+    "city": "Qionghai",
+    "lat": 19.141,
+    "lon": 110.4528,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bar qionghai bo'ao 机场 qionghai qionghai bo'ao airport qionghai (basuo)"
+  },
+  {
+    "code": "SYX",
+    "name": "三亚凤凰国际机场",
+    "city": "三亚",
+    "lat": 18.3029,
+    "lon": 109.412,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "syx 三亚凤凰国际机场 三亚 sanya phoenix international airport sanya (tianya)"
+  },
+  {
+    "code": "AKA",
+    "name": "Ankang Fuqiang 机场",
+    "city": "Ankang",
+    "lat": 32.757,
+    "lon": 108.8734,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "aka ankang fuqiang 机场 ankang ankang fuqiang airport ankang (hanbin)"
+  },
+  {
+    "code": "DNH",
+    "name": "Dunhuang Mogao 国际 机场",
+    "city": "Dunhuang",
+    "lat": 40.162,
+    "lon": 94.8128,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "dnh dunhuang mogao 国际 机场 dunhuang dunhuang mogao international airport dunhuang"
+  },
+  {
+    "code": "HXD",
+    "name": "Haixi Delingha 机场",
+    "city": "Delingha",
+    "lat": 37.1253,
+    "lon": 97.2687,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hxd haixi delingha 机场 delingha haixi delingha airport delingha"
+  },
+  {
+    "code": "GMQ",
+    "name": "Golog Maqên 机场",
+    "city": "Golog",
+    "lat": 34.4181,
+    "lon": 100.3011,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "gmq golog maqên 机场 golog golog maqên airport golog (maqên)"
+  },
+  {
+    "code": "GOQ",
+    "name": "Golmud 机场",
+    "city": "Golmud",
+    "lat": 36.4006,
+    "lon": 94.7861,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "goq golmud 机场 golmud golmud airport golmud"
+  },
+  {
+    "code": "GYU",
+    "name": "Guyuan Liupanshan 机场",
+    "city": "Guyuan",
+    "lat": 36.0789,
+    "lon": 106.2169,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "gyu guyuan liupanshan 机场 guyuan guyuan liupanshan airport guyuan (yuanzhou)"
+  },
+  {
+    "code": "HBQ",
+    "name": "Haibei Qilian 机场",
+    "city": "Haibei",
+    "lat": 38.0081,
+    "lon": 100.6451,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "hbq haibei qilian 机场 haibei haibei qilian airport haibei (qilian)"
+  },
+  {
+    "code": "HTT",
+    "name": "Huatugou 机场",
+    "city": "Mengnai",
+    "lat": 38.2016,
+    "lon": 90.8378,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "htt huatugou 机场 mengnai huatugou airport mengnai"
+  },
+  {
+    "code": "HZG",
+    "name": "Hanzhong Chenggu 机场",
+    "city": "Hanzhong",
+    "lat": 33.1335,
+    "lon": 107.2038,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hzg hanzhong chenggu 机场 hanzhong hanzhong chenggu airport hanzhong (chenggu)"
+  },
+  {
+    "code": "INC",
+    "name": "银川河东国际机场",
+    "city": "银川",
+    "lat": 38.3228,
+    "lon": 106.3932,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "inc 银川河东国际机场 银川 yinchuan hedong international airport yinchuan"
+  },
+  {
+    "code": "JIC",
+    "name": "Jinchang Jinchuan 机场",
+    "city": "Jinchang",
+    "lat": 38.5422,
+    "lon": 102.3483,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jic jinchang jinchuan 机场 jinchang jinchang jinchuan airport jinchang"
+  },
+  {
+    "code": "JGN",
+    "name": "Jiayuguan 国际 机场",
+    "city": "Jiayuguan",
+    "lat": 39.8591,
+    "lon": 98.3393,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "jgn jiayuguan 国际 机场 jiayuguan jiayuguan international airport jiayuguan"
+  },
+  {
+    "code": "LHW",
+    "name": "兰州中川国际机场",
+    "city": "兰州",
+    "lat": 36.5152,
+    "lon": 103.62,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "lhw 兰州中川国际机场 兰州 lanzhou zhongchuan international airport lanzhou (yongdeng)"
+  },
+  {
+    "code": "LNL",
+    "name": "Longnan Chengzhou 机场",
+    "city": "Longnan",
+    "lat": 33.7899,
+    "lon": 105.79,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lnl longnan chengzhou 机场 longnan longnan chengzhou airport longnan (cheng)"
+  },
+  {
+    "code": "IQN",
+    "name": "Qingyang Xifeng 机场",
+    "city": "Qingyang",
+    "lat": 35.8026,
+    "lon": 107.5989,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "iqn qingyang xifeng 机场 qingyang qingyang xifeng airport qingyang (xifeng)"
+  },
+  {
+    "code": "SIA",
+    "name": "Xi'an Xiguan 机场",
+    "city": "Xi'an",
+    "lat": 34.3767,
+    "lon": 109.12,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "sia xi'an xiguan 机场 xi'an xi'an xiguan airport xi'an (baqiao)"
+  },
+  {
+    "code": "THQ",
+    "name": "Tianshui Maijishan 机场",
+    "city": "Tianshui",
+    "lat": 34.5601,
+    "lon": 105.8603,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "thq tianshui maijishan 机场 tianshui tianshui maijishan airport tianshui (maiji)"
+  },
+  {
+    "code": "GXH",
+    "name": "Gannan Xiahe 机场",
+    "city": "Gannan",
+    "lat": 34.819,
+    "lon": 102.6223,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "gxh gannan xiahe 机场 gannan gannan xiahe airport gannan (xiahe)"
+  },
+  {
+    "code": "XNN",
+    "name": "西宁曹家堡国际机场",
+    "city": "西宁",
+    "lat": 36.5277,
+    "lon": 102.0402,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "xnn 西宁曹家堡国际机场 西宁 xining caojiabao international airport haidong (huzhu tu autonomous county)"
+  },
+  {
+    "code": "XIY",
+    "name": "西安咸阳国际机场",
+    "city": "西安",
+    "lat": 34.4422,
+    "lon": 108.7624,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "xiy 西安咸阳国际机场 西安 xi'an xianyang international airport xi'an"
+  },
+  {
+    "code": "ENY",
+    "name": "Yan'an Nanniwan 机场",
+    "city": "Yan'an",
+    "lat": 36.4794,
+    "lon": 109.4641,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "eny yan'an nanniwan 机场 yan'an yan'an nanniwan airport yan'an (baota)"
+  },
+  {
+    "code": "UYN",
+    "name": "Yulin Yuyang 机场",
+    "city": "Yulin",
+    "lat": 38.3597,
+    "lon": 109.5909,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "uyn yulin yuyang 机场 yulin yulin yuyang airport yulin"
+  },
+  {
+    "code": "YUS",
+    "name": "Yushu Batang 机场",
+    "city": "Yushu",
+    "lat": 32.8364,
+    "lon": 97.0364,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "yus yushu batang 机场 yushu yushu batang airport yushu (batang)"
+  },
+  {
+    "code": "ZHY",
+    "name": "Zhongwei Shapotou 机场",
+    "city": "Zhongwei",
+    "lat": 37.5731,
+    "lon": 105.1545,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "zhy zhongwei shapotou 机场 zhongwei zhongwei shapotou airport zhongwei (shapotou)"
+  },
+  {
+    "code": "YZY",
+    "name": "Zhangye Ganzhou 机场",
+    "city": "Zhangye",
+    "lat": 38.8019,
+    "lon": 100.675,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "yzy zhangye ganzhou 机场 zhangye zhangye ganzhou airport zhangye (ganzhou)"
+  },
+  {
+    "code": "BSD",
+    "name": "保山云瑞机场",
+    "city": "保山",
+    "lat": 25.0533,
+    "lon": 99.1683,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bsd 保山云瑞机场 保山 baoshan yunrui airport baoshan (longyang)"
+  },
+  {
+    "code": "CWJ",
+    "name": "沧源佤山机场",
+    "city": "沧源",
+    "lat": 23.2763,
+    "lon": 99.3732,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "cwj 沧源佤山机场 沧源 cangyuan washan airport lincang (cangyuan)"
+  },
+  {
+    "code": "DLU",
+    "name": "大理凤仪机场",
+    "city": "大理",
+    "lat": 25.6494,
+    "lon": 100.319,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "dlu 大理凤仪机场 大理 dali fengyi airport dali (xiaguan)"
+  },
+  {
+    "code": "DIG",
+    "name": "迪庆香格里拉机场",
+    "city": "香格里拉",
+    "lat": 27.7936,
+    "lon": 99.6772,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "dig 迪庆香格里拉机场 香格里拉 diqing shangri-la airport diqing (shangri-la)"
+  },
+  {
+    "code": "JHG",
+    "name": "西双版纳嘎洒国际机场",
+    "city": "景洪/西双版纳",
+    "lat": 21.9746,
+    "lon": 100.7622,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "jhg 西双版纳嘎洒国际机场 景洪/西双版纳 xishuangbanna gasa international airport jinghong (gasa)"
+  },
+  {
+    "code": "JMJ",
+    "name": "澜沧景迈机场",
+    "city": "澜沧",
+    "lat": 22.4177,
+    "lon": 99.784,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jmj 澜沧景迈机场 澜沧 lancang jingmai airport pu'er (lancang)"
+  },
+  {
+    "code": "LNJ",
+    "name": "临沧博尚机场",
+    "city": "临沧",
+    "lat": 23.7381,
+    "lon": 100.025,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lnj 临沧博尚机场 临沧 lincang boshang airport lincang"
+  },
+  {
+    "code": "LJG",
+    "name": "丽江三义国际机场",
+    "city": "丽江",
+    "lat": 26.6775,
+    "lon": 100.2449,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ljg 丽江三义国际机场 丽江 lijiang sanyi international airport lijiang"
+  },
+  {
+    "code": "LUM",
+    "name": "德宏芒市国际机场",
+    "city": "芒市",
+    "lat": 24.4011,
+    "lon": 98.5317,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lum 德宏芒市国际机场 芒市 dehong mangshi international airport dehong (mangshi)"
+  },
+  {
+    "code": "KMG",
+    "name": "昆明长水国际机场",
+    "city": "昆明",
+    "lat": 25.1103,
+    "lon": 102.9367,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "kmg 昆明长水国际机场 昆明 kunming changshui international airport kunming"
+  },
+  {
+    "code": "SYM",
+    "name": "普洱思茅机场",
+    "city": "普洱",
+    "lat": 22.7933,
+    "lon": 100.959,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "sym 普洱思茅机场 普洱 pu'er simao airport pu'er"
+  },
+  {
+    "code": "WNH",
+    "name": "文山普者黑机场",
+    "city": "文山",
+    "lat": 23.5583,
+    "lon": 104.3255,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "wnh 文山普者黑机场 文山 wenshan puzhehei airport wenshan"
+  },
+  {
+    "code": "XMN",
+    "name": "厦门高崎国际机场",
+    "city": "厦门",
+    "lat": 24.5439,
+    "lon": 118.1275,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "xmn 厦门高崎国际机场 厦门 xiamen gaoqi international airport xiamen"
+  },
+  {
+    "code": "BFU",
+    "name": "蚌埠仁和集机场",
+    "city": "蚌埠",
+    "lat": 32.8477,
+    "lon": 117.3202,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bfu 蚌埠仁和集机场 蚌埠 bengbu renheji airport bengbu"
+  },
+  {
+    "code": "CZX",
+    "name": "常州奔牛国际机场",
+    "city": "常州",
+    "lat": 31.9205,
+    "lon": 119.7755,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "czx 常州奔牛国际机场 常州 changzhou benniu international airport changzhou"
+  },
+  {
+    "code": "KHN",
+    "name": "南昌昌北国际机场",
+    "city": "南昌",
+    "lat": 28.8648,
+    "lon": 115.9027,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "khn 南昌昌北国际机场 南昌 nanchang changbei international airport nanchang"
+  },
+  {
+    "code": "DOY",
+    "name": "东营胜利机场",
+    "city": "东营",
+    "lat": 37.5014,
+    "lon": 118.7899,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "doy 东营胜利机场 东营 dongying shengli airport dongying (kenli)"
+  },
+  {
+    "code": "FUG",
+    "name": "阜阳西关机场",
+    "city": "阜阳",
+    "lat": 32.8822,
+    "lon": 115.7344,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "fug 阜阳西关机场 阜阳 fuyang xiguan airport yingzhou, fuyang"
+  },
+  {
+    "code": "FOC",
+    "name": "福州长乐国际机场",
+    "city": "福州",
+    "lat": 25.9293,
+    "lon": 119.6725,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "foc 福州长乐国际机场 福州 fuzhou changle international airport fuzhou (changle)"
+  },
+  {
+    "code": "KOW",
+    "name": "赣州黄金机场",
+    "city": "赣州",
+    "lat": 25.8533,
+    "lon": 114.7789,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "kow 赣州黄金机场 赣州 ganzhou huangjin airport ganzhou"
+  },
+  {
+    "code": "HGH",
+    "name": "杭州萧山国际机场",
+    "city": "杭州",
+    "lat": 30.2361,
+    "lon": 120.4289,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "hgh 杭州萧山国际机场 杭州 hangzhou xiaoshan international airport hangzhou"
+  },
+  {
+    "code": "HZA",
+    "name": "菏泽牡丹机场",
+    "city": "菏泽",
+    "lat": 35.213,
+    "lon": 115.7367,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hza 菏泽牡丹机场 菏泽 heze mudan airport heze (dingtao)"
+  },
+  {
+    "code": "JDZ",
+    "name": "景德镇罗家机场",
+    "city": "景德镇",
+    "lat": 29.3386,
+    "lon": 117.176,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jdz 景德镇罗家机场 景德镇 jingdezhen luojia airport jingdezhen"
+  },
+  {
+    "code": "JNG",
+    "name": "济宁大安机场",
+    "city": "济宁",
+    "lat": 35.6474,
+    "lon": 116.7433,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jng 济宁大安机场 济宁 jining da'an airport jining"
+  },
+  {
+    "code": "JIU",
+    "name": "九江庐山机场",
+    "city": "九江",
+    "lat": 29.4769,
+    "lon": 115.8011,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "jiu 九江庐山机场 九江 jiujiang lushan airport jiujiang"
+  },
+  {
+    "code": "TNA",
+    "name": "济南遥墙国际机场",
+    "city": "济南",
+    "lat": 36.8572,
+    "lon": 117.216,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "tna 济南遥墙国际机场 济南 jinan yaoqiang international airport jinan (licheng)"
+  },
+  {
+    "code": "JUZ",
+    "name": "衢州机场",
+    "city": "衢州",
+    "lat": 28.9661,
+    "lon": 118.8988,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "juz 衢州机场 衢州 quzhou airport quzhou (kezheng)"
+  },
+  {
+    "code": "LYG",
+    "name": "连云港花果山国际机场",
+    "city": "连云港",
+    "lat": 34.4141,
+    "lon": 119.179,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "lyg 连云港花果山国际机场 连云港 lianyungang huaguoshan international airport lianyungang"
+  },
+  {
+    "code": "LCX",
+    "name": "连城冠豸山机场",
+    "city": "龙岩",
+    "lat": 25.6759,
+    "lon": 116.7459,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lcx 连城冠豸山机场 龙岩 liancheng guanzhishan airport longyan (liancheng)"
+  },
+  {
+    "code": "HYN",
+    "name": "台州路桥机场",
+    "city": "台州",
+    "lat": 28.5622,
+    "lon": 121.429,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hyn 台州路桥机场 台州 taizhou luqiao airport taizhou (luqiao)"
+  },
+  {
+    "code": "LYI",
+    "name": "临沂启阳机场",
+    "city": "临沂",
+    "lat": 35.0529,
+    "lon": 118.4118,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lyi 临沂启阳机场 临沂 linyi qiyang airport linyi (hedong)"
+  },
+  {
+    "code": "NGB",
+    "name": "宁波栎社国际机场",
+    "city": "宁波",
+    "lat": 29.8267,
+    "lon": 121.462,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ngb 宁波栎社国际机场 宁波 ningbo lishe international airport ningbo"
+  },
+  {
+    "code": "NKG",
+    "name": "南京禄口国际机场",
+    "city": "南京",
+    "lat": 31.735,
+    "lon": 118.8659,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "nkg 南京禄口国际机场 南京 nanjing lukou international airport nanjing"
+  },
+  {
+    "code": "NTG",
+    "name": "南通兴东国际机场",
+    "city": "南通",
+    "lat": 32.0736,
+    "lon": 120.9801,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ntg 南通兴东国际机场 南通 nantong xingdong international airport nantong (tongzhou)"
+  },
+  {
+    "code": "HFE",
+    "name": "合肥新桥国际机场",
+    "city": "合肥",
+    "lat": 31.9878,
+    "lon": 116.9769,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "hfe 合肥新桥国际机场 合肥 hefei xinqiao international airport hefei"
+  },
+  {
+    "code": "PVG",
+    "name": "上海浦东国际机场",
+    "city": "上海",
+    "lat": 31.1434,
+    "lon": 121.805,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "pvg 上海浦东国际机场 上海 shanghai pudong international airport shanghai (pudong)"
+  },
+  {
+    "code": "TAO",
+    "name": "青岛胶东国际机场",
+    "city": "青岛",
+    "lat": 36.362,
+    "lon": 120.0882,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "tao 青岛胶东国际机场 青岛 qingdao jiaodong international airport qingdao (jiaozhou)"
+  },
+  {
+    "code": "JJN",
+    "name": "泉州晋江国际机场",
+    "city": "泉州",
+    "lat": 24.7959,
+    "lon": 118.5886,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "jjn 泉州晋江国际机场 泉州 quanzhou jinjiang international airport quanzhou"
+  },
+  {
+    "code": "RIZ",
+    "name": "日照山字河机场",
+    "city": "日照",
+    "lat": 35.405,
+    "lon": 119.3244,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "riz 日照山字河机场 日照 rizhao shanzihe airport rizhao (donggang)"
+  },
+  {
+    "code": "HIA",
+    "name": "淮安涟水机场",
+    "city": "淮安",
+    "lat": 33.7927,
+    "lon": 119.1267,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "hia 淮安涟水机场 淮安 huai'an lianshui airport huai'an"
+  },
+  {
+    "code": "SQJ",
+    "name": "三明沙县机场",
+    "city": "三明",
+    "lat": 26.4263,
+    "lon": 117.8336,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "sqj 三明沙县机场 三明 sanming shaxian airport sanming (sha)"
+  },
+  {
+    "code": "SQD",
+    "name": "上饶三清山机场",
+    "city": "上饶",
+    "lat": 28.3797,
+    "lon": 117.9643,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "sqd 上饶三清山机场 上饶 shangrao sanqingshan airport shangrao (hengfeng)"
+  },
+  {
+    "code": "SHA",
+    "name": "上海虹桥国际机场",
+    "city": "上海",
+    "lat": 31.1981,
+    "lon": 121.3343,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "sha 上海虹桥国际机场 上海 shanghai hongqiao international airport shanghai (minhang)"
+  },
+  {
+    "code": "SZV",
+    "name": "Suzhou Guangfu 机场",
+    "city": "Suzhou",
+    "lat": 31.2631,
+    "lon": 120.401,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "szv suzhou guangfu 机场 suzhou suzhou guangfu airport suzhou"
+  },
+  {
+    "code": "TXN",
+    "name": "黄山屯溪国际机场",
+    "city": "黄山",
+    "lat": 29.7333,
+    "lon": 118.256,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "txn 黄山屯溪国际机场 黄山 huangshan tunxi international airport huangshan"
+  },
+  {
+    "code": "WHA",
+    "name": "芜湖宣州机场",
+    "city": "芜湖/宣城",
+    "lat": 31.1045,
+    "lon": 118.6669,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "wha 芜湖宣州机场 芜湖/宣城 wuhu xuanzhou airport wuhu"
+  },
+  {
+    "code": "WEF",
+    "name": "潍坊南苑机场",
+    "city": "潍坊",
+    "lat": 36.6467,
+    "lon": 119.119,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "wef 潍坊南苑机场 潍坊 weifang nanyuan airport weifang (kuiwen)"
+  },
+  {
+    "code": "WEH",
+    "name": "威海大水泊机场",
+    "city": "威海",
+    "lat": 37.1871,
+    "lon": 122.229,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "weh 威海大水泊机场 威海 weihai dashuibo airport weihai"
+  },
+  {
+    "code": "WUX",
+    "name": "苏南硕放国际机场",
+    "city": "无锡/苏州",
+    "lat": 31.497,
+    "lon": 120.4304,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "wux 苏南硕放国际机场 无锡/苏州 sunan shuofang international airport wuxi"
+  },
+  {
+    "code": "WUS",
+    "name": "南平武夷山机场",
+    "city": "武夷山",
+    "lat": 27.7019,
+    "lon": 118.001,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "wus 南平武夷山机场 武夷山 nanping wuyishan airport wuyishan"
+  },
+  {
+    "code": "WNZ",
+    "name": "温州龙湾国际机场",
+    "city": "温州",
+    "lat": 27.9106,
+    "lon": 120.8535,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "wnz 温州龙湾国际机场 温州 wenzhou longwan international airport wenzhou (longwan)"
+  },
+  {
+    "code": "XUZ",
+    "name": "徐州观音国际机场",
+    "city": "徐州",
+    "lat": 34.0591,
+    "lon": 117.5553,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "xuz 徐州观音国际机场 徐州 xuzhou guanyin international airport xuzhou"
+  },
+  {
+    "code": "YTY",
+    "name": "扬州泰州国际机场",
+    "city": "扬州/泰州",
+    "lat": 32.5634,
+    "lon": 119.7198,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "yty 扬州泰州国际机场 扬州/泰州 yangzhou taizhou airport yangzhou"
+  },
+  {
+    "code": "YIC",
+    "name": "宜春明月山机场",
+    "city": "宜春",
+    "lat": 27.8025,
+    "lon": 114.3062,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "yic 宜春明月山机场 宜春 yichun mingyueshan airport yichun"
+  },
+  {
+    "code": "YNZ",
+    "name": "盐城南洋国际机场",
+    "city": "盐城",
+    "lat": 33.4283,
+    "lon": 120.2054,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ynz 盐城南洋国际机场 盐城 yancheng nanyang international airport yancheng (tinghu)"
+  },
+  {
+    "code": "YNT",
+    "name": "烟台蓬莱国际机场",
+    "city": "烟台",
+    "lat": 37.6597,
+    "lon": 120.9781,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ynt 烟台蓬莱国际机场 烟台 yantai penglai international airport yantai"
+  },
+  {
+    "code": "YIW",
+    "name": "义乌机场",
+    "city": "义乌/金华",
+    "lat": 29.3421,
+    "lon": 120.0312,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "yiw 义乌机场 义乌/金华 yiwu airport yiwu/jinhua"
+  },
+  {
+    "code": "HSN",
+    "name": "舟山普陀山机场",
+    "city": "舟山",
+    "lat": 29.9339,
+    "lon": 122.3623,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "hsn 舟山普陀山机场 舟山 zhoushan putuoshan international airport zhoushan"
+  },
+  {
+    "code": "NGQ",
+    "name": "阿里昆莎机场",
+    "city": "阿里",
+    "lat": 32.0979,
+    "lon": 80.054,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ngq 阿里昆莎机场 阿里 ngari gunsa airport shiquanhe"
+  },
+  {
+    "code": "AVA",
+    "name": "安顺黄果树机场",
+    "city": "安顺",
+    "lat": 26.2606,
+    "lon": 105.8733,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ava 安顺黄果树机场 安顺 anshun huangguoshu airport anshun (xixiu)"
+  },
+  {
+    "code": "BPX",
+    "name": "昌都邦达机场",
+    "city": "昌都",
+    "lat": 30.5536,
+    "lon": 97.1083,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bpx 昌都邦达机场 昌都 qamdo bangda airport bangda"
+  },
+  {
+    "code": "BFJ",
+    "name": "毕节飞雄机场",
+    "city": "毕节",
+    "lat": 27.2671,
+    "lon": 105.4721,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bfj 毕节飞雄机场 毕节 bijie feixiong airport bijie"
+  },
+  {
+    "code": "CKG",
+    "name": "重庆江北国际机场",
+    "city": "重庆",
+    "lat": 29.7123,
+    "lon": 106.6519,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ckg 重庆江北国际机场 重庆 chongqing jiangbei international airport chongqing"
+  },
+  {
+    "code": "DZH",
+    "name": "达州金垭机场",
+    "city": "达州",
+    "lat": 31.0488,
+    "lon": 107.4356,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "dzh 达州金垭机场 达州 dazhou jinya airport dazhou (dachuan)"
+  },
+  {
+    "code": "DCY",
+    "name": "稻城亚丁机场",
+    "city": "甘孜/稻城",
+    "lat": 29.3163,
+    "lon": 100.0603,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "dcy 稻城亚丁机场 甘孜/稻城 daocheng yading airport garzê (daocheng)"
+  },
+  {
+    "code": "DEJ",
+    "name": "Tongren Dejiang 机场 (Under Construction)",
+    "city": "Tongren",
+    "lat": 28.121,
+    "lon": 108.1631,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "dej tongren dejiang 机场 (under construction) tongren tongren dejiang airport (under construction) tongren"
+  },
+  {
+    "code": "DAX",
+    "name": "Dachuan 机场",
+    "city": "Dazhou",
+    "lat": 31.1302,
+    "lon": 107.4295,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "dax dachuan 机场 dazhou dachuan airport dazhou (daxian)"
+  },
+  {
+    "code": "GHN",
+    "name": "Guanghan 机场",
+    "city": "Deyang",
+    "lat": 30.9485,
+    "lon": 104.3296,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ghn guanghan 机场 deyang guanghan airport deyang (guanghan)"
+  },
+  {
+    "code": "GYS",
+    "name": "广元盘龙机场",
+    "city": "广元",
+    "lat": 32.3903,
+    "lon": 105.6946,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "gys 广元盘龙机场 广元 guangyuan panlong airport guangyuan (lizhou)"
+  },
+  {
+    "code": "KWE",
+    "name": "贵阳龙洞堡国际机场",
+    "city": "贵阳",
+    "lat": 26.5418,
+    "lon": 106.804,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "kwe 贵阳龙洞堡国际机场 贵阳 guiyang longdongbao international airport guiyang (nanming)"
+  },
+  {
+    "code": "GZG",
+    "name": "甘孜格萨尔机场",
+    "city": "甘孜",
+    "lat": 31.7575,
+    "lon": 99.5542,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "gzg 甘孜格萨尔机场 甘孜 garze gesar airport garzê (garzê)"
+  },
+  {
+    "code": "AHJ",
+    "name": "红原机场",
+    "city": "阿坝/红原",
+    "lat": 32.5315,
+    "lon": 102.3522,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ahj 红原机场 阿坝/红原 hongyuan airport ngawa (hongyuan)"
+  },
+  {
+    "code": "JZH",
+    "name": "九寨黄龙机场",
+    "city": "阿坝/九寨沟",
+    "lat": 32.8533,
+    "lon": 103.6822,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jzh 九寨黄龙机场 阿坝/九寨沟 jiuzhai huanglong airport ngawa (songpan)"
+  },
+  {
+    "code": "KGT",
+    "name": "康定机场",
+    "city": "甘孜/康定",
+    "lat": 30.1425,
+    "lon": 101.7387,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "kgt 康定机场 甘孜/康定 kangding airport garzê (kangding)"
+  },
+  {
+    "code": "KJH",
+    "name": "凯里黄平机场",
+    "city": "凯里",
+    "lat": 26.972,
+    "lon": 107.988,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "kjh 凯里黄平机场 凯里 kaili huangping airport kaili  (huangping)"
+  },
+  {
+    "code": "LLB",
+    "name": "荔波机场",
+    "city": "黔南/荔波",
+    "lat": 25.4525,
+    "lon": 107.9617,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "llb 荔波机场 黔南/荔波 libo airport qiannan (libo)"
+  },
+  {
+    "code": "LXA",
+    "name": "拉萨贡嘎国际机场",
+    "city": "拉萨",
+    "lat": 29.298,
+    "lon": 90.912,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "lxa 拉萨贡嘎国际机场 拉萨 lhasa gonggar international airport shannan (gonggar)"
+  },
+  {
+    "code": "LZO",
+    "name": "泸州云龙机场",
+    "city": "泸州",
+    "lat": 29.0304,
+    "lon": 105.4684,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lzo 泸州云龙机场 泸州 luzhou yunlong airport luzhou (yunlong)"
+  },
+  {
+    "code": "WMT",
+    "name": "遵义茅台机场",
+    "city": "遵义/茅台",
+    "lat": 27.9618,
+    "lon": 106.4354,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "wmt 遵义茅台机场 遵义/茅台 zunyi maotai airport zunyi"
+  },
+  {
+    "code": "MIG",
+    "name": "绵阳南郊机场",
+    "city": "绵阳",
+    "lat": 31.4281,
+    "lon": 104.741,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "mig 绵阳南郊机场 绵阳 mianyang nanjiao airport mianyang (fucheng)"
+  },
+  {
+    "code": "NAO",
+    "name": "南充高坪机场",
+    "city": "南充",
+    "lat": 30.7981,
+    "lon": 106.1642,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "nao 南充高坪机场 南充 nanchong gaoping airport nanchong (gaoping)"
+  },
+  {
+    "code": "HZH",
+    "name": "黎平机场",
+    "city": "黔东南/黎平",
+    "lat": 26.3222,
+    "lon": 109.1499,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hzh 黎平机场 黔东南/黎平 liping airport liping"
+  },
+  {
+    "code": "LZY",
+    "name": "林芝米林机场",
+    "city": "林芝",
+    "lat": 29.3033,
+    "lon": 94.3353,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lzy 林芝米林机场 林芝 nyingchi mainling airport nyingchi (mainling)"
+  },
+  {
+    "code": "LPF",
+    "name": "六盘水月照机场",
+    "city": "六盘水",
+    "lat": 26.6094,
+    "lon": 104.979,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lpf 六盘水月照机场 六盘水 liupanshui yuezhao airport liupanshui (zhongshan)"
+  },
+  {
+    "code": "JIQ",
+    "name": "黔江武陵山机场",
+    "city": "重庆黔江",
+    "lat": 29.5133,
+    "lon": 108.8311,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jiq 黔江武陵山机场 重庆黔江 qianjiang wulingshan airport qianjiang"
+  },
+  {
+    "code": "LGZ",
+    "name": "Shannan Longzi 机场",
+    "city": "Shannan",
+    "lat": 28.4224,
+    "lon": 92.3481,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "lgz shannan longzi 机场 shannan shannan longzi airport shannan"
+  },
+  {
+    "code": "TCZ",
+    "name": "腾冲驼峰机场",
+    "city": "腾冲",
+    "lat": 24.9381,
+    "lon": 98.4858,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "tcz 腾冲驼峰机场 腾冲 tengchong tuofeng airport baoshan (tengchong)"
+  },
+  {
+    "code": "TFU",
+    "name": "成都天府国际机场",
+    "city": "成都",
+    "lat": 30.3125,
+    "lon": 104.4413,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "tfu 成都天府国际机场 成都 chengdu tianfu international airport chengdu (jianyang)"
+  },
+  {
+    "code": "TEN",
+    "name": "铜仁凤凰机场",
+    "city": "铜仁",
+    "lat": 27.8833,
+    "lon": 109.3089,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ten 铜仁凤凰机场 铜仁 tongren fenghuang airport tongren (daxing)"
+  },
+  {
+    "code": "CTU",
+    "name": "成都双流国际机场",
+    "city": "成都",
+    "lat": 30.5583,
+    "lon": 103.946,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ctu 成都双流国际机场 成都 chengdu shuangliu international airport chengdu (shuangliu)"
+  },
+  {
+    "code": "CQW",
+    "name": "重庆仙女山机场",
+    "city": "重庆武隆",
+    "lat": 29.4657,
+    "lon": 107.6937,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "cqw 重庆仙女山机场 重庆武隆 chongqing xiannüshan airport wulong"
+  },
+  {
+    "code": "WSK",
+    "name": "重庆巫山机场",
+    "city": "重庆巫山",
+    "lat": 31.069,
+    "lon": 109.709,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "wsk 重庆巫山机场 重庆巫山 chongqing wushan airport wushan"
+  },
+  {
+    "code": "WXN",
+    "name": "万州五桥机场",
+    "city": "重庆万州",
+    "lat": 30.8017,
+    "lon": 108.433,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "wxn 万州五桥机场 重庆万州 wanzhou wuqiao airport wanzhou"
+  },
+  {
+    "code": "XIC",
+    "name": "西昌青山机场",
+    "city": "凉山/西昌",
+    "lat": 27.9891,
+    "lon": 102.184,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "xic 西昌青山机场 凉山/西昌 xichang qingshan airport liangshan (xichang)"
+  },
+  {
+    "code": "YBP",
+    "name": "宜宾五粮液机场",
+    "city": "宜宾",
+    "lat": 28.8584,
+    "lon": 104.5262,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ybp 宜宾五粮液机场 宜宾 yibin wuliangye airport yibin (cuiping)"
+  },
+  {
+    "code": "ACX",
+    "name": "兴义万峰林机场",
+    "city": "兴义",
+    "lat": 25.0834,
+    "lon": 104.9608,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "acx 兴义万峰林机场 兴义 xingyi wanfenglin airport xingyi"
+  },
+  {
+    "code": "PZI",
+    "name": "攀枝花保安营机场",
+    "city": "攀枝花",
+    "lat": 26.54,
+    "lon": 101.7985,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "pzi 攀枝花保安营机场 攀枝花 panzhihua bao'anying airport panzhihua (renhe)"
+  },
+  {
+    "code": "ZYI",
+    "name": "遵义新舟机场",
+    "city": "遵义",
+    "lat": 27.8107,
+    "lon": 107.2472,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "zyi 遵义新舟机场 遵义 zunyi xinzhou airport zunyi"
+  },
+  {
+    "code": "AKU",
+    "name": "阿克苏红旗坡机场",
+    "city": "阿克苏",
+    "lat": 41.2625,
+    "lon": 80.2917,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "aku 阿克苏红旗坡机场 阿克苏 aksu hongqipo airport aksu (onsu)"
+  },
+  {
+    "code": "ACF",
+    "name": "阿拉尔塔里木机场",
+    "city": "阿拉尔",
+    "lat": 40.4347,
+    "lon": 81.2621,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "acf 阿拉尔塔里木机场 阿拉尔 aral tarim airport aral"
+  },
+  {
+    "code": "AAT",
+    "name": "阿勒泰雪都机场",
+    "city": "阿勒泰",
+    "lat": 47.7499,
+    "lon": 88.0858,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "aat 阿勒泰雪都机场 阿勒泰 altay xuedu airport altay"
+  },
+  {
+    "code": "BPL",
+    "name": "博乐阿拉山口机场",
+    "city": "博乐",
+    "lat": 44.8955,
+    "lon": 82.3001,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "bpl 博乐阿拉山口机场 博乐 bole alashankou airport bole"
+  },
+  {
+    "code": "IQM",
+    "name": "且末玉都机场",
+    "city": "且末",
+    "lat": 38.2345,
+    "lon": 85.4655,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "iqm 且末玉都机场 且末 qiemo yudu airport qiemo"
+  },
+  {
+    "code": "FYN",
+    "name": "富蕴可可托海机场",
+    "city": "富蕴",
+    "lat": 46.8042,
+    "lon": 89.512,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "fyn 富蕴可可托海机场 富蕴 fuyun koktokay airport fuyun"
+  },
+  {
+    "code": "HMI",
+    "name": "哈密机场",
+    "city": "哈密",
+    "lat": 42.8414,
+    "lon": 93.6692,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hmi 哈密机场 哈密 hami airport hami"
+  },
+  {
+    "code": "SHF",
+    "name": "石河子花园机场",
+    "city": "石河子",
+    "lat": 44.2421,
+    "lon": 85.8905,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "shf 石河子花园机场 石河子 shihezi huayuan airport shihezi"
+  },
+  {
+    "code": "KCA",
+    "name": "库车龟兹机场",
+    "city": "库车",
+    "lat": 41.6779,
+    "lon": 82.8729,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "kca 库车龟兹机场 库车 kuqa qiuci airport kuqa"
+  },
+  {
+    "code": "KRL",
+    "name": "库尔勒梨城机场",
+    "city": "库尔勒",
+    "lat": 41.615,
+    "lon": 86.1408,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "krl 库尔勒梨城机场 库尔勒 korla licheng airport korla"
+  },
+  {
+    "code": "KRY",
+    "name": "克拉玛依机场",
+    "city": "克拉玛依",
+    "lat": 45.4665,
+    "lon": 84.9527,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "kry 克拉玛依机场 克拉玛依 karamay airport karamay"
+  },
+  {
+    "code": "KJI",
+    "name": "布尔津喀纳斯机场",
+    "city": "喀纳斯",
+    "lat": 48.2223,
+    "lon": 86.9959,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "kji 布尔津喀纳斯机场 喀纳斯 burqin kanas airport burqin"
+  },
+  {
+    "code": "DHH",
+    "name": "巴里坤大河机场",
+    "city": "巴里坤",
+    "lat": 43.7565,
+    "lon": 93.1372,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "dhh 巴里坤大河机场 巴里坤 barkol dahe airport barkol"
+  },
+  {
+    "code": "NLT",
+    "name": "新源那拉提机场",
+    "city": "那拉提",
+    "lat": 43.4318,
+    "lon": 83.3786,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "nlt 新源那拉提机场 那拉提 xinyuan nalati airport xinyuan"
+  },
+  {
+    "code": "RQA",
+    "name": "若羌楼兰机场",
+    "city": "若羌",
+    "lat": 38.9747,
+    "lon": 88.0083,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "rqa 若羌楼兰机场 若羌 ruoqiang loulan airport ruoqiang town"
+  },
+  {
+    "code": "QSZ",
+    "name": "莎车机场",
+    "city": "莎车",
+    "lat": 38.2454,
+    "lon": 77.0561,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "qsz 莎车机场 莎车 shache airport shache"
+  },
+  {
+    "code": "KHG",
+    "name": "喀什徕宁国际机场",
+    "city": "喀什",
+    "lat": 39.5423,
+    "lon": 76.0202,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "khg 喀什徕宁国际机场 喀什 kashgar laining international airport kashgar"
+  },
+  {
+    "code": "SXJ",
+    "name": "鄯善机场",
+    "city": "鄯善",
+    "lat": 42.9117,
+    "lon": 90.2475,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "sxj 鄯善机场 鄯善 shanshan airport shanshan"
+  },
+  {
+    "code": "TCG",
+    "name": "塔城千泉机场",
+    "city": "塔城",
+    "lat": 46.6725,
+    "lon": 83.3408,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "tcg 塔城千泉机场 塔城 tacheng qianquan airport tacheng"
+  },
+  {
+    "code": "TLQ",
+    "name": "吐鲁番交河机场",
+    "city": "吐鲁番",
+    "lat": 43.0308,
+    "lon": 89.0987,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "tlq 吐鲁番交河机场 吐鲁番 turpan jiaohe airport turpan"
+  },
+  {
+    "code": "HTN",
+    "name": "和田机场",
+    "city": "和田",
+    "lat": 37.0385,
+    "lon": 79.8649,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "htn 和田机场 和田 hotan airport hotan"
+  },
+  {
+    "code": "URC",
+    "name": "乌鲁木齐地窝堡国际机场",
+    "city": "乌鲁木齐",
+    "lat": 43.9136,
+    "lon": 87.4794,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "urc 乌鲁木齐地窝堡国际机场 乌鲁木齐 ürümqi tianshan international airport ürümqi"
+  },
+  {
+    "code": "YIN",
+    "name": "Ili Yining 国际 机场",
+    "city": "Ili",
+    "lat": 43.9558,
+    "lon": 81.3303,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "yin ili yining 国际 机场 ili ili yining international airport ili (yining / ghulja)"
+  },
+  {
+    "code": "YTW",
+    "name": "Yutian Wanfang 机场",
+    "city": "Hotan",
+    "lat": 36.8085,
+    "lon": 81.7827,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "ytw yutian wanfang 机场 hotan yutian wanfang airport hotan (yutian)"
+  },
+  {
+    "code": "DBC",
+    "name": "Baicheng Chang'an 机场",
+    "city": "Baicheng",
+    "lat": 45.5053,
+    "lon": 123.0197,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "dbc baicheng chang'an 机场 baicheng baicheng chang'an airport baicheng"
+  },
+  {
+    "code": "NBS",
+    "name": "Changbaishan 机场",
+    "city": "Baishan",
+    "lat": 42.0669,
+    "lon": 127.6022,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "nbs changbaishan 机场 baishan changbaishan airport baishan"
+  },
+  {
+    "code": "CGQ",
+    "name": "长春龙嘉国际机场",
+    "city": "长春",
+    "lat": 43.9962,
+    "lon": 125.685,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "cgq 长春龙嘉国际机场 长春 changchun longjia international airport changchun"
+  },
+  {
+    "code": "CNI",
+    "name": "Changhai Dachangshandao 机场",
+    "city": "Dalian",
+    "lat": 39.2664,
+    "lon": 122.667,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "cni changhai dachangshandao 机场 dalian changhai dachangshandao airport dalian (changhai)"
+  },
+  {
+    "code": "CHG",
+    "name": "Chaoyang 机场",
+    "city": "Shuangta, Chaoyang",
+    "lat": 41.5381,
+    "lon": 120.435,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "chg chaoyang 机场 shuangta, chaoyang chaoyang airport shuangta, chaoyang"
+  },
+  {
+    "code": "DDG",
+    "name": "Dandong Langtou 国际 机场",
+    "city": "Dandong",
+    "lat": 40.0255,
+    "lon": 124.2867,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ddg dandong langtou 国际 机场 dandong dandong langtou international airport dandong (zhenxing)"
+  },
+  {
+    "code": "DQA",
+    "name": "Daqing Sartu 机场",
+    "city": "Daqing",
+    "lat": 46.7509,
+    "lon": 125.1386,
+    "country": "CN",
+    "type": "small_airport",
+    "keywords": "dqa daqing sartu 机场 daqing daqing sartu airport daqing"
+  },
+  {
+    "code": "DTU",
+    "name": "Wudalianchi Dedu 机场",
+    "city": "Heihe",
+    "lat": 48.441,
+    "lon": 126.1284,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "dtu wudalianchi dedu 机场 heihe wudalianchi dedu airport heihe"
+  },
+  {
+    "code": "FYJ",
+    "name": "Fuyuan Dongji 机场",
+    "city": "Fuyuan",
+    "lat": 48.1972,
+    "lon": 134.363,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "fyj fuyuan dongji 机场 fuyuan fuyuan dongji airport fuyuan"
+  },
+  {
+    "code": "HRB",
+    "name": "哈尔滨太平国际机场",
+    "city": "哈尔滨",
+    "lat": 45.6234,
+    "lon": 126.25,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "hrb 哈尔滨太平国际机场 哈尔滨 harbin taiping international airport harbin"
+  },
+  {
+    "code": "HEK",
+    "name": "Heihe Aihui 机场",
+    "city": "Heihe",
+    "lat": 50.1716,
+    "lon": 127.3089,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "hek heihe aihui 机场 heihe heihe aihui airport heihe"
+  },
+  {
+    "code": "JGD",
+    "name": "Daxing'anling Elunchun 机场",
+    "city": "Jiagedaqi",
+    "lat": 50.3714,
+    "lon": 124.1175,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jgd daxing'anling elunchun 机场 jiagedaqi daxing'anling elunchun airport jiagedaqi"
+  },
+  {
+    "code": "JMU",
+    "name": "Jiamusi Songjiang 国际 机场",
+    "city": "Jiamusi",
+    "lat": 46.8428,
+    "lon": 130.4643,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jmu jiamusi songjiang 国际 机场 jiamusi jiamusi songjiang international airport jiamusi"
+  },
+  {
+    "code": "JSJ",
+    "name": "Jiansanjiang Shidi 机场",
+    "city": "Jiansanjiang",
+    "lat": 47.1082,
+    "lon": 132.6579,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jsj jiansanjiang shidi 机场 jiansanjiang jiansanjiang shidi airport jiansanjiang"
+  },
+  {
+    "code": "JXA",
+    "name": "Jixi Xingkaihu 机场",
+    "city": "Jixi",
+    "lat": 45.293,
+    "lon": 131.193,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jxa jixi xingkaihu 机场 jixi jixi xingkaihu airport jixi"
+  },
+  {
+    "code": "JNZ",
+    "name": "Jinzhou Bay 机场",
+    "city": "Jinzhou",
+    "lat": 40.936,
+    "lon": 121.2771,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "jnz jinzhou bay 机场 jinzhou jinzhou bay airport jinzhou (linghai)"
+  },
+  {
+    "code": "LDS",
+    "name": "Yichun Lindu 机场",
+    "city": "Yichun",
+    "lat": 47.7521,
+    "lon": 129.0191,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "lds yichun lindu 机场 yichun yichun lindu airport yichun"
+  },
+  {
+    "code": "MDG",
+    "name": "Mudanjiang Hailang 国际 机场",
+    "city": "Mudanjiang",
+    "lat": 44.5252,
+    "lon": 129.5686,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "mdg mudanjiang hailang 国际 机场 mudanjiang mudanjiang hailang international airport mudanjiang"
+  },
+  {
+    "code": "OHE",
+    "name": "Mohe Gulian 机场",
+    "city": "Mohe",
+    "lat": 52.9169,
+    "lon": 122.4228,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ohe mohe gulian 机场 mohe mohe gulian airport mohe"
+  },
+  {
+    "code": "NDG",
+    "name": "Qiqihar Sanjiazi 机场",
+    "city": "Qiqihar",
+    "lat": 47.23,
+    "lon": 123.9142,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "ndg qiqihar sanjiazi 机场 qiqihar qiqihar sanjiazi airport qiqihar"
+  },
+  {
+    "code": "YSQ",
+    "name": "Songyuan Chaganhu 机场",
+    "city": "Qian Gorlos Mongol Autonomous County",
+    "lat": 44.9311,
+    "lon": 124.5521,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ysq songyuan chaganhu 机场 qian gorlos mongol autonomous county songyuan chaganhu airport qian gorlos mongol autonomous county"
+  },
+  {
+    "code": "DLC",
+    "name": "大连周水子国际机场",
+    "city": "大连",
+    "lat": 38.9657,
+    "lon": 121.5385,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "dlc 大连周水子国际机场 大连 dalian zhoushuizi international airport dalian (ganjingzi)"
+  },
+  {
+    "code": "TNH",
+    "name": "Tonghua Sanyuanpu 机场",
+    "city": "Tonghua",
+    "lat": 42.0484,
+    "lon": 125.734,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "tnh tonghua sanyuanpu 机场 tonghua tonghua sanyuanpu airport tonghua"
+  },
+  {
+    "code": "SHE",
+    "name": "沈阳桃仙国际机场",
+    "city": "沈阳",
+    "lat": 41.6398,
+    "lon": 123.4837,
+    "country": "CN",
+    "type": "large_airport",
+    "keywords": "she 沈阳桃仙国际机场 沈阳 shenyang taoxian international airport shenyang"
+  },
+  {
+    "code": "YNJ",
+    "name": "Yanji Chaoyangchuan 机场",
+    "city": "Yanji",
+    "lat": 42.8828,
+    "lon": 129.451,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ynj yanji chaoyangchuan 机场 yanji yanji chaoyangchuan airport yanji"
+  },
+  {
+    "code": "YKH",
+    "name": "Yingkou Lanqi 机场",
+    "city": "Yingkou",
+    "lat": 40.5425,
+    "lon": 122.3586,
+    "country": "CN",
+    "type": "medium_airport",
+    "keywords": "ykh yingkou lanqi 机场 yingkou yingkou lanqi airport yingkou (laobian)"
+  }
+]

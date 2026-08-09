@@ -1,0 +1,2657 @@
+[
+  {
+    "code": "AXF",
+    "name": "阿拉善左旗巴彦浩特机场",
+    "city": "阿拉善左旗",
+    "lat": 38.7483,
+    "lon": 105.5842,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BZX",
+    "name": "巴中恩阳机场",
+    "city": "巴中",
+    "lat": 31.7384,
+    "lon": 106.6449,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HSC",
+    "name": "韶关丹霞机场",
+    "city": "韶关",
+    "lat": 24.9786,
+    "lon": 113.421,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JGS",
+    "name": "井冈山机场",
+    "city": "吉安/井冈山",
+    "lat": 26.8569,
+    "lon": 114.737,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HNG",
+    "name": "海南州共和机场",
+    "city": "海南州",
+    "lat": 36.3367,
+    "lon": 100.48,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JNH",
+    "name": "嘉兴南湖机场",
+    "city": "嘉兴",
+    "lat": 30.6981,
+    "lon": 120.6631,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WHN",
+    "name": "武汉汉南通用机场",
+    "city": "武汉汉南",
+    "lat": 30.2552,
+    "lon": 114.0628,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DDR",
+    "name": "日喀则定日机场",
+    "city": "日喀则定日",
+    "lat": 28.6046,
+    "lon": 86.798,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HQL",
+    "name": "塔什库尔干红其拉甫机场",
+    "city": "塔县帕米尔",
+    "lat": 37.6613,
+    "lon": 75.2889,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LSG",
+    "name": "乐山机场",
+    "city": "乐山",
+    "lat": 29.4386,
+    "lon": 103.7492,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JDE",
+    "name": "建德千岛湖通用机场",
+    "city": "建德千岛湖",
+    "lat": 29.3609,
+    "lon": 119.1808,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "APJ",
+    "name": "阿里普兰机场",
+    "city": "阿里普兰",
+    "lat": 30.3979,
+    "lon": 81.1332,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "ZFL",
+    "name": "昭苏天马机场",
+    "city": "昭苏",
+    "lat": 43.0885,
+    "lon": 81.223,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HJB",
+    "name": "和静巴音布鲁克机场",
+    "city": "巴音布鲁克",
+    "lat": 42.9764,
+    "lon": 83.9955,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JBK",
+    "name": "奇台江布拉克机场",
+    "city": "奇台",
+    "lat": 44.1661,
+    "lon": 89.5501,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "ZAT",
+    "name": "昭通昭阳机场",
+    "city": "昭通",
+    "lat": 27.2058,
+    "lon": 103.6915,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BFY",
+    "name": "蚌埠腾湖机场",
+    "city": "蚌埠",
+    "lat": 33.1663,
+    "lon": 117.0583,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HZU",
+    "name": "成都淮州通用机场",
+    "city": "成都淮州",
+    "lat": 30.6773,
+    "lon": 104.5294,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JUH",
+    "name": "池州九华山机场",
+    "city": "池州/九华山",
+    "lat": 30.7403,
+    "lon": 117.6856,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LZG",
+    "name": "阆中古城机场",
+    "city": "阆中",
+    "lat": 31.5019,
+    "lon": 106.0344,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NLH",
+    "name": "宁蒗泸沽湖机场",
+    "city": "泸沽湖",
+    "lat": 27.5403,
+    "lon": 100.7593,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KNH",
+    "name": "金门尚义机场",
+    "city": "金门",
+    "lat": 24.4279,
+    "lon": 118.359,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LZN",
+    "name": "马祖南竿机场",
+    "city": "马祖南竿",
+    "lat": 26.1597,
+    "lon": 119.9584,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TTT",
+    "name": "台东丰年机场",
+    "city": "台东",
+    "lat": 22.7549,
+    "lon": 121.1018,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KHH",
+    "name": "高雄国际机场",
+    "city": "高雄",
+    "lat": 22.5771,
+    "lon": 120.35,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "CYI",
+    "name": "嘉义水上机场",
+    "city": "嘉义",
+    "lat": 23.4626,
+    "lon": 120.3905,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HCN",
+    "name": "恒春机场",
+    "city": "恒春",
+    "lat": 22.0411,
+    "lon": 120.73,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KYD",
+    "name": "兰屿机场",
+    "city": "兰屿",
+    "lat": 22.027,
+    "lon": 121.535,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "MFK",
+    "name": "马祖北竿机场",
+    "city": "马祖北竿",
+    "lat": 26.2241,
+    "lon": 120.0027,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "MZG",
+    "name": "澎湖马公机场",
+    "city": "澎湖",
+    "lat": 23.5687,
+    "lon": 119.628,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "TSA",
+    "name": "台北松山国际机场",
+    "city": "台北松山",
+    "lat": 25.0672,
+    "lon": 121.5528,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "TPE",
+    "name": "台湾桃园国际机场",
+    "city": "台北",
+    "lat": 25.0777,
+    "lon": 121.233,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "HUN",
+    "name": "花莲佳山机场",
+    "city": "花莲",
+    "lat": 24.0232,
+    "lon": 121.618,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "RHT",
+    "name": "阿拉善右旗巴丹吉林机场",
+    "city": "阿拉善右旗",
+    "lat": 39.225,
+    "lon": 101.546,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TWC",
+    "name": "图木舒克唐王城机场",
+    "city": "图木舒克",
+    "lat": 39.8867,
+    "lon": 79.2334,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HKG",
+    "name": "香港国际机场",
+    "city": "香港",
+    "lat": 22.3118,
+    "lon": 113.9149,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "MFM",
+    "name": "澳门国际机场",
+    "city": "澳门",
+    "lat": 22.1496,
+    "lon": 113.592,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "PEK",
+    "name": "北京首都国际机场",
+    "city": "北京",
+    "lat": 40.0773,
+    "lon": 116.5967,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "PKX",
+    "name": "北京大兴国际机场",
+    "city": "北京",
+    "lat": 39.5013,
+    "lon": 116.414,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "CDE",
+    "name": "承德普宁机场",
+    "city": "承德",
+    "lat": 41.1225,
+    "lon": 118.0739,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CIF",
+    "name": "赤峰玉龙机场",
+    "city": "赤峰",
+    "lat": 42.1597,
+    "lon": 118.841,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CIH",
+    "name": "长治王村机场",
+    "city": "长治",
+    "lat": 36.2475,
+    "lon": 113.126,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BPE",
+    "name": "秦皇岛北戴河机场",
+    "city": "秦皇岛",
+    "lat": 39.6664,
+    "lon": 119.0614,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DSN",
+    "name": "鄂尔多斯伊金霍洛国际机场",
+    "city": "鄂尔多斯",
+    "lat": 39.4935,
+    "lon": 109.8599,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "DAT",
+    "name": "大同云冈国际机场",
+    "city": "大同",
+    "lat": 40.0614,
+    "lon": 113.4805,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "ERL",
+    "name": "二连浩特赛乌素国际机场",
+    "city": "二连浩特",
+    "lat": 43.4241,
+    "lon": 112.0911,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YIE",
+    "name": "阿尔山伊尔施机场",
+    "city": "阿尔山",
+    "lat": 47.3106,
+    "lon": 119.9117,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HDG",
+    "name": "邯郸机场",
+    "city": "邯郸",
+    "lat": 36.5248,
+    "lon": 114.4241,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HET",
+    "name": "呼和浩特白塔国际机场",
+    "city": "呼和浩特",
+    "lat": 40.8497,
+    "lon": 111.8246,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "HUO",
+    "name": "霍林郭勒霍林河机场",
+    "city": "霍林郭勒",
+    "lat": 45.4872,
+    "lon": 119.4072,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HLD",
+    "name": "呼伦贝尔海拉尔机场",
+    "city": "海拉尔",
+    "lat": 49.2086,
+    "lon": 119.8223,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "LFQ",
+    "name": "临汾尧都机场",
+    "city": "临汾",
+    "lat": 36.1326,
+    "lon": 111.6412,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LLV",
+    "name": "吕梁大武机场",
+    "city": "吕梁",
+    "lat": 37.6833,
+    "lon": 111.1428,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NZH",
+    "name": "满洲里西郊机场",
+    "city": "满洲里",
+    "lat": 49.5667,
+    "lon": 117.33,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BAV",
+    "name": "包头东河国际机场",
+    "city": "包头",
+    "lat": 40.56,
+    "lon": 109.997,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "SZH",
+    "name": "朔州滋润机场",
+    "city": "朔州",
+    "lat": 39.2732,
+    "lon": 112.6916,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "SJW",
+    "name": "石家庄正定国际机场",
+    "city": "石家庄",
+    "lat": 38.2807,
+    "lon": 114.697,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "TVS",
+    "name": "唐山三女河机场",
+    "city": "唐山",
+    "lat": 39.7178,
+    "lon": 118.0026,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TSN",
+    "name": "天津滨海国际机场",
+    "city": "天津",
+    "lat": 39.1244,
+    "lon": 117.346,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "TGO",
+    "name": "通辽机场",
+    "city": "通辽",
+    "lat": 43.5567,
+    "lon": 122.2,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "UCB",
+    "name": "乌兰察布集宁机场",
+    "city": "乌兰察布",
+    "lat": 41.1303,
+    "lon": 113.1073,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WUA",
+    "name": "乌海机场",
+    "city": "乌海",
+    "lat": 39.7934,
+    "lon": 106.7993,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HLH",
+    "name": "乌兰浩特义勒力特机场",
+    "city": "乌兰浩特",
+    "lat": 46.1953,
+    "lon": 122.0083,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "XIL",
+    "name": "锡林浩特机场",
+    "city": "锡林浩特",
+    "lat": 43.9156,
+    "lon": 115.964,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WUT",
+    "name": "忻州五台山机场",
+    "city": "忻州",
+    "lat": 38.5975,
+    "lon": 112.9692,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YCU",
+    "name": "运城盐湖国际机场",
+    "city": "运城",
+    "lat": 35.1178,
+    "lon": 111.034,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "TYN",
+    "name": "太原武宿国际机场",
+    "city": "太原",
+    "lat": 37.7469,
+    "lon": 112.628,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "RLK",
+    "name": "巴彦淖尔天吉泰机场",
+    "city": "巴彦淖尔",
+    "lat": 40.9264,
+    "lon": 107.7409,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "ZQZ",
+    "name": "张家口宁远机场",
+    "city": "张家口",
+    "lat": 40.7387,
+    "lon": 114.9334,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NZL",
+    "name": "扎兰屯成吉思汗机场",
+    "city": "扎兰屯",
+    "lat": 47.8659,
+    "lon": 122.7687,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BHY",
+    "name": "北海福成机场",
+    "city": "北海",
+    "lat": 21.5387,
+    "lon": 109.2937,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "AEB",
+    "name": "百色巴马机场",
+    "city": "百色",
+    "lat": 23.7206,
+    "lon": 106.96,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CGD",
+    "name": "常德桃花源机场",
+    "city": "常德",
+    "lat": 28.9189,
+    "lon": 111.64,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HJJ",
+    "name": "怀化芷江机场",
+    "city": "怀化",
+    "lat": 27.4431,
+    "lon": 109.7047,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HCZ",
+    "name": "郴州北湖机场",
+    "city": "郴州",
+    "lat": 25.7534,
+    "lon": 112.8454,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DYG",
+    "name": "张家界荷花国际机场",
+    "city": "张家界",
+    "lat": 29.1047,
+    "lon": 110.4428,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "FUO",
+    "name": "佛山沙堤机场",
+    "city": "佛山",
+    "lat": 23.0825,
+    "lon": 113.0708,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CAN",
+    "name": "广州白云国际机场",
+    "city": "广州",
+    "lat": 23.3924,
+    "lon": 113.299,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "CSX",
+    "name": "长沙黄花国际机场",
+    "city": "长沙",
+    "lat": 28.1892,
+    "lon": 113.22,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "HCJ",
+    "name": "河池金城江机场",
+    "city": "河池",
+    "lat": 24.8043,
+    "lon": 107.7108,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HNY",
+    "name": "衡阳南岳机场",
+    "city": "衡阳",
+    "lat": 26.7221,
+    "lon": 112.618,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HUZ",
+    "name": "惠州平潭机场",
+    "city": "惠州",
+    "lat": 23.05,
+    "lon": 114.6,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KWL",
+    "name": "桂林两江国际机场",
+    "city": "桂林",
+    "lat": 25.2198,
+    "lon": 110.0396,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "LLF",
+    "name": "永州零陵机场",
+    "city": "永州",
+    "lat": 26.3387,
+    "lon": 111.61,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "MXZ",
+    "name": "梅州梅县机场",
+    "city": "梅州",
+    "lat": 24.2634,
+    "lon": 116.0979,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NNG",
+    "name": "南宁吴圩国际机场",
+    "city": "南宁",
+    "lat": 22.5981,
+    "lon": 108.1819,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "SWA",
+    "name": "揭阳潮汕国际机场",
+    "city": "揭阳/潮州/汕头",
+    "lat": 23.552,
+    "lon": 116.5033,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "ZUH",
+    "name": "珠海金湾机场",
+    "city": "珠海",
+    "lat": 22.0064,
+    "lon": 113.376,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "WGN",
+    "name": "武冈机场",
+    "city": "邵阳",
+    "lat": 26.8061,
+    "lon": 110.641,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "SZX",
+    "name": "深圳宝安国际机场",
+    "city": "深圳",
+    "lat": 22.6395,
+    "lon": 113.8033,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "WUZ",
+    "name": "梧州西江机场",
+    "city": "梧州",
+    "lat": 23.4032,
+    "lon": 111.0933,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DXJ",
+    "name": "湘西边城机场",
+    "city": "湘西",
+    "lat": 28.4972,
+    "lon": 109.5218,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YLX",
+    "name": "玉林福绵机场",
+    "city": "玉林",
+    "lat": 22.433,
+    "lon": 110.12,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YYA",
+    "name": "岳阳三荷机场",
+    "city": "岳阳",
+    "lat": 29.3117,
+    "lon": 113.2816,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "ZHA",
+    "name": "湛江吴川机场",
+    "city": "湛江",
+    "lat": 21.4817,
+    "lon": 110.5903,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "CGO",
+    "name": "郑州新郑国际机场",
+    "city": "郑州",
+    "lat": 34.5265,
+    "lon": 113.8492,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "EHU",
+    "name": "鄂州花湖国际机场",
+    "city": "鄂州",
+    "lat": 30.3412,
+    "lon": 115.0393,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "ENH",
+    "name": "恩施许家坪机场",
+    "city": "恩施",
+    "lat": 30.3203,
+    "lon": 109.485,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WUH",
+    "name": "武汉天河国际机场",
+    "city": "武汉",
+    "lat": 30.7748,
+    "lon": 114.2137,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "SHS",
+    "name": "荆州沙市机场",
+    "city": "荆州",
+    "lat": 30.2928,
+    "lon": 112.4485,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LYA",
+    "name": "洛阳北郊机场",
+    "city": "洛阳",
+    "lat": 34.7411,
+    "lon": 112.388,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "NNY",
+    "name": "南阳姜营机场",
+    "city": "南阳",
+    "lat": 32.9827,
+    "lon": 112.6175,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HQQ",
+    "name": "安阳红旗渠机场",
+    "city": "安阳",
+    "lat": 35.8708,
+    "lon": 114.4619,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HPG",
+    "name": "神农架红坪机场",
+    "city": "神农架",
+    "lat": 31.626,
+    "lon": 110.34,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WDS",
+    "name": "十堰武当山机场",
+    "city": "十堰",
+    "lat": 32.5929,
+    "lon": 110.9063,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "XFN",
+    "name": "襄阳刘集机场",
+    "city": "襄阳",
+    "lat": 32.1522,
+    "lon": 112.2917,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "XAI",
+    "name": "信阳明港机场",
+    "city": "信阳",
+    "lat": 32.5408,
+    "lon": 114.0791,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YIH",
+    "name": "宜昌三峡机场",
+    "city": "宜昌",
+    "lat": 30.5541,
+    "lon": 111.4826,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HAK",
+    "name": "海口美兰国际机场",
+    "city": "海口",
+    "lat": 19.9349,
+    "lon": 110.459,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "BAR",
+    "name": "琼海博鳌机场",
+    "city": "琼海",
+    "lat": 19.141,
+    "lon": 110.4528,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "SYX",
+    "name": "三亚凤凰国际机场",
+    "city": "三亚",
+    "lat": 18.3029,
+    "lon": 109.412,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "AKA",
+    "name": "安康富强机场",
+    "city": "安康",
+    "lat": 32.757,
+    "lon": 108.8734,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DNH",
+    "name": "敦煌莫高国际机场",
+    "city": "敦煌",
+    "lat": 40.162,
+    "lon": 94.8128,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "HXD",
+    "name": "海西德令哈机场",
+    "city": "德令哈",
+    "lat": 37.1253,
+    "lon": 97.2687,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "GMQ",
+    "name": "果洛玛沁机场",
+    "city": "果洛",
+    "lat": 34.4181,
+    "lon": 100.3011,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "GOQ",
+    "name": "格尔木机场",
+    "city": "格尔木",
+    "lat": 36.4006,
+    "lon": 94.7861,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "GYU",
+    "name": "固原六盘山机场",
+    "city": "固原",
+    "lat": 36.0789,
+    "lon": 106.2169,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HBQ",
+    "name": "海北祁连机场",
+    "city": "祁连",
+    "lat": 38.0081,
+    "lon": 100.6451,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HTT",
+    "name": "芒崖花土沟机场",
+    "city": "花土沟",
+    "lat": 38.2016,
+    "lon": 90.8378,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HZG",
+    "name": "汉中城固机场",
+    "city": "汉中",
+    "lat": 33.1335,
+    "lon": 107.2038,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "INC",
+    "name": "银川河东国际机场",
+    "city": "银川",
+    "lat": 38.3228,
+    "lon": 106.3932,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "JIC",
+    "name": "金昌金川机场",
+    "city": "金昌",
+    "lat": 38.5422,
+    "lon": 102.3483,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JGN",
+    "name": "嘉峪关关城国际机场",
+    "city": "嘉峪关",
+    "lat": 39.8591,
+    "lon": 98.3393,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "LHW",
+    "name": "兰州中川国际机场",
+    "city": "兰州",
+    "lat": 36.5152,
+    "lon": 103.62,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "LNL",
+    "name": "陇南成州机场",
+    "city": "陇南",
+    "lat": 33.7899,
+    "lon": 105.79,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "IQN",
+    "name": "庆阳西峰机场",
+    "city": "庆阳",
+    "lat": 35.8026,
+    "lon": 107.5989,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "SIA",
+    "name": "西安西关机场",
+    "city": "西安",
+    "lat": 34.3767,
+    "lon": 109.12,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "THQ",
+    "name": "天水麦积山机场",
+    "city": "天水",
+    "lat": 34.5601,
+    "lon": 105.8603,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "GXH",
+    "name": "甘南夏河机场",
+    "city": "甘南",
+    "lat": 34.819,
+    "lon": 102.6223,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "XNN",
+    "name": "西宁曹家堡国际机场",
+    "city": "西宁",
+    "lat": 36.5277,
+    "lon": 102.0402,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "XIY",
+    "name": "西安咸阳国际机场",
+    "city": "西安",
+    "lat": 34.4422,
+    "lon": 108.7624,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "ENY",
+    "name": "延安南泥湾机场",
+    "city": "延安",
+    "lat": 36.4794,
+    "lon": 109.4641,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "UYN",
+    "name": "榆林榆阳机场",
+    "city": "榆林",
+    "lat": 38.3597,
+    "lon": 109.5909,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YUS",
+    "name": "玉树巴塘机场",
+    "city": "玉树",
+    "lat": 32.8364,
+    "lon": 97.0364,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "ZHY",
+    "name": "中卫沙坡头机场",
+    "city": "中卫",
+    "lat": 37.5731,
+    "lon": 105.1545,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YZY",
+    "name": "张掖甘州机场",
+    "city": "张掖",
+    "lat": 38.8019,
+    "lon": 100.675,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BSD",
+    "name": "保山云瑞机场",
+    "city": "保山",
+    "lat": 25.0533,
+    "lon": 99.1683,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CWJ",
+    "name": "沧源佤山机场",
+    "city": "沧源",
+    "lat": 23.2763,
+    "lon": 99.3732,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DLU",
+    "name": "大理凤仪机场",
+    "city": "大理",
+    "lat": 25.6494,
+    "lon": 100.319,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DIG",
+    "name": "迪庆香格里拉机场",
+    "city": "香格里拉",
+    "lat": 27.7936,
+    "lon": 99.6772,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JHG",
+    "name": "西双版纳嘎洒国际机场",
+    "city": "景洪/西双版纳",
+    "lat": 21.9746,
+    "lon": 100.7622,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "JMJ",
+    "name": "澜沧景迈机场",
+    "city": "澜沧",
+    "lat": 22.4177,
+    "lon": 99.784,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LNJ",
+    "name": "临沧博尚机场",
+    "city": "临沧",
+    "lat": 23.7381,
+    "lon": 100.025,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LJG",
+    "name": "丽江三义国际机场",
+    "city": "丽江",
+    "lat": 26.6775,
+    "lon": 100.2449,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "LUM",
+    "name": "德宏芒市国际机场",
+    "city": "芒市",
+    "lat": 24.4011,
+    "lon": 98.5317,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KMG",
+    "name": "昆明长水国际机场",
+    "city": "昆明",
+    "lat": 25.1103,
+    "lon": 102.9367,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "SYM",
+    "name": "普洱思茅机场",
+    "city": "普洱",
+    "lat": 22.7933,
+    "lon": 100.959,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WNH",
+    "name": "文山普者黑机场",
+    "city": "文山",
+    "lat": 23.5583,
+    "lon": 104.3255,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "XMN",
+    "name": "厦门高崎国际机场",
+    "city": "厦门",
+    "lat": 24.5439,
+    "lon": 118.1275,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "BFU",
+    "name": "蚌埠仁和集机场",
+    "city": "蚌埠",
+    "lat": 32.8477,
+    "lon": 117.3202,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CZX",
+    "name": "常州奔牛国际机场",
+    "city": "常州",
+    "lat": 31.9205,
+    "lon": 119.7755,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KHN",
+    "name": "南昌昌北国际机场",
+    "city": "南昌",
+    "lat": 28.8648,
+    "lon": 115.9027,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "DOY",
+    "name": "东营胜利机场",
+    "city": "东营",
+    "lat": 37.5014,
+    "lon": 118.7899,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "FUG",
+    "name": "阜阳西关机场",
+    "city": "阜阳",
+    "lat": 32.8822,
+    "lon": 115.7344,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "FOC",
+    "name": "福州长乐国际机场",
+    "city": "福州",
+    "lat": 25.9293,
+    "lon": 119.6725,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "KOW",
+    "name": "赣州黄金机场",
+    "city": "赣州",
+    "lat": 25.8533,
+    "lon": 114.7789,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HGH",
+    "name": "杭州萧山国际机场",
+    "city": "杭州",
+    "lat": 30.2361,
+    "lon": 120.4289,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "HZA",
+    "name": "菏泽牡丹机场",
+    "city": "菏泽",
+    "lat": 35.213,
+    "lon": 115.7367,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JDZ",
+    "name": "景德镇罗家机场",
+    "city": "景德镇",
+    "lat": 29.3386,
+    "lon": 117.176,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JNG",
+    "name": "济宁大安机场",
+    "city": "济宁",
+    "lat": 35.6474,
+    "lon": 116.7433,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JIU",
+    "name": "九江庐山机场",
+    "city": "九江",
+    "lat": 29.4769,
+    "lon": 115.8011,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TNA",
+    "name": "济南遥墙国际机场",
+    "city": "济南",
+    "lat": 36.8572,
+    "lon": 117.216,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "JUZ",
+    "name": "衢州机场",
+    "city": "衢州",
+    "lat": 28.9661,
+    "lon": 118.8988,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LYG",
+    "name": "连云港花果山国际机场",
+    "city": "连云港",
+    "lat": 34.4141,
+    "lon": 119.179,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "LCX",
+    "name": "连城冠豸山机场",
+    "city": "龙岩",
+    "lat": 25.6759,
+    "lon": 116.7459,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HYN",
+    "name": "台州路桥机场",
+    "city": "台州",
+    "lat": 28.5622,
+    "lon": 121.429,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LYI",
+    "name": "临沂启阳机场",
+    "city": "临沂",
+    "lat": 35.0529,
+    "lon": 118.4118,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NGB",
+    "name": "宁波栎社国际机场",
+    "city": "宁波",
+    "lat": 29.8267,
+    "lon": 121.462,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "NKG",
+    "name": "南京禄口国际机场",
+    "city": "南京",
+    "lat": 31.735,
+    "lon": 118.8659,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "NTG",
+    "name": "南通兴东国际机场",
+    "city": "南通",
+    "lat": 32.0736,
+    "lon": 120.9801,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HFE",
+    "name": "合肥新桥国际机场",
+    "city": "合肥",
+    "lat": 31.9878,
+    "lon": 116.9769,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "PVG",
+    "name": "上海浦东国际机场",
+    "city": "上海",
+    "lat": 31.1434,
+    "lon": 121.805,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "TAO",
+    "name": "青岛胶东国际机场",
+    "city": "青岛",
+    "lat": 36.362,
+    "lon": 120.0882,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "JJN",
+    "name": "泉州晋江国际机场",
+    "city": "泉州",
+    "lat": 24.7959,
+    "lon": 118.5886,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "RIZ",
+    "name": "日照山字河机场",
+    "city": "日照",
+    "lat": 35.405,
+    "lon": 119.3244,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HIA",
+    "name": "淮安涟水机场",
+    "city": "淮安",
+    "lat": 33.7927,
+    "lon": 119.1267,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "SQJ",
+    "name": "三明沙县机场",
+    "city": "三明",
+    "lat": 26.4263,
+    "lon": 117.8336,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "SQD",
+    "name": "上饶三清山机场",
+    "city": "上饶",
+    "lat": 28.3797,
+    "lon": 117.9643,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "SHA",
+    "name": "上海虹桥国际机场",
+    "city": "上海",
+    "lat": 31.1981,
+    "lon": 121.3343,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "SZV",
+    "name": "苏州光福机场",
+    "city": "苏州",
+    "lat": 31.2631,
+    "lon": 120.401,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TXN",
+    "name": "黄山屯溪国际机场",
+    "city": "黄山",
+    "lat": 29.7333,
+    "lon": 118.256,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "WHA",
+    "name": "芜湖宣州机场",
+    "city": "芜湖/宣城",
+    "lat": 31.1045,
+    "lon": 118.6669,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WEF",
+    "name": "潍坊南苑机场",
+    "city": "潍坊",
+    "lat": 36.6467,
+    "lon": 119.119,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WEH",
+    "name": "威海大水泊机场",
+    "city": "威海",
+    "lat": 37.1871,
+    "lon": 122.229,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WUX",
+    "name": "苏南硕放国际机场",
+    "city": "无锡/苏州",
+    "lat": 31.497,
+    "lon": 120.4304,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "WUS",
+    "name": "南平武夷山机场",
+    "city": "武夷山",
+    "lat": 27.7019,
+    "lon": 118.001,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WNZ",
+    "name": "温州龙湾国际机场",
+    "city": "温州",
+    "lat": 27.9106,
+    "lon": 120.8535,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "XUZ",
+    "name": "徐州观音国际机场",
+    "city": "徐州",
+    "lat": 34.0591,
+    "lon": 117.5553,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YTY",
+    "name": "扬州泰州国际机场",
+    "city": "扬州/泰州",
+    "lat": 32.5634,
+    "lon": 119.7198,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YIC",
+    "name": "宜春明月山机场",
+    "city": "宜春",
+    "lat": 27.8025,
+    "lon": 114.3062,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YNZ",
+    "name": "盐城南洋国际机场",
+    "city": "盐城",
+    "lat": 33.4283,
+    "lon": 120.2054,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "YNT",
+    "name": "烟台蓬莱国际机场",
+    "city": "烟台",
+    "lat": 37.6597,
+    "lon": 120.9781,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "YIW",
+    "name": "义乌机场",
+    "city": "义乌/金华",
+    "lat": 29.3421,
+    "lon": 120.0312,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "HSN",
+    "name": "舟山普陀山机场",
+    "city": "舟山",
+    "lat": 29.9339,
+    "lon": 122.3623,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "NGQ",
+    "name": "阿里昆莎机场",
+    "city": "阿里",
+    "lat": 32.0979,
+    "lon": 80.054,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "AVA",
+    "name": "安顺黄果树机场",
+    "city": "安顺",
+    "lat": 26.2606,
+    "lon": 105.8733,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BPX",
+    "name": "昌都邦达机场",
+    "city": "昌都",
+    "lat": 30.5536,
+    "lon": 97.1083,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BFJ",
+    "name": "毕节飞雄机场",
+    "city": "毕节",
+    "lat": 27.2671,
+    "lon": 105.4721,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CKG",
+    "name": "重庆江北国际机场",
+    "city": "重庆",
+    "lat": 29.7123,
+    "lon": 106.6519,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "DZH",
+    "name": "达州金垭机场",
+    "city": "达州",
+    "lat": 31.0488,
+    "lon": 107.4356,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DCY",
+    "name": "稻城亚丁机场",
+    "city": "甘孜/稻城",
+    "lat": 29.3163,
+    "lon": 100.0603,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DEJ",
+    "name": "铜仁德江机场",
+    "city": "铜仁",
+    "lat": 28.121,
+    "lon": 108.1631,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DAX",
+    "name": "达州金亚机场",
+    "city": "达州",
+    "lat": 31.1302,
+    "lon": 107.4295,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "GHN",
+    "name": "德阳广汉机场",
+    "city": "德阳广汉",
+    "lat": 30.9485,
+    "lon": 104.3296,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "GYS",
+    "name": "广元盘龙机场",
+    "city": "广元",
+    "lat": 32.3903,
+    "lon": 105.6946,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KWE",
+    "name": "贵阳龙洞堡国际机场",
+    "city": "贵阳",
+    "lat": 26.5418,
+    "lon": 106.804,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "GZG",
+    "name": "甘孜格萨尔机场",
+    "city": "甘孜",
+    "lat": 31.7575,
+    "lon": 99.5542,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "AHJ",
+    "name": "红原机场",
+    "city": "阿坝/红原",
+    "lat": 32.5315,
+    "lon": 102.3522,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JZH",
+    "name": "九寨黄龙机场",
+    "city": "阿坝/九寨沟",
+    "lat": 32.8533,
+    "lon": 103.6822,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KGT",
+    "name": "康定机场",
+    "city": "甘孜/康定",
+    "lat": 30.1425,
+    "lon": 101.7387,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KJH",
+    "name": "凯里黄平机场",
+    "city": "凯里",
+    "lat": 26.972,
+    "lon": 107.988,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LLB",
+    "name": "荔波机场",
+    "city": "黔南/荔波",
+    "lat": 25.4525,
+    "lon": 107.9617,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LXA",
+    "name": "拉萨贡嘎国际机场",
+    "city": "拉萨",
+    "lat": 29.298,
+    "lon": 90.912,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "LZO",
+    "name": "泸州云龙机场",
+    "city": "泸州",
+    "lat": 29.0304,
+    "lon": 105.4684,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WMT",
+    "name": "遵义茅台机场",
+    "city": "遵义/茅台",
+    "lat": 27.9618,
+    "lon": 106.4354,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "MIG",
+    "name": "绵阳南郊机场",
+    "city": "绵阳",
+    "lat": 31.4281,
+    "lon": 104.741,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NAO",
+    "name": "南充高坪机场",
+    "city": "南充",
+    "lat": 30.7981,
+    "lon": 106.1642,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HZH",
+    "name": "黎平机场",
+    "city": "黔东南/黎平",
+    "lat": 26.3222,
+    "lon": 109.1499,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LZY",
+    "name": "林芝米林机场",
+    "city": "林芝",
+    "lat": 29.3033,
+    "lon": 94.3353,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LPF",
+    "name": "六盘水月照机场",
+    "city": "六盘水",
+    "lat": 26.6094,
+    "lon": 104.979,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JIQ",
+    "name": "黔江武陵山机场",
+    "city": "重庆黔江",
+    "lat": 29.5133,
+    "lon": 108.8311,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LGZ",
+    "name": "山南隆子机场",
+    "city": "山南",
+    "lat": 28.4224,
+    "lon": 92.3481,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TCZ",
+    "name": "腾冲驼峰机场",
+    "city": "腾冲",
+    "lat": 24.9381,
+    "lon": 98.4858,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TFU",
+    "name": "成都天府国际机场",
+    "city": "成都",
+    "lat": 30.3125,
+    "lon": 104.4413,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "TEN",
+    "name": "铜仁凤凰机场",
+    "city": "铜仁",
+    "lat": 27.8833,
+    "lon": 109.3089,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CTU",
+    "name": "成都双流国际机场",
+    "city": "成都",
+    "lat": 30.5583,
+    "lon": 103.946,
+    "isOrigin": true,
+    "tier": 1
+  },
+  {
+    "code": "CQW",
+    "name": "重庆仙女山机场",
+    "city": "重庆武隆",
+    "lat": 29.4657,
+    "lon": 107.6937,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WSK",
+    "name": "重庆巫山机场",
+    "city": "重庆巫山",
+    "lat": 31.069,
+    "lon": 109.709,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "WXN",
+    "name": "万州五桥机场",
+    "city": "重庆万州",
+    "lat": 30.8017,
+    "lon": 108.433,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "XIC",
+    "name": "西昌青山机场",
+    "city": "凉山/西昌",
+    "lat": 27.9891,
+    "lon": 102.184,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YBP",
+    "name": "宜宾五粮液机场",
+    "city": "宜宾",
+    "lat": 28.8584,
+    "lon": 104.5262,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "ACX",
+    "name": "兴义万峰林机场",
+    "city": "兴义",
+    "lat": 25.0834,
+    "lon": 104.9608,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "PZI",
+    "name": "攀枝花保安营机场",
+    "city": "攀枝花",
+    "lat": 26.54,
+    "lon": 101.7985,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "ZYI",
+    "name": "遵义新舟机场",
+    "city": "遵义",
+    "lat": 27.8107,
+    "lon": 107.2472,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "AKU",
+    "name": "阿克苏红旗坡机场",
+    "city": "阿克苏",
+    "lat": 41.2625,
+    "lon": 80.2917,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "ACF",
+    "name": "阿拉尔塔里木机场",
+    "city": "阿拉尔",
+    "lat": 40.4347,
+    "lon": 81.2621,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "AAT",
+    "name": "阿勒泰雪都机场",
+    "city": "阿勒泰",
+    "lat": 47.7499,
+    "lon": 88.0858,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "BPL",
+    "name": "博乐阿拉山口机场",
+    "city": "博乐",
+    "lat": 44.8955,
+    "lon": 82.3001,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "IQM",
+    "name": "且末玉都机场",
+    "city": "且末",
+    "lat": 38.2345,
+    "lon": 85.4655,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "FYN",
+    "name": "富蕴可可托海机场",
+    "city": "富蕴",
+    "lat": 46.8042,
+    "lon": 89.512,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HMI",
+    "name": "哈密机场",
+    "city": "哈密",
+    "lat": 42.8414,
+    "lon": 93.6692,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "SHF",
+    "name": "石河子花园机场",
+    "city": "石河子",
+    "lat": 44.2421,
+    "lon": 85.8905,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KCA",
+    "name": "库车龟兹机场",
+    "city": "库车",
+    "lat": 41.6779,
+    "lon": 82.8729,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KRL",
+    "name": "库尔勒梨城机场",
+    "city": "库尔勒",
+    "lat": 41.615,
+    "lon": 86.1408,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KRY",
+    "name": "克拉玛依机场",
+    "city": "克拉玛依",
+    "lat": 45.4665,
+    "lon": 84.9527,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KJI",
+    "name": "布尔津喀纳斯机场",
+    "city": "喀纳斯",
+    "lat": 48.2223,
+    "lon": 86.9959,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DHH",
+    "name": "巴里坤大河机场",
+    "city": "巴里坤",
+    "lat": 43.7565,
+    "lon": 93.1372,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NLT",
+    "name": "新源那拉提机场",
+    "city": "那拉提",
+    "lat": 43.4318,
+    "lon": 83.3786,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "RQA",
+    "name": "若羌楼兰机场",
+    "city": "若羌",
+    "lat": 38.9747,
+    "lon": 88.0083,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "QSZ",
+    "name": "莎车机场",
+    "city": "莎车",
+    "lat": 38.2454,
+    "lon": 77.0561,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "KHG",
+    "name": "喀什徕宁国际机场",
+    "city": "喀什",
+    "lat": 39.5423,
+    "lon": 76.0202,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "SXJ",
+    "name": "鄯善机场",
+    "city": "鄯善",
+    "lat": 42.9117,
+    "lon": 90.2475,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TCG",
+    "name": "塔城千泉机场",
+    "city": "塔城",
+    "lat": 46.6725,
+    "lon": 83.3408,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "TLQ",
+    "name": "吐鲁番交河机场",
+    "city": "吐鲁番",
+    "lat": 43.0308,
+    "lon": 89.0987,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HTN",
+    "name": "和田机场",
+    "city": "和田",
+    "lat": 37.0385,
+    "lon": 79.8649,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "URC",
+    "name": "乌鲁木齐地窝堡国际机场",
+    "city": "乌鲁木齐",
+    "lat": 43.9136,
+    "lon": 87.4794,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "YIN",
+    "name": "伊宁国际机场",
+    "city": "伊犁伊宁",
+    "lat": 43.9558,
+    "lon": 81.3303,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YTW",
+    "name": "于田万方机场",
+    "city": "于田",
+    "lat": 36.8085,
+    "lon": 81.7827,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DBC",
+    "name": "白城长安机场",
+    "city": "白城",
+    "lat": 45.5053,
+    "lon": 123.0197,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NBS",
+    "name": "白山长白山机场",
+    "city": "长白山",
+    "lat": 42.0669,
+    "lon": 127.6022,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CGQ",
+    "name": "长春龙嘉国际机场",
+    "city": "长春",
+    "lat": 43.9962,
+    "lon": 125.685,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "CNI",
+    "name": "大连长海大长山岛机场",
+    "city": "长海",
+    "lat": 39.2664,
+    "lon": 122.667,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "CHG",
+    "name": "朝阳机场",
+    "city": "朝阳",
+    "lat": 41.5381,
+    "lon": 120.435,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DDG",
+    "name": "丹东浪头国际机场",
+    "city": "丹东",
+    "lat": 40.0255,
+    "lon": 124.2867,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DQA",
+    "name": "大庆萨尔图机场",
+    "city": "大庆",
+    "lat": 46.7509,
+    "lon": 125.1386,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DTU",
+    "name": "五大连池德都机场",
+    "city": "五大连池",
+    "lat": 48.441,
+    "lon": 126.1284,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "FYJ",
+    "name": "抚远东极机场",
+    "city": "抚远",
+    "lat": 48.1972,
+    "lon": 134.363,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HRB",
+    "name": "哈尔滨太平国际机场",
+    "city": "哈尔滨",
+    "lat": 45.6234,
+    "lon": 126.25,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "HEK",
+    "name": "黑河瑷珲机场",
+    "city": "黑河",
+    "lat": 50.1716,
+    "lon": 127.3089,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JGD",
+    "name": "大兴安岭鄂伦春机场",
+    "city": "加格达奇",
+    "lat": 50.3714,
+    "lon": 124.1175,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JMU",
+    "name": "佳木斯松江国际机场",
+    "city": "佳木斯",
+    "lat": 46.8428,
+    "lon": 130.4643,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JSJ",
+    "name": "建三江湿地机场",
+    "city": "建三江",
+    "lat": 47.1082,
+    "lon": 132.6579,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JXA",
+    "name": "鸡西兴凯湖机场",
+    "city": "鸡西",
+    "lat": 45.293,
+    "lon": 131.193,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "JNZ",
+    "name": "锦州湾机场",
+    "city": "锦州",
+    "lat": 40.936,
+    "lon": 121.2771,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "LDS",
+    "name": "伊春林都机场",
+    "city": "伊春",
+    "lat": 47.7521,
+    "lon": 129.0191,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "MDG",
+    "name": "牡丹江海浪国际机场",
+    "city": "牡丹江",
+    "lat": 44.5252,
+    "lon": 129.5686,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "OHE",
+    "name": "漠河古莲机场",
+    "city": "漠河",
+    "lat": 52.9169,
+    "lon": 122.4228,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "NDG",
+    "name": "齐齐哈尔三家子机场",
+    "city": "齐齐哈尔",
+    "lat": 47.23,
+    "lon": 123.9142,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "YSQ",
+    "name": "松原查干湖机场",
+    "city": "松原",
+    "lat": 44.9311,
+    "lon": 124.5521,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "DLC",
+    "name": "大连周水子国际机场",
+    "city": "大连",
+    "lat": 38.9657,
+    "lon": 121.5385,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "TNH",
+    "name": "通化三源浦机场",
+    "city": "通化",
+    "lat": 42.0484,
+    "lon": 125.734,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "SHE",
+    "name": "沈阳桃仙国际机场",
+    "city": "沈阳",
+    "lat": 41.6398,
+    "lon": 123.4837,
+    "isOrigin": false,
+    "tier": 1
+  },
+  {
+    "code": "YNJ",
+    "name": "延吉朝阳川机场",
+    "city": "延吉",
+    "lat": 42.8828,
+    "lon": 129.451,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "YKH",
+    "name": "营口兰旗机场",
+    "city": "营口",
+    "lat": 40.5425,
+    "lon": 122.3586,
+    "isOrigin": false,
+    "tier": 3
+  },
+  {
+    "code": "HND",
+    "name": "东京羽田国际机场",
+    "city": "东京羽田",
+    "lat": 35.5494,
+    "lon": 139.7798,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "NRT",
+    "name": "东京成田国际机场",
+    "city": "东京成田",
+    "lat": 35.772,
+    "lon": 140.3929,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "ICN",
+    "name": "首尔仁川国际机场",
+    "city": "首尔仁川",
+    "lat": 37.4602,
+    "lon": 126.4407,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "SIN",
+    "name": "新加坡樟宜机场",
+    "city": "新加坡",
+    "lat": 1.3644,
+    "lon": 103.9915,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "BKK",
+    "name": "曼谷素万那普机场",
+    "city": "曼谷",
+    "lat": 13.69,
+    "lon": 100.7501,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "LHR",
+    "name": "伦敦希思罗机场",
+    "city": "伦敦",
+    "lat": 51.47,
+    "lon": -0.4543,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "CDG",
+    "name": "巴黎戴高乐机场",
+    "city": "巴黎",
+    "lat": 49.0097,
+    "lon": 2.5479,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "DXB",
+    "name": "迪拜国际机场",
+    "city": "迪拜",
+    "lat": 25.2532,
+    "lon": 55.3657,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "JFK",
+    "name": "纽约肯尼迪国际机场",
+    "city": "纽约",
+    "lat": 40.6413,
+    "lon": -73.7781,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "LAX",
+    "name": "洛杉矶国际机场",
+    "city": "洛杉矶",
+    "lat": 33.9416,
+    "lon": -118.4085,
+    "isOrigin": false,
+    "tier": 2
+  },
+  {
+    "code": "SYD",
+    "name": "悉尼金斯福德史密斯机场",
+    "city": "悉尼",
+    "lat": -33.9461,
+    "lon": 151.1772,
+    "isOrigin": false,
+    "tier": 2
+  }
+]

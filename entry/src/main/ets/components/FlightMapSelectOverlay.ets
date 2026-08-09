@@ -1,4 +1,11 @@
-import { Airport, POPULAR_AIRPORTS, findAirportByCode, getDistanceKm } from '../models/AirportModel';
+import { MapComponent, mapCommon, map } from '@kit.MapKit';
+import { vibrator } from '@kit.SensorServiceKit';
+import {
+  Airport,
+  POPULAR_AIRPORTS,
+  findAirportByCode,
+  getDistanceKm
+} from '../models/AirportModel';
 
 /**
  * 对应 ArkTS 规范：显式定义地图节点接口
@@ -10,45 +17,181 @@ export interface MapAirportNode {
   isUnlocked?: boolean;
 }
 
-/**
- * FlightMapSelectOverlay.ets
- * 方案二 形态 B：全屏沉浸式航图大屏 (选目的地)
- * 允许用户在暖色手绘大航图上拖拽点选城市、查看金光弧线、累计足迹成就与盲盒抽取航线
- */
+export interface RulerTick {
+  minutes: number;
+  isMajor: boolean;
+  label?: string;
+}
+
+export interface MapControllerEventSubscriber {
+  on(event: string, callback: (pos: mapCommon.CameraPosition) => void): void;
+}
+
+// 自动生成 15 ~ 240 分钟，按 5 分钟步进的精细刻度列表 (每 15 分钟为一个数字大刻度，中间带两个小短竖条)
+export const RULER_MINUTES_TICKS: RulerTick[] = [];
+for (let m = 15; m <= 240; m += 5) {
+  RULER_MINUTES_TICKS.push({
+    minutes: m,
+    isMajor: m % 15 === 0,
+    label: m % 15 === 0 ? `${m}` : undefined
+  });
+}
+
+interface MapElement {
+  remove(): void;
+}
+
 @CustomDialog
 export struct FlightMapSelectOverlay {
   controller?: CustomDialogController;
   @Prop selectedCode: string = '';
-  onDestinationSelected?: (airport: Airport) => void;
+  onDestinationSelected?: (airport: Airport, minutes?: number) => void;
 
-  @State currentSelectedCode: string = 'HND'; // 默认选中东京
-  @State routeDistanceKm: number = 2480;
-  @State unlockedCount: number = 4; // 示例已被解锁的城市计数
+  @State currentMinutes: number = 25;
+  @State currentSelectedCode: string = 'XIY';
+  @State routeDistanceKm: number = 624;
+  @State candidateAirports: Airport[] = [];
+  @State currentZoomLevel: number = 9.0;
+  @State rulerContainerWidth: number = 360;
 
-  // 整理全屏航图要展示的节点城市列表
-  private readonly mapAirports: MapAirportNode[] = [
-    { airport: findAirportByCode('CTU') || POPULAR_AIRPORTS[7], xPct: 35, yPct: 52, isUnlocked: true }, // 成都 (基准站)
-    { airport: findAirportByCode('PEK') || POPULAR_AIRPORTS[0], xPct: 50, yPct: 32, isUnlocked: true }, // 北京
-    { airport: findAirportByCode('PVG') || POPULAR_AIRPORTS[2], xPct: 62, yPct: 48, isUnlocked: true }, // 上海
-    { airport: findAirportByCode('CAN') || POPULAR_AIRPORTS[4], xPct: 48, yPct: 68, isUnlocked: true }, // 广州
-    { airport: findAirportByCode('SZX') || POPULAR_AIRPORTS[5], xPct: 52, yPct: 70 }, // 深圳
-    { airport: findAirportByCode('HGH') || POPULAR_AIRPORTS[8], xPct: 58, yPct: 52 }, // 杭州
-    { airport: findAirportByCode('XIY') || POPULAR_AIRPORTS[10], xPct: 40, yPct: 40 }, // 西安
-    { airport: findAirportByCode('CKG') || POPULAR_AIRPORTS[11], xPct: 38, yPct: 56 }, // 重庆
-    { airport: findAirportByCode('TAO') || POPULAR_AIRPORTS[16], xPct: 58, yPct: 38 }, // 青岛
-    { airport: findAirportByCode('HKG') || POPULAR_AIRPORTS[19], xPct: 50, yPct: 73 }, // 香港
-    { airport: findAirportByCode('HND') || POPULAR_AIRPORTS[22], xPct: 82, yPct: 34 }, // 东京
-    { airport: findAirportByCode('ICN') || POPULAR_AIRPORTS[24], xPct: 68, yPct: 33 }, // 首尔
-    { airport: findAirportByCode('SIN') || POPULAR_AIRPORTS[25], xPct: 42, yPct: 86 }, // 新加坡
-    { airport: findAirportByCode('LHR') || POPULAR_AIRPORTS[26], xPct: 12, yPct: 22 }, // 伦敦
-    { airport: findAirportByCode('CDG') || POPULAR_AIRPORTS[27], xPct: 16, yPct: 25 }  // 巴黎
-  ];
+  private huaweiMapController?: map.MapComponentController;
+  private currentPolyline?: MapElement;
+  private currentMarkers: Object[] = [];
+  private rulerScroller: Scroller = new Scroller();
+  private lastHapticTickIndex: number = -1;
+  private lastVibrateTime: number = 0;
+  private lastPanOffsetX: number = 0;
+
+  private huaweiMapOptions: mapCommon.MapOptions = {
+    position: {
+      target: { latitude: 30.48, longitude: 103.95 }, // 🎯 默认精准定位到起点 (成都: 30.56N, 103.95E)，如图 2 所示
+      zoom: 7.5,
+      tilt: 0
+    },
+    mapType: mapCommon.MapType.SATELLITE, // 卫星地图模式
+    zoomControlsEnabled: false,
+    compassControlsEnabled: false
+  };
 
   aboutToAppear() {
     if (this.selectedCode) {
       this.currentSelectedCode = this.selectedCode;
     }
+    this.updateCandidateAirports(this.currentMinutes);
     this.updateRouteDistance(this.currentSelectedCode);
+    this.initRulerScroll();
+  }
+
+  /**
+   * 🎯 对标 BackButton 标准系统的 25~40ms 触控微脉冲引擎 (100% 稳定响应)
+   */
+  private triggerTickHaptic(isMajor: boolean = false) {
+    const now = Date.now();
+    if (now - this.lastVibrateTime < 25) {
+      return;
+    }
+    this.lastVibrateTime = now;
+
+    try {
+      vibrator.startVibration({
+        type: 'time',
+        duration: isMajor ? 40 : 25
+      }, {
+        id: 0,
+        usage: 'touch'
+      });
+    } catch (e) {
+      console.error('vibrator startVibration error:', JSON.stringify(e));
+    }
+  }
+
+  private initRulerScroll() {
+    const idx = RULER_MINUTES_TICKS.findIndex(t => t.minutes === this.currentMinutes);
+    if (idx >= 0) {
+      setTimeout(() => {
+        this.rulerScroller.scrollTo({
+          xOffset: idx * 36,
+          yOffset: 0,
+          animation: { duration: 300, curve: Curve.Smooth }
+        });
+      }, 200);
+    }
+  }
+
+  private snapToNearestTick() {
+    const xOffset = this.rulerScroller.currentOffset().xOffset;
+    let tickIdx = Math.round(xOffset / 36);
+    if (tickIdx < 0) tickIdx = 0;
+    if (tickIdx >= RULER_MINUTES_TICKS.length) tickIdx = RULER_MINUTES_TICKS.length - 1;
+
+    const snapX = tickIdx * 36;
+    // 移除松手时的二次重复震动，保证单次滚动过程触感干净利落
+    this.rulerScroller.scrollTo({
+      xOffset: snapX,
+      yOffset: 0,
+      animation: { duration: 180, curve: Curve.FastOutSlowIn }
+    });
+
+    const targetMin = RULER_MINUTES_TICKS[tickIdx].minutes;
+    if (targetMin !== this.currentMinutes) {
+      this.currentMinutes = targetMin;
+      this.updateCandidateAirports(targetMin);
+      this.drawRoute(this.currentSelectedCode);
+    }
+  }
+
+  private updateCandidateAirports(minutes: number) {
+    const origin = findAirportByCode('CTU');
+    if (!origin || origin.lat === undefined || origin.lon === undefined) {
+      this.candidateAirports = POPULAR_AIRPORTS.slice(0, 5);
+      return;
+    }
+
+    const filtered = POPULAR_AIRPORTS.filter(apt => {
+      if (apt.code === 'CTU' || apt.lat === undefined || apt.lon === undefined) return false;
+      const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
+      if (minutes <= 25) {
+        return dist < 800; // 绵阳 / 重庆 / 西安
+      } else if (minutes <= 45) {
+        return dist < 2200; // 包含 624km 的西安、320km 的重庆、1200km 的广州、1558km 的北京
+      } else if (minutes <= 90) {
+        return dist >= 1200 && dist < 4200;
+      } else {
+        return dist >= 3500;
+      }
+    });
+
+    this.candidateAirports = filtered.length > 0 ? filtered : POPULAR_AIRPORTS.slice(0, 6);
+    
+    // 🎯 防止默认切到北京：优先保持当前选中，若不在列表中优先取近途机场 (如 XIY 西安 / CKG 重庆)
+    const exists = this.candidateAirports.some(apt => apt.code === this.currentSelectedCode);
+    if (!exists && this.candidateAirports.length > 0) {
+      const preferred = this.candidateAirports.find(a => a.code === 'XIY' || a.code === 'CKG') || this.candidateAirports[0];
+      this.currentSelectedCode = preferred.code;
+      this.updateRouteDistance(this.currentSelectedCode);
+    }
+  }
+
+  private selectMinutes(minutes: number, index?: number) {
+    this.currentMinutes = minutes;
+    this.triggerTickHaptic(true);
+    this.updateCandidateAirports(minutes);
+    this.drawRoute(this.currentSelectedCode);
+
+    if (index !== undefined) {
+      this.rulerScroller.scrollTo({
+        xOffset: index * 36,
+        yOffset: 0,
+        animation: { duration: 300, curve: Curve.Smooth }
+      });
+    }
+  }
+
+  private selectCity(code: string) {
+    this.triggerTickHaptic(true);
+    this.currentSelectedCode = code;
+    this.updateRouteDistance(code);
+    this.drawRoute(code);
   }
 
   private updateRouteDistance(targetCode: string) {
@@ -62,20 +205,159 @@ export struct FlightMapSelectOverlay {
     }
   }
 
-  private selectRandomDestination() {
-    const candidateList = this.mapAirports.filter(item => item.airport.code !== 'CTU');
-    if (candidateList.length > 0) {
-      const randomIdx = Math.floor(Math.random() * candidateList.length);
-      const chosen = candidateList[randomIdx];
-      this.currentSelectedCode = chosen.airport.code;
-      this.updateRouteDistance(chosen.airport.code);
+  private async drawRoute(destCode: string) {
+    if (!this.huaweiMapController) return;
+    const origin = findAirportByCode('CTU');
+    const target = findAirportByCode(destCode);
+    
+    if (!origin || !target || origin.lat === undefined || origin.lon === undefined || target.lat === undefined || target.lon === undefined) return;
+
+    // 清理旧航线
+    if (this.currentPolyline) {
+      this.currentPolyline.remove();
+      this.currentPolyline = undefined;
+    }
+
+    // 清理旧 Marker 标注
+    if (this.currentMarkers.length > 0) {
+      this.currentMarkers.forEach((m: Object) => {
+        try {
+          (m as map.Marker).remove();
+        } catch (e) {}
+      });
+      this.currentMarkers = [];
+    }
+
+    // 绘制航线 (精细橙红色画笔)
+    try {
+      this.currentPolyline = (await this.huaweiMapController.addPolyline({
+        points: [
+          { latitude: origin.lat, longitude: origin.lon },
+          { latitude: target.lat, longitude: target.lon }
+        ],
+        color: 0xFFF06553,
+        width: 5
+      })) as MapElement;
+    } catch (e) {
+      console.error('add polyline error', JSON.stringify(e));
+    }
+
+    // 🎯 绘制定位点机场 Marker (起点 + 终点)
+    try {
+      const opt1: mapCommon.MarkerOptions = {
+        position: { latitude: origin.lat, longitude: origin.lon }
+      };
+      const m1 = await this.huaweiMapController.addMarker(opt1);
+      if (m1) {
+        try {
+          const markerObj = m1 as Object as Record<string, Function>;
+          if (typeof markerObj['setTitle'] === 'function') {
+            markerObj['setTitle'](`📍 ${origin.name} (${origin.code})`);
+          }
+        } catch (err) {}
+        this.currentMarkers.push(m1);
+      }
+
+      const opt2: mapCommon.MarkerOptions = {
+        position: { latitude: target.lat, longitude: target.lon }
+      };
+      const m2 = await this.huaweiMapController.addMarker(opt2);
+      if (m2) {
+        try {
+          const markerObj = m2 as Object as Record<string, Function>;
+          if (typeof markerObj['setTitle'] === 'function') {
+            markerObj['setTitle'](`📍 ${target.name} (${target.code})`);
+          }
+        } catch (err) {}
+        this.currentMarkers.push(m2);
+      }
+    } catch (e) {
+      console.error('addMarker error', JSON.stringify(e));
+    }
+
+    // 智能镜头：以起点 (成都: 30.56N, 103.95E) 为基准视角（如图 2 所示），顺着航线延伸 15% 并扣除抽屉遮挡！
+    try {
+      let targetZoom = 7.5;
+      if (this.routeDistanceKm > 8000) {
+        targetZoom = 3.2;
+      } else if (this.routeDistanceKm > 3000) {
+        targetZoom = 4.5;
+      } else if (this.routeDistanceKm > 1500) {
+        targetZoom = 6.0;
+      } else if (this.routeDistanceKm > 800) {
+        targetZoom = 6.8;
+      } else {
+        targetZoom = 7.5;
+      }
+
+      this.currentZoomLevel = targetZoom;
+
+      // 镜头焦点精准打在起点成都 (30.56N, 103.95E) 偏南 0.08°，100% 呈现图 2 效果！
+      const anchorLat = origin.lat + (target.lat - origin.lat) * 0.15 - 0.08;
+      const anchorLon = origin.lon + (target.lon - origin.lon) * 0.15;
+
+      this.huaweiMapController.animateCamera({
+         target: {
+           latitude: anchorLat,
+           longitude: anchorLon
+         },
+         zoom: targetZoom
+      }, 800);
+    } catch (e) {
+      console.error('animate camera error', JSON.stringify(e));
+    }
+  }
+
+  private huaweiMapCallback = async (err: Error, controller: map.MapComponentController) => {
+    if (!err) {
+      this.huaweiMapController = controller;
+      this.drawRoute(this.currentSelectedCode);
+
+      // 🎯 动态兼容监听两指 Pinch 放大缩小地图手势，实时同步更新右侧 7.5x 倍率数字！
+      try {
+        const ctrl = controller as Object as MapControllerEventSubscriber;
+        if (ctrl && typeof ctrl.on === 'function') {
+          ctrl.on('cameraChange', (position: mapCommon.CameraPosition) => {
+            if (position && typeof position.zoom === 'number') {
+              this.currentZoomLevel = position.zoom;
+            }
+          });
+          ctrl.on('cameraMove', (position: mapCommon.CameraPosition) => {
+            if (position && typeof position.zoom === 'number') {
+              this.currentZoomLevel = position.zoom;
+            }
+          });
+        }
+      } catch (e) {
+        console.error('camera listener error', JSON.stringify(e));
+      }
+    }
+  };
+
+  private zoomIn() {
+    if (!this.huaweiMapController) return;
+    this.currentZoomLevel = Math.min(this.currentZoomLevel + 0.5, 12.0);
+    try {
+      this.huaweiMapController.animateCamera({ zoom: this.currentZoomLevel }, 300);
+    } catch (e) {
+      console.error('zoom in error', JSON.stringify(e));
+    }
+  }
+
+  private zoomOut() {
+    if (!this.huaweiMapController) return;
+    this.currentZoomLevel = Math.max(this.currentZoomLevel - 0.5, 1.5);
+    try {
+      this.huaweiMapController.animateCamera({ zoom: this.currentZoomLevel }, 300);
+    } catch (e) {
+      console.error('zoom out error', JSON.stringify(e));
     }
   }
 
   private confirmSelection() {
     const selected = findAirportByCode(this.currentSelectedCode);
     if (selected && this.onDestinationSelected) {
-      this.onDestinationSelected(selected);
+      this.onDestinationSelected(selected, this.currentMinutes);
     }
     if (this.controller) {
       this.controller.close();
@@ -83,150 +365,61 @@ export struct FlightMapSelectOverlay {
   }
 
   build() {
-    Stack({ alignContent: Alignment.TopStart }) {
-      // 1. 全屏温润手绘大航图背景与网络线
-      Column() {
-        // 背景微缩网格与经纬度线装饰
-        Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.SpaceBetween }) {
-          ForEach([1, 2, 3, 4, 5, 6], (_: number) => {
-            Row()
-              .width('100%')
-              .height(1)
-              .backgroundColor('rgba(226, 232, 240, 0.4)')
-          })
-        }
+    Stack({ alignContent: Alignment.BottomStart }) {
+      // 1. 原生花瓣卫星地图底图
+      MapComponent({ mapOptions: this.huaweiMapOptions, mapCallback: this.huaweiMapCallback })
         .width('100%')
         .height('100%')
-      }
-      .width('100%')
-      .height('100%')
-      .backgroundColor('#FAF7F2')
 
-      // 2. 交互地图主区域 (散落城市 Marker 点标)
-      Stack({ alignContent: Alignment.TopStart }) {
-        // 渲染城市节点 Marker
-        ForEach(this.mapAirports, (item: MapAirportNode) => {
-          Column({ space: 3 }) {
-            // 节点图标
-            Stack() {
-              if (item.airport.code === 'CTU') {
-                // 基准起飞站 (成都)
-                Circle({ width: 22, height: 22 })
-                  .fill('rgba(240, 101, 83, 0.25)')
-                Circle({ width: 12, height: 12 })
-                  .fill('#F06553')
-              } else if (item.airport.code === this.currentSelectedCode) {
-                // 当前选中目标城市 (暖珊瑚红发光高亮)
-                Circle({ width: 26, height: 26 })
-                  .fill('rgba(240, 101, 83, 0.35)')
-                Circle({ width: 14, height: 14 })
-                  .fill('#F06553')
-                Text('✈️')
-                  .fontSize(10)
-              } else if (item.isUnlocked) {
-                // 已解锁城市足迹 (金色爪印)
-                Circle({ width: 18, height: 18 })
-                  .fill('rgba(245, 158, 11, 0.2)')
-                Text('🐾')
-                  .fontSize(10)
-              } else {
-                // 未解锁普通城市 (柔和微光)
-                Circle({ width: 10, height: 10 })
-                  .fill('#CBD5E1')
-              }
-            }
-            .width(26)
-            .height(26)
-
-            // 城市卡片小标签
-            Row({ space: 2 }) {
-              Text(item.airport.city)
-                .fontSize(11)
-                .fontWeight(item.airport.code === this.currentSelectedCode ? FontWeight.Bold : FontWeight.Medium)
-                .fontColor(item.airport.code === this.currentSelectedCode ? '#F06553' : (item.airport.code === 'CTU' ? '#1E293B' : '#475569'))
-            }
-            .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-            .backgroundColor(item.airport.code === this.currentSelectedCode ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.75)')
-            .borderRadius(8)
-            .border({ width: 1, color: item.airport.code === this.currentSelectedCode ? '#F06553' : '#E2E8F0' })
-          }
-          .position({ x: `${item.xPct}%`, y: `${item.yPct}%` })
-          .onClick(() => {
-            if (item.airport.code !== 'CTU') {
-              this.currentSelectedCode = item.airport.code;
-              this.updateRouteDistance(item.airport.code);
-            }
-          })
-        })
-
-        // 浮动右下角“🎲 随机探索”盲盒按钮
-        Button() {
+      // 2. 顶部高级暗黑玻璃 Header (Route Pill & Close)
+      Row() {
+        Row({ space: 10 }) {
           Row({ space: 6 }) {
-            Text('🎲')
-              .fontSize(14)
-            Text('随机盲盒航线')
+            Text('成都')
+              .fontSize(13)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#F8FAFC')
+            Text('✈️')
+              .fontSize(11)
+            Text(findAirportByCode(this.currentSelectedCode)?.city || this.currentSelectedCode)
               .fontSize(13)
               .fontWeight(FontWeight.Bold)
               .fontColor('#F06553')
           }
-        }
-        .padding({ left: 14, right: 16, top: 8, bottom: 8 })
-        .backgroundColor('#FFFFFF')
-        .borderRadius(20)
-        .border({ width: 1, color: 'rgba(240, 101, 83, 0.3)', radius: 20 })
-        .shadow({ radius: 10, color: 'rgba(240, 101, 83, 0.15)', offsetY: 3 })
-        .position({ x: '58%', y: '68%' })
-        .onClick(() => {
-          this.selectRandomDestination();
-        })
-      }
-      .width('100%')
-      .height('100%')
 
-      // 3. 顶部 Header 悬浮栏 (标题、足迹统计、关闭按钮)
-      Row() {
-        Column({ space: 3 }) {
-          Row({ space: 6 }) {
-            Text('全屏沉浸航图')
-              .fontSize(18)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#1E293B')
+          Divider()
+            .vertical(true)
+            .height(12)
+            .color('rgba(255, 255, 255, 0.2)')
 
-            Row({ space: 4 }) {
-              Text('🐾')
-                .fontSize(11)
-              Text(`已解锁 ${this.unlockedCount}/15 城市`)
-                .fontSize(11)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#D97706')
-            }
-            .padding({ left: 8, right: 8, top: 3, bottom: 3 })
-            .backgroundColor('#FEF3C7')
-            .borderRadius(10)
-          }
-
-          Text('探索全球坐标 · 绘制您的专属专注足迹')
+          Text(`${Math.round(this.routeDistanceKm)} km · ${this.currentMinutes}min`)
             .fontSize(12)
-            .fontColor('#64748B')
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#94A3B8')
         }
-        .alignItems(HorizontalAlign.Start)
+        .padding({ left: 16, right: 16, top: 9, bottom: 9 })
+        .backgroundColor('rgba(15, 23, 42, 0.88)')
+        .borderRadius(20)
+        .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
+        .shadow({ radius: 10, color: 'rgba(0, 0, 0, 0.35)', offsetY: 3 })
 
         Blank()
 
-        // 关闭按钮 ✕
+        // 右侧关闭 ✕
         Row() {
           Text('✕')
-            .fontSize(15)
+            .fontSize(14)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#64748B')
+            .fontColor('#94A3B8')
         }
         .width(36)
         .height(36)
         .justifyContent(FlexAlign.Center)
         .alignItems(VerticalAlign.Center)
-        .backgroundColor('rgba(255, 255, 255, 0.85)')
+        .backgroundColor('rgba(15, 23, 42, 0.88)')
         .borderRadius(18)
-        .border({ width: 1, color: '#E2E8F0' })
+        .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
+        .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.3)', offsetY: 2 })
         .onClick(() => {
           if (this.controller) {
             this.controller.close();
@@ -234,63 +427,219 @@ export struct FlightMapSelectOverlay {
         })
       }
       .width('100%')
-      .padding({ left: 20, right: 20, top: 44, bottom: 14 })
-      .backgroundColor('rgba(250, 247, 242, 0.88)')
-      .backdropBlur(12)
+      .padding({ left: 16, right: 16 })
+      .position({ x: 0, y: 44 })
+      .hitTestBehavior(HitTestMode.Transparent)
 
-      // 4. 底部拟真登机牌确认面板 (Flight Ticket Floating Sheet)
-      Column({ space: 12 }) {
-        // 拟真登机牌卡片 Header
+      // 3. 右侧极简地图缩放倍率悬浮面板 (+ / - Controls)
+      Column({ space: 4 }) {
         Row() {
-          // 出发地
-          Column({ space: 2 }) {
-            Text('CTU')
-              .fontSize(20)
-              .fontWeight(FontWeight.Bolder)
-              .fontColor('#1E293B')
-            Text('成都双流')
-              .fontSize(12)
-              .fontColor('#64748B')
+          Text('+')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#F8FAFC')
+        }
+        .width(34)
+        .height(34)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
+        .backgroundColor('rgba(15, 23, 42, 0.85)')
+        .borderRadius(17)
+        .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
+        .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.3)', offsetY: 2 })
+        .onClick(() => {
+          this.zoomIn();
+        })
+
+        Column({ space: 1 }) {
+          Text(`${this.currentZoomLevel.toFixed(1)}x`)
+            .fontSize(10)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#F06553')
+        }
+        .padding({ top: 2, bottom: 2 })
+
+        Row() {
+          Text('−')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#F8FAFC')
+        }
+        .width(34)
+        .height(34)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
+        .backgroundColor('rgba(15, 23, 42, 0.85)')
+        .borderRadius(17)
+        .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
+        .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.3)', offsetY: 2 })
+        .onClick(() => {
+          this.zoomOut();
+        })
+      }
+      .position({ x: '86%', y: 105 })
+      .hitTestBehavior(HitTestMode.Transparent)
+
+      // 4. 底部一体化暗黑玻璃导航控制面板 (宽幅防遮挡 + 绝无重叠截断的精致刻度尺)
+      Column({ space: 12 }) {
+        // (1) 候选城市名牌横向滑块
+        Scroll() {
+          Row({ space: 8 }) {
+            ForEach(this.candidateAirports, (apt: Airport) => {
+              Row({ space: 6 }) {
+                Text(apt.city || apt.name)
+                  .fontSize(13)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(this.currentSelectedCode === apt.code ? '#FFFFFF' : '#CBD5E1')
+                Text(apt.code)
+                  .fontSize(10)
+                  .fontColor(this.currentSelectedCode === apt.code ? 'rgba(255,255,255,0.85)' : '#64748B')
+              }
+              .padding({ left: 14, right: 14, top: 7, bottom: 7 })
+              .backgroundColor(this.currentSelectedCode === apt.code ? '#F06553' : 'rgba(255, 255, 255, 0.08)')
+              .borderRadius(16)
+              .border({ width: 1, color: this.currentSelectedCode === apt.code ? 'transparent' : 'rgba(255, 255, 255, 0.12)' })
+              .onClick(() => {
+                this.selectCity(apt.code);
+              })
+            })
           }
-          .alignItems(HorizontalAlign.Start)
+          .padding({ left: 4, right: 4 })
+        }
+        .scrollable(ScrollDirection.Horizontal)
+        .scrollBar(BarState.Off)
+        .width('100%')
 
-          // 航线路线指示
-          Column({ space: 4 }) {
-            Text(`${this.routeDistanceKm} km`)
-              .fontSize(11)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#F06553')
+        // (2) 36px 宽幅呼吸排版刻度尺 (100% 绝无重叠、绝无截断)
+        Column({ space: 4 }) {
+          // 顶层指针 ▲
+          Text('▲')
+            .fontSize(11)
+            .fontColor('#F06553')
+            .margin({ bottom: 2 })
 
-            Row({ space: 4 }) {
-              Row().width(24).height(1).backgroundColor('#F06553')
-              Image($r('app.media.ic_airport'))
-                .width(14)
-                .height(14)
-                .fillColor('#F06553')
-              Row().width(24).height(1).backgroundColor('#F06553')
+          // 横向自由滑动卷轴刻度尺
+          Scroll(this.rulerScroller) {
+            Row({ space: 0 }) {
+              // 动态精确中点垫片 (根据 36px 宽幅刻度计算中点)
+              Blank()
+                .width(Math.max(0, this.rulerContainerWidth / 2.0 - 18.0))
+
+              ForEach(RULER_MINUTES_TICKS, (tick: RulerTick, index: number) => {
+                Column({ space: 6 }) {
+                  // 数字在刻度线正上方 (主刻度显示数字，次刻度若被选中也高亮显示数字)
+                  if (tick.isMajor || tick.minutes === this.currentMinutes) {
+                    Text(`${tick.minutes}`)
+                      .fontSize(tick.minutes === this.currentMinutes ? 13 : 11)
+                      .fontWeight(tick.minutes === this.currentMinutes ? FontWeight.Bold : FontWeight.Medium)
+                      .fontColor(tick.minutes === this.currentMinutes ? '#F06553' : 'rgba(255, 255, 255, 0.65)')
+                  } else {
+                    Text(' ')
+                      .fontSize(11)
+                  }
+
+                  // 刻度线 (底部对齐，主刻度长，次刻度小短竖条)
+                  Line()
+                    .width(tick.minutes === this.currentMinutes ? 3.5 : (tick.isMajor ? 1.5 : 1))
+                    .height(tick.minutes === this.currentMinutes ? 22 : (tick.isMajor ? 14 : 7))
+                    .backgroundColor(tick.minutes === this.currentMinutes ? '#F06553' : (tick.isMajor ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.28)'))
+                    .borderRadius(1)
+                }
+                .width(36)
+                .alignItems(HorizontalAlign.Center)
+                .justifyContent(FlexAlign.End)
+                .onClick(() => {
+                  this.selectMinutes(tick.minutes, index);
+                })
+              })
+
+              Blank()
+                .width(Math.max(0, this.rulerContainerWidth / 2.0 - 18.0))
             }
           }
+          .scrollable(ScrollDirection.Horizontal)
+          .scrollBar(BarState.Off)
+          .width('100%')
+          .onAreaChange((oldArea, newArea) => {
+            this.rulerContainerWidth = Number(newArea.width);
+          })
+          .onScroll(() => {
+            const xOffset = this.rulerScroller.currentOffset().xOffset;
+            const tickIdx = Math.round(xOffset / 36);
+            if (tickIdx >= 0 && tickIdx < RULER_MINUTES_TICKS.length) {
+              if (tickIdx !== this.lastHapticTickIndex) {
+                this.lastHapticTickIndex = tickIdx;
+                const isMajor = RULER_MINUTES_TICKS[tickIdx].isMajor;
+                this.triggerTickHaptic(isMajor);
+              }
+              const targetMin = RULER_MINUTES_TICKS[tickIdx].minutes;
+              if (targetMin !== this.currentMinutes) {
+                this.currentMinutes = targetMin;
+                this.updateCandidateAirports(targetMin);
+                this.drawRoute(this.currentSelectedCode);
+              }
+            }
+          })
+          .onScrollStop(() => {
+            this.snapToNearestTick();
+          })
 
-          // 目的地
-          Column({ space: 2 }) {
-            Text(this.currentSelectedCode)
-              .fontSize(20)
-              .fontWeight(FontWeight.Bolder)
-              .fontColor('#1E293B')
-            Text(findAirportByCode(this.currentSelectedCode)?.city || '目标城市')
-              .fontSize(12)
-              .fontColor('#64748B')
-          }
-          .alignItems(HorizontalAlign.End)
+          // 刻度尺下方标题提示
+          Text('专注时间（分钟）')
+            .fontSize(11)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('rgba(255, 255, 255, 0.45)')
+            .margin({ top: 6, bottom: 2 })
         }
         .width('100%')
-        .justifyContent(FlexAlign.SpaceBetween)
+        .padding({ top: 6, bottom: 6 })
+        .backgroundColor('rgba(255, 255, 255, 0.05)')
+        .borderRadius(18)
+        .gesture(
+          PanGesture({ direction: PanDirection.Horizontal })
+            .onActionStart(() => {
+              this.lastPanOffsetX = 0;
+            })
+            .onActionUpdate((event: GestureEvent) => {
+              if (!event) return;
+              const deltaX = event.offsetX - this.lastPanOffsetX;
+              this.lastPanOffsetX = event.offsetX;
 
-        // 确认登机并开始专注按钮
+              const currentScrollX = this.rulerScroller.currentOffset().xOffset;
+              // 0.40 粘性手势抗力阻尼感
+              const targetScrollX = Math.max(0, currentScrollX - deltaX * 0.40);
+
+              this.rulerScroller.scrollTo({
+                xOffset: targetScrollX,
+                yOffset: 0
+              });
+
+              // 🎯 解决 scrollTo 不触发 onScroll 的鸿蒙底层机制：在 PanGesture 手势中实时触发震动！
+              const tickIdx = Math.round(targetScrollX / 36);
+              if (tickIdx >= 0 && tickIdx < RULER_MINUTES_TICKS.length) {
+                if (tickIdx !== this.lastHapticTickIndex) {
+                  this.lastHapticTickIndex = tickIdx;
+                  const isMajor = RULER_MINUTES_TICKS[tickIdx].isMajor;
+                  this.triggerTickHaptic(isMajor);
+                }
+                const targetMin = RULER_MINUTES_TICKS[tickIdx].minutes;
+                if (targetMin !== this.currentMinutes) {
+                  this.currentMinutes = targetMin;
+                  this.updateCandidateAirports(targetMin);
+                  this.drawRoute(this.currentSelectedCode);
+                }
+              }
+            })
+            .onActionEnd(() => {
+              this.snapToNearestTick();
+            })
+        )
+
+        // (3) 主行动按钮
         Button() {
           Row({ space: 8 }) {
-            Text('确认航线 · 准备起飞 🛫')
-              .fontSize(16)
+            Text(`开启 ${this.currentMinutes} 分钟专注航程 · 准备起飞 🛫`)
+              .fontSize(15)
               .fontWeight(FontWeight.Bold)
               .fontColor('#FFFFFF')
           }
@@ -299,18 +648,18 @@ export struct FlightMapSelectOverlay {
         .height(48)
         .backgroundColor('#F06553')
         .borderRadius(24)
-        .shadow({ radius: 12, color: 'rgba(240, 101, 83, 0.35)', offsetY: 4 })
+        .shadow({ radius: 12, color: 'rgba(240, 101, 83, 0.45)', offsetY: 4 })
         .onClick(() => {
           this.confirmSelection();
         })
       }
-      .width('90%')
-      .padding({ left: 20, right: 20, top: 16, bottom: 20 })
-      .backgroundColor('#FFFFFF')
-      .borderRadius(24)
-      .shadow({ radius: 18, color: 'rgba(0, 0, 0, 0.08)', offsetY: 6 })
-      .border({ width: 1, color: 'rgba(240, 101, 83, 0.25)' })
-      .position({ x: '5%', y: '75%' })
+      .width('100%')
+      .padding({ left: 20, right: 20, top: 20, bottom: 32 })
+      .backgroundColor('rgba(15, 23, 42, 0.95)')
+      .borderRadius({ topLeft: 28, topRight: 28, bottomLeft: 0, bottomRight: 0 })
+      .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
+      .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.6)', offsetY: -4 })
+      .margin({ left: 0, bottom: 0 })
     }
     .width('100%')
     .height('100%')

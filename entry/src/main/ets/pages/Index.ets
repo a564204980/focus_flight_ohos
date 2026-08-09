@@ -91,7 +91,8 @@ struct Index {
     $r('app.media.theme_doraemon'),
     $r('app.media.theme_skyreverie'),
     $r('app.media.skymechacrev'),
-    $r('app.media.starportvanguard')
+    $r('app.media.starportvanguard'),
+    $r('app.media.skyframe')
   ];
 
   // 华为花瓣地图初始配置：默认纯净战术矢量图 STANDARD + 精修 CTU 跑道垂直朝上对齐视角
@@ -1016,6 +1017,16 @@ struct Index {
           .scale({ x: 1.0, y: 1.0 })
           .translate({ x: 4 })
           .opacity(this.isMapBackgroundVisible ? 0 : (this.currentThemeIndex === 6 ? 0.6 : 0))
+          .animation({ duration: 600, curve: Curve.EaseInOut })
+
+        // 主题附加层7：苍穹机甲 (Index 7)
+        Image(this.bgThemes[7])
+          .width('100%')
+          .height('100%')
+          .objectFit(ImageFit.Cover)
+          .scale({ x: 1.0, y: 1.0 })
+          .translate({ x: 4 })
+          .opacity(this.isMapBackgroundVisible ? 0 : (this.currentThemeIndex === 7 ? 0.6 : 0))
           .animation({ duration: 600, curve: Curve.EaseInOut })
 
         // 上层：华为原生花瓣地图 (Petal Maps) 精修机场地图
