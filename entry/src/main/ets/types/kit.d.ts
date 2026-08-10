@@ -154,6 +154,7 @@ declare module '@kit.MapKit' {
       moveCamera(update: mapCommon.CameraPosition): void;
       animateCamera(update: mapCommon.CameraPosition, duration?: number): void;
       getCameraPosition(): mapCommon.CameraPosition;
+      getProjection(): any;
       setMapType(type: mapCommon.MapType): void;
       setDayNightMode(mode: mapCommon.DayNightMode): void;
       on(type: string, callback: (data: Object) => void): void;
