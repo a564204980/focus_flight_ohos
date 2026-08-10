@@ -153,12 +153,7 @@ struct RadarScanOverlay {
           style: BorderStyle.Dashed
         })
 
-      // 7. 右上角雷达空管范围标签
-      Text(`RADAR · ${this.currentMinutes}min`)
-        .fontSize(10)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('rgba(240, 101, 83, 0.85)')
-        .position({ x: this.radius + 20, y: 16 })
+
     }
     .width(this.radius * 2)
     .height(this.radius * 2)
@@ -261,10 +256,9 @@ export struct FlightMapSelectOverlay {
         this.ctuScreenX = targetX;
         this.ctuScreenY = targetY;
 
-        const zoomScale = Math.pow(2, zoom - 6.2);
-        const baseRadiusFor25Min = 155.0;
-        const timeScale = this.currentMinutes / 25.0;
-        this.dynamicRadarRadius = Math.max(20, baseRadiusFor25Min * timeScale * zoomScale);
+        const maxDistKm = this.getMaxFlightDistanceKm(this.currentMinutes);
+        // 🎯 规范设计：雷达圈为固定的 HUD 经典视觉尺寸 (155vp)，地图自适应在下方推拉
+        this.dynamicRadarRadius = 155;
       }
     } catch (e) {
       console.error('refreshCtuScreenPosition error:', JSON.stringify(e));
@@ -364,10 +358,48 @@ export struct FlightMapSelectOverlay {
     });
 
     const targetMin = RULER_FIVE_MIN_UNITS[tickIdx].minutes;
-    if (targetMin !== this.currentMinutes) {
-      this.currentMinutes = targetMin;
-      this.updateCandidateAirports(targetMin);
-      this.drawRoute(this.currentSelectedCode);
+    this.currentMinutes = targetMin;
+    this.updateCandidateAirports(targetMin);
+    this.drawRoute(this.currentSelectedCode);
+  }
+
+  private getMaxFlightDistanceKm(minutes: number): number {
+    if (minutes <= 15) return 420;
+    if (minutes <= 25) return 850;
+    if (minutes <= 45) return 1450;
+    if (minutes <= 60) return 2000;
+    if (minutes <= 90) return 3500;
+    if (minutes <= 120) return 5500;
+    return 10000;
+  }
+
+  // 🎯 动态视界缩放引擎：根据专注航程自适应调整相机高空视野 (15分钟默认 7.0 倍)
+  private getBestZoomLevelForMinutes(minutes: number): number {
+    if (minutes <= 15) return 7.0;
+    if (minutes <= 25) return 6.2;
+    if (minutes <= 45) return 5.2;
+    if (minutes <= 60) return 4.5;
+    if (minutes <= 90) return 3.8;
+    if (minutes <= 120) return 3.0;
+    return 2.2;
+  }
+
+  // 🎯 专用于拖拽过程的 60fps 顺滑视界拉伸引擎 (220ms 电影级柔和动画过渡 + map.newCameraPosition)
+  private updateCameraZoomSmoothly(minutes: number) {
+    if (!this.huaweiMapController) return;
+    const origin = findAirportByCode('CTU');
+    if (!origin || origin.lat === undefined || origin.lon === undefined) return;
+    try {
+      const targetZoom = this.getBestZoomLevelForMinutes(minutes);
+      this.huaweiMapController.animateCamera(map.newCameraPosition({
+        target: {
+          latitude: this.getCenteredCameraLatitude(origin.lat, targetZoom),
+          longitude: origin.lon
+        },
+        zoom: targetZoom
+      }), 220);
+    } catch (e) {
+      console.error('updateCameraZoomSmoothly error:', JSON.stringify(e));
     }
   }
 
@@ -379,32 +411,19 @@ export struct FlightMapSelectOverlay {
     }
 
     // 🎯 科学专注航程阶梯算法体系 (1分钟 ≈ 15km，划分专属航段等级)
+    const maxDist = this.getMaxFlightDistanceKm(minutes);
     const filtered = POPULAR_AIRPORTS.filter(apt => {
       if (apt.code === 'CTU' || apt.code === 'TFU' || apt.lat === undefined || apt.lon === undefined) return false;
       const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
       
-      if (minutes <= 15) {
-        // 15分钟短途微专注：省内支线穿梭 (100km ~ 420km，如 绵阳、宜宾、西昌、重庆、九寨、南充)
-        return dist >= 80 && dist <= 420;
-      } else if (minutes <= 25) {
-        // 25分钟经典番茄钟：西南/西北区域干线 (380km ~ 820km，如 西安624km、贵阳、昆明、兰州)
-        return dist > 380 && dist <= 850;
-      } else if (minutes <= 45) {
-        // 35~45分钟深度专注：省际黄金通道 (800km ~ 1450km，如 武汉、长沙、郑州、拉萨1300km、南京)
-        return dist > 800 && dist <= 1450;
-      } else if (minutes <= 60) {
-        // 60分钟1小时深度办公：全国一线核心超级枢纽 (1200km ~ 2000km，如 北京、上海、广州、深圳、杭州、厦门、青岛)
-        return dist > 1200 && dist <= 2000;
-      } else if (minutes <= 90) {
-        // 90分钟深度心流：国土边陲与近邻东亚 (1800km ~ 3500km，如 哈尔滨2400km、乌鲁木齐2100km、三亚、台北、东京、首尔)
-        return dist > 1800 && dist <= 3500;
-      } else if (minutes <= 120) {
-        // 120分钟2小时心流马拉松：东南亚与热带远航 (2800km ~ 5500km，如 新加坡3250km、曼谷、吉隆坡、迪拜4800km)
-        return dist > 2800 && dist <= 5500;
-      } else {
-        // 180~240分钟史诗级大航程：欧美洲际极地跨洋巡航 (> 5000km，如 伦敦8300km、巴黎8200km、法兰克福、纽约、旧金山、悉尼)
-        return dist > 5000;
-      }
+      // 过滤掉低于最小航程的，同时保证最大航程严格小于等于 maxDist (即被雷达圈完美包裹)
+      if (minutes <= 15) return dist >= 80 && dist <= maxDist;
+      if (minutes <= 25) return dist > 380 && dist <= maxDist;
+      if (minutes <= 45) return dist > 800 && dist <= maxDist;
+      if (minutes <= 60) return dist > 1200 && dist <= maxDist;
+      if (minutes <= 90) return dist > 1800 && dist <= maxDist;
+      if (minutes <= 120) return dist > 2800 && dist <= maxDist;
+      return dist > 5000;
     });
 
     // 按照与出发地的实际飞行距离由近及远优雅排序
@@ -564,32 +583,18 @@ export struct FlightMapSelectOverlay {
         }
       } else {
         // 未选目的地时，根据当前专注时长的航程覆盖半径自适应最佳雷达全景视野
-        if (this.currentMinutes <= 15) {
-          targetZoom = 7.0;
-        } else if (this.currentMinutes <= 25) {
-          targetZoom = 6.2;
-        } else if (this.currentMinutes <= 45) {
-          targetZoom = 5.3;
-        } else if (this.currentMinutes <= 60) {
-          targetZoom = 4.8;
-        } else if (this.currentMinutes <= 90) {
-          targetZoom = 4.2;
-        } else if (this.currentMinutes <= 120) {
-          targetZoom = 3.6;
-        } else {
-          targetZoom = 3.0;
-        }
+        targetZoom = this.getBestZoomLevelForMinutes(this.currentMinutes);
       }
 
       this.currentZoomLevel = targetZoom;
 
-      this.huaweiMapController.animateCamera({
+      this.huaweiMapController.animateCamera(map.newCameraPosition({
          target: {
            latitude: this.getCenteredCameraLatitude(origin.lat, targetZoom),
            longitude: origin.lon
          },
          zoom: targetZoom
-      }, 700);
+      }), 700);
     } catch (e) {
       console.error('animate camera error', JSON.stringify(e));
     }
@@ -650,15 +655,14 @@ export struct FlightMapSelectOverlay {
   };
 
   private zoomIn() {
-    if (!this.huaweiMapController) return;
-    try {
+    if (this.huaweiMapController) {
+      const target = Math.min(18, this.currentZoomLevel + 0.5);
+      this.currentZoomLevel = target;
       const cam = this.huaweiMapController.getCameraPosition();
-      const current = (cam && typeof cam.zoom === 'number') ? cam.zoom : this.currentZoomLevel;
-      const target = Math.min(current + 0.5, 18.0);
-      this.currentZoomLevel = parseFloat(target.toFixed(1));
-      this.huaweiMapController.animateCamera({ zoom: target }, 300);
-    } catch (e) {
-      console.error('zoom in error', JSON.stringify(e));
+      this.huaweiMapController.animateCamera(map.newCameraPosition({
+        target: cam?.target || { latitude: 30.5607, longitude: 103.9426 },
+        zoom: target
+      }), 300);
     }
   }
 
@@ -904,8 +908,9 @@ export struct FlightMapSelectOverlay {
           Scroll(this.rulerScroller) {
             Row({ space: 0 }) {
               // 动态精确中点垫片 (确保 index=0 的刻度线 100% 居中在屏幕正中央中轴线上)
+              // 减去 18vp，是因为包裹 Scroll 的父容器拥有 .padding({ left: 18, right: 18 })
               Blank()
-                .width(Math.max(0, this.rulerContainerWidth / 2.0 - (RULER_SUB_WIDTH / 2.0)))
+                .width(Math.max(0, this.rulerContainerWidth / 2.0 - (RULER_SUB_WIDTH / 2.0) - 18))
 
               ForEach(RULER_FIVE_MIN_UNITS, (unit: RulerFiveMinUnit, index: number) => {
                 Row({ space: 0 }) {
@@ -1000,7 +1005,7 @@ export struct FlightMapSelectOverlay {
               }, (unit: RulerFiveMinUnit) => `${unit.minutes}`)
 
               Blank()
-                .width(Math.max(0, this.rulerContainerWidth / 2.0 - (RULER_SUB_WIDTH / 2.0)))
+                .width(Math.max(0, this.rulerContainerWidth / 2.0 - (RULER_SUB_WIDTH / 2.0) - 18))
             }
           }
           .scrollable(ScrollDirection.Horizontal)
@@ -1021,8 +1026,7 @@ export struct FlightMapSelectOverlay {
               const targetMin = RULER_FIVE_MIN_UNITS[tickIdx].minutes;
               if (targetMin !== this.currentMinutes) {
                 this.currentMinutes = targetMin;
-                this.updateCandidateAirports(targetMin);
-                this.drawRoute(this.currentSelectedCode);
+                this.updateCameraZoomSmoothly(targetMin);
               }
             }
           })
@@ -1062,8 +1066,7 @@ export struct FlightMapSelectOverlay {
                 const targetMin = RULER_FIVE_MIN_UNITS[tickIdx].minutes;
                 if (targetMin !== this.currentMinutes) {
                   this.currentMinutes = targetMin;
-                  this.updateCandidateAirports(targetMin);
-                  this.drawRoute(this.currentSelectedCode);
+                  this.updateCameraZoomSmoothly(targetMin);
                 }
               }
             })
