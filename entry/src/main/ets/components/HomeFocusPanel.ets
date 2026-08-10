@@ -12,7 +12,7 @@ import { FlightMapSelectOverlay } from './FlightMapSelectOverlay';
 @Component
 export struct HomeFocusPanel {
   @State selectedTab: number = 0;
-  @State timerMinutes: number = 45;
+  @State timerMinutes: number = 15;
   @State isRunning: boolean = false;
   @State selectedDestination?: Airport = undefined; // 默认不指定目的地，等待用户自主选择
   @State routeDistanceKm: number = 0;
@@ -22,6 +22,7 @@ export struct HomeFocusPanel {
   destinationDialogController: CustomDialogController = new CustomDialogController({
     builder: FlightMapSelectOverlay({
       selectedCode: this.selectedDestination ? this.selectedDestination.code : '',
+      initialMinutes: this.timerMinutes,
       onDestinationSelected: (airport: Airport, minutes?: number) => {
         this.selectedDestination = airport;
         this.calculateRouteDistance(airport);
