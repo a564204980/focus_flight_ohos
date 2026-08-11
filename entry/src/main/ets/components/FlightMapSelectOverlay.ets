@@ -203,6 +203,7 @@ export struct FlightMapSelectOverlay {
   private lastVibrateTime: number = 0;
   private lastPanOffsetX: number = 0;
   private destPulseTimer: number = -1;
+  private lastSnappedMinutes: number = 15;
 
   /**
    * 🎯 经纬度转屏幕 vp 物理坐标转换引擎 (支持 Native MapKit Projection 与 Mercator 双引擎)
@@ -318,6 +319,7 @@ export struct FlightMapSelectOverlay {
     } else {
       this.currentMinutes = 15;
     }
+    this.lastSnappedMinutes = this.currentMinutes;
     if (this.selectedCode) {
       this.currentSelectedCode = this.selectedCode;
       this.updateRouteDistance(this.currentSelectedCode);
@@ -405,20 +407,44 @@ export struct FlightMapSelectOverlay {
     });
 
     const targetMin = RULER_FIVE_MIN_UNITS[tickIdx].minutes;
+    const isMinChanged = (targetMin !== this.lastSnappedMinutes);
     this.currentMinutes = targetMin;
-    this.updateCandidateAirports(targetMin);
-    this.drawRoute(this.currentSelectedCode);
-    this.updateCameraZoomSmoothly(targetMin);
+
+    if (isMinChanged) {
+      this.lastSnappedMinutes = targetMin;
+      this.updateCandidateAirports(targetMin);
+      this.drawRoute(this.currentSelectedCode, true);
+      this.updateCameraZoomSmoothly(targetMin);
+    } else {
+      // 即使分钟数未改变（微滑松手），也更新候选数据，但绝对不销毁重绘地图 Marker 与动画
+      this.updateCandidateAirports(targetMin);
+    }
+    this.refreshCtuScreenPosition();
+  }
+
+  private lerpByKnots(minutes: number, times: number[], values: number[]): number {
+    if (minutes <= times[0]) return values[0];
+    if (minutes >= times[times.length - 1]) return values[values.length - 1];
+
+    for (let i = 0; i < times.length - 1; i++) {
+      if (minutes >= times[i] && minutes <= times[i + 1]) {
+        const t = (minutes - times[i]) / (times[i + 1] - times[i]);
+        return values[i] + t * (values[i + 1] - values[i]);
+      }
+    }
+    return values[values.length - 1];
   }
 
   private getMaxFlightDistanceKm(minutes: number): number {
-    if (minutes <= 15) return 420;
-    if (minutes <= 25) return 850;
-    if (minutes <= 45) return 1450;
-    if (minutes <= 60) return 2000;
-    if (minutes <= 90) return 3500;
-    if (minutes <= 120) return 5500;
-    return 10000;
+    const times = [15, 25, 45, 60, 90, 120, 180, 240];
+    const maxDists = [420, 850, 1650, 2300, 3800, 5800, 9500, 12000];
+    return this.lerpByKnots(minutes, times, maxDists);
+  }
+
+  private getMinFlightDistanceKm(minutes: number): number {
+    const times = [15, 25, 45, 60, 90, 120, 180, 240];
+    const minDists = [80, 350, 700, 1100, 1800, 2800, 4800, 6500];
+    return this.lerpByKnots(minutes, times, minDists);
   }
 
   // 🎯 连续视界缩放算法：自适应对齐 155vp 稳定雷达圈，确保对应分钟数的候选目的地 100% 全员容纳在雷达圈内
@@ -473,37 +499,73 @@ export struct FlightMapSelectOverlay {
     }
   }
 
+  private getBearingDeg(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const dLon = (lon2 - lon1) * Math.PI / 180.0;
+    const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180.0);
+    const x = Math.cos(lat1 * Math.PI / 180.0) * Math.sin(lat2 * Math.PI / 180.0) -
+              Math.sin(lat1 * Math.PI / 180.0) * Math.cos(lat2 * Math.PI / 180.0) * Math.cos(dLon);
+    return (Math.atan2(y, x) * 180.0 / Math.PI + 360.0) % 360.0;
+  }
+
   private updateCandidateAirports(minutes: number) {
     const origin = findAirportByCode('CTU');
     if (!origin || origin.lat === undefined || origin.lon === undefined) {
-      this.candidateAirports = POPULAR_AIRPORTS.slice(0, 5);
+      this.candidateAirports = POPULAR_AIRPORTS.slice(0, 6);
       return;
     }
 
-    // 🎯 科学专注航程阶梯算法体系 (1分钟 ≈ 15km，划分专属航段等级)
     const maxDist = this.getMaxFlightDistanceKm(minutes);
-    const filtered = POPULAR_AIRPORTS.filter(apt => {
+    const minDist = this.getMinFlightDistanceKm(minutes);
+    const midDist = (minDist + maxDist) / 2.0;
+
+    const inRange = POPULAR_AIRPORTS.filter(apt => {
       if (apt.code === 'CTU' || apt.code === 'TFU' || apt.lat === undefined || apt.lon === undefined) return false;
       const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
-      
-      // 过滤掉低于最小航程的，同时保证最大航程严格小于等于 maxDist (即被雷达圈完美包裹)
-      if (minutes <= 15) return dist >= 80 && dist <= maxDist;
-      if (minutes <= 25) return dist > 380 && dist <= maxDist;
-      if (minutes <= 45) return dist > 800 && dist <= maxDist;
-      if (minutes <= 60) return dist > 1200 && dist <= maxDist;
-      if (minutes <= 90) return dist > 1800 && dist <= maxDist;
-      if (minutes <= 120) return dist > 2800 && dist <= maxDist;
-      return dist > 5000;
+      return dist >= minDist && dist <= maxDist;
     });
 
-    // 按照与出发地的实际飞行距离由近及远优雅排序
-    filtered.sort((a, b) => {
+    // 🎯 360° 八方位全向散射算法：在每个扇区内挑选最接近航程黄金中心点 (midDist) 的代表性机场！
+    const sectors: Airport[][] = [[], [], [], [], [], [], [], []];
+    inRange.forEach(apt => {
+      const b = this.getBearingDeg(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
+      const sIdx = Math.floor(b / 45.0) % 8;
+      sectors[sIdx].push(apt);
+    });
+
+    const scatteredList: Airport[] = [];
+    sectors.forEach(sec => {
+      if (sec.length > 0) {
+        // 挑选距离最贴近 midDist 的代表性机场
+        sec.sort((a, b) => {
+          const d1 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(a.lat), Number(a.lon));
+          const d2 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(b.lat), Number(b.lon));
+          return Math.abs(d1 - midDist) - Math.abs(d2 - midDist);
+        });
+        scatteredList.push(sec[0]);
+      }
+    });
+
+    // 如果方向抽样后数量不足 6 个，按最贴近 midDist 的距离排序补充
+    if (scatteredList.length < 6) {
+      const candidates = inRange.filter(apt => !scatteredList.some(item => item.code === apt.code));
+      candidates.sort((a, b) => {
+        const d1 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(a.lat), Number(a.lon));
+        const d2 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(b.lat), Number(b.lon));
+        return Math.abs(d1 - midDist) - Math.abs(d2 - midDist);
+      });
+      for (let i = 0; i < candidates.length && scatteredList.length < 8; i++) {
+        scatteredList.push(candidates[i]);
+      }
+    }
+
+    // 按照与出发地的实际飞行距离由近及远排序
+    scatteredList.sort((a, b) => {
       const d1 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(a.lat), Number(a.lon));
       const d2 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(b.lat), Number(b.lon));
       return d1 - d2;
     });
 
-    this.candidateAirports = filtered.length > 0 ? filtered : POPULAR_AIRPORTS.slice(0, 6);
+    this.candidateAirports = scatteredList.length > 0 ? scatteredList : POPULAR_AIRPORTS.slice(0, 6);
 
     // 如果当前选中的机场不在候选列表内，清空选中
     if (this.currentSelectedCode) {
@@ -517,10 +579,12 @@ export struct FlightMapSelectOverlay {
 
   private selectMinutes(minutes: number, index?: number) {
     this.currentMinutes = minutes;
+    this.lastSnappedMinutes = minutes;
     this.triggerTickHaptic(true);
     this.updateCandidateAirports(minutes);
-    this.drawRoute(this.currentSelectedCode);
+    this.drawRoute(this.currentSelectedCode, true);
     this.updateCameraZoomSmoothly(minutes);
+    this.refreshCtuScreenPosition();
 
     if (index !== undefined) {
       this.rulerScroller.scrollTo({
@@ -1261,6 +1325,8 @@ export struct FlightMapSelectOverlay {
               const targetMin = RULER_FIVE_MIN_UNITS[tickIdx].minutes;
               if (targetMin !== this.currentMinutes) {
                 this.currentMinutes = targetMin;
+                this.updateCandidateAirports(targetMin);
+                this.refreshCtuScreenPosition();
               }
             }
           })
