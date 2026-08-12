@@ -32,6 +32,7 @@ export struct HomeFocusPanel {
       }
     }),
     alignment: DialogAlignment.Bottom,
+    maskColor: 'rgba(26, 38, 59, 0.90)',
     customStyle: true
   });
 

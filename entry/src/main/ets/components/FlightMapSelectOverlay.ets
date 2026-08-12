@@ -1,171 +1,46 @@
 import { promptAction } from '@kit.ArkUI';
 import { MapComponent, mapCommon, map } from '@kit.MapKit';
 import { vibrator } from '@kit.SensorServiceKit';
-import {
-  Airport,
-  POPULAR_AIRPORTS,
-  findAirportByCode,
-  getDistanceKm
-} from '../models/AirportModel';
+import componentSnapshot from '@ohos.arkui.componentSnapshot';
+import { image } from '@kit.ImageKit';
+import { Airport, findAirportByCode, getDistanceKm } from '../models/AirportModel';
 import { AirportMarkerHelper } from '../utils/AirportMarkerHelper';
+import {
+  ScreenVpPoint,
+  AirportMarkerEntry,
+  RULER_FIVE_MIN_UNITS,
+  RULER_STEP_WIDTH,
+  getMaxFlightDistanceKm,
+  getContinuousZoomLevel,
+  getCenteredCameraLatitude,
+  getBearingDeg,
+  filterAndSampleCandidateAirports,
+  calculateBezierCurve
+} from '../utils/FlightMapMathHelper';
+import { CustomAirportMarkerBuilder } from './flight_map/CustomAirportMarkerBuilder';
+import { RadarScanOverlay } from './flight_map/RadarScanOverlay';
+import { FlightMapTopBar } from './flight_map/FlightMapTopBar';
+import { FlightMapZoomControls } from './flight_map/FlightMapZoomControls';
+import { FlightMapBottomPanel } from './flight_map/FlightMapBottomPanel';
 
-/**
- * 对应 ArkTS 规范：显式定义地图节点接口
- */
-export interface MapAirportNode {
-  airport: Airport;
-  xPct: number;
-  yPct: number;
-  isUnlocked?: boolean;
-}
-
-export interface ScreenVpPoint {
+export interface RadarPingWave {
+  id: string;
   x: number;
   y: number;
+  code: string;
 }
 
-export interface RulerFiveMinUnit {
-  minutes: number;
-  isMajor: boolean;
-}
-
-export interface AirportMarkerEntry {
+export interface ScanTargetMarker {
   marker: map.Marker;
   code: string;
-  isTemporary?: boolean;
+  lat: number;
+  lon: number;
+  bearing: number;
 }
 
-export interface MapControllerEventSubscriber {
-  on(event: string, callback: (pos: mapCommon.CameraPosition) => void): void;
-}
-
-// 每个小刻度格子的宽度 (vp) 与 每个 5 分钟步进的总宽度 (vp) (1 主刻度 + 3 紧凑小刻度 = 4 * 8 = 32vp)
-export const RULER_SUB_WIDTH: number = 8;
-export const RULER_STEP_WIDTH: number = 32;
-
-// 自动生成 15 ~ 240 分钟，按 5 分钟步进的刻度列表 (每 15 分钟为数字大刻度，每 5 分钟为中刻度)
-export const RULER_FIVE_MIN_UNITS: RulerFiveMinUnit[] = [];
-for (let m = 15; m <= 240; m += 5) {
-  RULER_FIVE_MIN_UNITS.push({
-    minutes: m,
-    isMajor: m % 15 === 0
-  });
-}
-
-/**
- * 🎯 航空空管雷达扫描与声纳脉冲动效组件 (以红框中心为圆心，硬件加速渲染，完全穿透手势)
- */
-@Component
-struct RadarScanOverlay {
-  @Prop radius: number = 155;
-  @Prop currentMinutes: number = 25;
-  @State radarAngle: number = 0;
-  @State pulseRatio1: number = 0.0;
-  @State pulseRatio2: number = 0.5;
-  private timerId: number = -1;
-
-  aboutToAppear() {
-    this.timerId = setInterval(() => {
-      this.radarAngle = (this.radarAngle + 2.2) % 360;
-      this.pulseRatio1 = (this.pulseRatio1 + 0.015) % 1.0;
-      this.pulseRatio2 = (this.pulseRatio2 + 0.015) % 1.0;
-    }, 33);
-  }
-
-  aboutToDisappear() {
-    if (this.timerId !== -1) {
-      clearInterval(this.timerId);
-      this.timerId = -1;
-    }
-  }
-
-  build() {
-    Stack({ alignContent: Alignment.Center }) {
-      // 1. 360° 顺时针扇形微光扫光 (SweepGradient 硬件加速)
-      Stack()
-        .width(this.radius * 2)
-        .height(this.radius * 2)
-        .borderRadius(this.radius)
-        .clip(true)
-        .sweepGradient({
-          center: ['50%', '50%'],
-          start: 0,
-          end: 360,
-          colors: [
-            ['rgba(240, 101, 83, 0.0)', 0.0],
-            ['rgba(240, 101, 83, 0.0)', 0.78],
-            ['rgba(240, 101, 83, 0.06)', 0.88],
-            ['rgba(240, 101, 83, 0.22)', 0.98],
-            ['rgba(255, 230, 220, 0.75)', 1.0]
-          ]
-        })
-        .rotate({ angle: this.radarAngle })
-
-      // 2. 声纳向外扩散波纹 1
-      Stack()
-        .width(this.radius * 2 * this.pulseRatio1)
-        .height(this.radius * 2 * this.pulseRatio1)
-        .borderRadius(this.radius * this.pulseRatio1)
-        .border({
-          width: 1.8,
-          color: `rgba(240, 101, 83, ${((1.0 - this.pulseRatio1) * 0.35).toFixed(2)})`,
-          style: BorderStyle.Solid
-        })
-
-      // 3. 声纳向外扩散波纹 2
-      Stack()
-        .width(this.radius * 2 * this.pulseRatio2)
-        .height(this.radius * 2 * this.pulseRatio2)
-        .borderRadius(this.radius * this.pulseRatio2)
-        .border({
-          width: 1.8,
-          color: `rgba(240, 101, 83, ${((1.0 - this.pulseRatio2) * 0.35).toFixed(2)})`,
-          style: BorderStyle.Solid
-        })
-
-      // 4. 十字准星横纵刻度线
-      Row().width(this.radius * 2).height(1).backgroundColor('rgba(255, 255, 255, 0.08)')
-      Column().width(1).height(this.radius * 2).backgroundColor('rgba(255, 255, 255, 0.08)')
-
-      // 5. 内层同心距离刻度圈 (1/3 与 2/3)
-      Stack()
-        .width(this.radius * 2 * 0.36)
-        .height(this.radius * 2 * 0.36)
-        .borderRadius(this.radius * 0.36)
-        .border({
-          width: 1,
-          color: 'rgba(255, 255, 255, 0.12)',
-          style: BorderStyle.Solid
-        })
-
-      Stack()
-        .width(this.radius * 2 * 0.70)
-        .height(this.radius * 2 * 0.70)
-        .borderRadius(this.radius * 0.70)
-        .border({
-          width: 1,
-          color: 'rgba(255, 255, 255, 0.12)',
-          style: BorderStyle.Solid
-        })
-
-      // 6. 外层主测距范围圈 (半透明珊瑚红虚线)
-      Stack()
-        .width(this.radius * 2)
-        .height(this.radius * 2)
-        .borderRadius(this.radius)
-        .border({
-          width: 1.5,
-          color: 'rgba(240, 101, 83, 0.45)',
-          style: BorderStyle.Dashed
-        })
-
-
-    }
-    .width(this.radius * 2)
-    .height(this.radius * 2)
-    .hitTestBehavior(HitTestMode.None)
-  }
-}
+// 兼容旧导入，保持对外接口 100% 不变
+export type { ScreenVpPoint, AirportMarkerEntry };
+export { RULER_FIVE_MIN_UNITS, RULER_STEP_WIDTH };
 
 @CustomDialog
 export struct FlightMapSelectOverlay {
@@ -174,19 +49,32 @@ export struct FlightMapSelectOverlay {
   @Prop initialMinutes: number = 15;
   onDestinationSelected?: (airport: Airport, minutes?: number) => void;
 
+  // ── 地图状态 ──────────────────────────────────
   @State currentMinutes: number = 15;
   @State currentSelectedCode: string = '';
   @State routeDistanceKm: number = 0;
   @State candidateAirports: Airport[] = [];
   @State currentZoomLevel: number = 6.2;
   @State rulerContainerWidth: number = 360;
-  @State ctuScreenX: number = 210;
-  @State ctuScreenY: number = 320;
+  @State ctuScreenX: number = 189;
+  @State ctuScreenY: number = 339;
   @State dynamicRadarRadius: number = 155;
+  @State isMapReady: boolean = false;
+  @State mapOpacity: number = 0.0;
+  @State scanAngle: number = 0;
+  @State scanBeamOpacity: number = 1.0;
+  @State activePingWaves: RadarPingWave[] = [];
+
+  // ── 终点激活态覆盖层 ──────────────────────────
   @State destScreenX: number = 0;
   @State destScreenY: number = 0;
-  @State destPulseRadius: number = 0;
-  @State destPulseOpacity: number = 0.0;
+  @State destActiveOverlayVisible: boolean = false;
+  @State destActiveOpacity: number = 0.0;
+  @State activeDestCode: string = '';
+  @State activeDestName: string = '';
+  @State activeDestDist: number = 0;
+
+  // ── 领航小飞机 ────────────────────────────────
   @State flightPlaneX: number = 0;
   @State flightPlaneY: number = 0;
   @State flightPlaneAngle: number = 0;
@@ -194,23 +82,77 @@ export struct FlightMapSelectOverlay {
   @State flightPlaneScale: number = 1.0;
   @State flightPlaneOpacity: number = 1.0;
 
+  // ── 私有字段 ──────────────────────────────────
   private huaweiMapController?: map.MapComponentController;
   private originMarker?: map.Marker;
   private airportMarkers: AirportMarkerEntry[] = [];
+  private pendingScanTargets: ScanTargetMarker[] = [];
+  private activeScanTimerIds: number[] = [];
   private currentPolyline?: Object;
   private rulerScroller: Scroller = new Scroller();
-  private lastHapticTickIndex: number = -1;
   private lastVibrateTime: number = 0;
-  private lastPanOffsetX: number = 0;
-  private destPulseTimer: number = -1;
   private lastSnappedMinutes: number = 15;
+  private markerPixelMapCache: Map<string, image.PixelMap> = new Map();
+  private scanStartTime: number = 0;
+
+  // ── 地图初始化配置 ────────────────────────────
+  private huaweiMapOptions: mapCommon.MapOptions = {
+    position: {
+      target: { latitude: 30.5607 - 1.82, longitude: 103.9426 },
+      zoom: 5.54,
+      tilt: 0
+    },
+    mapType: mapCommon.MapType.SATELLITE,
+    zoomControlsEnabled: false,
+    compassControlsEnabled: false,
+    rotateGesturesEnabled: true,
+    zoomGesturesEnabled: true,
+    scrollGesturesEnabled: true
+  };
+
+  // ─────────────────────────────────────────────
+  // 生命周期
+  // ─────────────────────────────────────────────
+
+  aboutToAppear() {
+    this.currentMinutes = (this.initialMinutes && this.initialMinutes > 0) ? this.initialMinutes : 15;
+    this.lastSnappedMinutes = this.currentMinutes;
+    if (this.selectedCode) {
+      this.currentSelectedCode = this.selectedCode;
+      this.updateRouteDistance(this.currentSelectedCode);
+    }
+    this.updateCandidateAirports(this.currentMinutes);
+    this.initRulerScroll();
+  }
+
+  aboutToDisappear() {
+    if (this.currentPolyline) {
+      try {
+        const p = this.currentPolyline as object as Record<string, () => void>;
+        if (typeof p['remove'] === 'function') p['remove']();
+      } catch (e) {}
+      this.currentPolyline = undefined;
+    }
+    this.airportMarkers.forEach(entry => {
+      try { entry.marker.remove(); } catch (e) {}
+    });
+    this.airportMarkers = [];
+    if (this.originMarker) {
+      try { this.originMarker.remove(); } catch (e) {}
+      this.originMarker = undefined;
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // 坐标投影
+  // ─────────────────────────────────────────────
 
   /**
-   * 🎯 经纬度转屏幕 vp 物理坐标转换引擎 (支持 Native MapKit Projection 与 Mercator 双引擎)
+   * 经纬度转屏幕 vp 物理坐标转换引擎
+   * 优先 Native Projection，备用 Mercator 数学投影
    */
   private latLngToScreenVp(lat: number, lon: number): ScreenVpPoint | null {
     if (!this.huaweiMapController) return null;
-    // 1. 优先使用 Native Projection
     try {
       const dynamicCtrl = this.huaweiMapController as object as Record<string, () => Object>;
       if (typeof dynamicCtrl['getProjection'] === 'function') {
@@ -223,161 +165,103 @@ export struct FlightMapSelectOverlay {
             const rawX = ptRecord['positionX'] ?? ptRecord['x'];
             const rawY = ptRecord['positionY'] ?? ptRecord['y'];
             if (rawX !== undefined && rawY !== undefined && !isNaN(rawX) && !isNaN(rawY)) {
-              const pt: ScreenVpPoint = { x: px2vp(rawX), y: px2vp(rawY) };
-              return pt;
+              return { x: px2vp(rawX), y: px2vp(rawY) };
             }
           }
         }
       }
     } catch (e) {}
 
-    // 2. 备用 Mercator 数学投影
     try {
       const cam = this.huaweiMapController.getCameraPosition();
       if (!cam || !cam.target) return null;
       const zoom = (typeof cam.zoom === 'number' && !isNaN(cam.zoom)) ? cam.zoom : this.currentZoomLevel;
       const centerLat = cam.target.latitude;
       const centerLon = cam.target.longitude;
-
       const tileSize = 256.0;
       const scale = Math.pow(2, zoom);
       const worldSize = tileSize * scale;
-
       const worldX = ((lon + 180.0) / 360.0) * worldSize;
       const centerWorldX = ((centerLon + 180.0) / 360.0) * worldSize;
-
       const sinLat = Math.sin((lat * Math.PI) / 180.0);
       const clampedSinLat = Math.max(-0.9999, Math.min(0.9999, sinLat));
       const worldY = (0.5 - Math.log((1.0 + clampedSinLat) / (1.0 - clampedSinLat)) / (4.0 * Math.PI)) * worldSize;
-
       const sinCenterLat = Math.sin((centerLat * Math.PI) / 180.0);
       const clampedSinCenterLat = Math.max(-0.9999, Math.min(0.9999, sinCenterLat));
       const centerWorldY = (0.5 - Math.log((1.0 + clampedSinCenterLat) / (1.0 - clampedSinCenterLat)) / (4.0 * Math.PI)) * worldSize;
-
       const containerW = this.rulerContainerWidth > 0 ? this.rulerContainerWidth : 360.0;
       const screenCenterX = containerW / 2.0;
-      const screenCenterY = 305.0; // 🎯 精准回降定格在 Y ≈ 305vp 黄金中轴线
-
+      const screenCenterY = 305.0;
       const targetX = screenCenterX + (worldX - centerWorldX);
       const targetY = screenCenterY + (worldY - centerWorldY);
-
       if (!isNaN(targetX) && !isNaN(targetY) && isFinite(targetX) && isFinite(targetY)) {
-        const pt: ScreenVpPoint = { x: targetX, y: targetY };
-        return pt;
+        return { x: targetX, y: targetY };
       }
     } catch (e) {}
     return null;
   }
 
-  /**
-   * 🎯 专注领航精确投影系统 (Web Mercator)：
-   * 直接通过相机 target 坐标计算起点在红框中心区域 (screenCenterY = 305vp) 的物理 vp 坐标。
-   */
+  /** 刷新 CTU 机场在屏幕上的物理 vp 坐标与雷达圈半径 */
   private refreshCtuScreenPosition() {
     const origin = findAirportByCode('CTU');
     if (!origin || origin.lat === undefined || origin.lon === undefined) return;
+
+    // 1. 实实时时将雷达中心 100% 精确磁吸贴合在 CTU 机场的屏幕真实投影点上
     const pt = this.latLngToScreenVp(Number(origin.lat), Number(origin.lon));
-    if (pt) {
+    if (pt && !isNaN(pt.x) && !isNaN(pt.y)) {
       this.ctuScreenX = pt.x;
       this.ctuScreenY = pt.y;
+    } else {
+      const containerW = this.rulerContainerWidth > 0 ? this.rulerContainerWidth : 360.0;
+      this.ctuScreenX = containerW / 2.0;
+      this.ctuScreenY = 305.0;
+    }
 
-      // 🎯 真实地理雷达半径：根据当前专注航程的实际公里数与当前地图缩放倍率，实时计算屏幕真实像素半径
-      const maxDistKm = this.getMaxFlightDistanceKm(this.currentMinutes);
-      const cosLat = Math.cos(Number(origin.lat) * Math.PI / 180.0);
-      const dLon = maxDistKm / (111.32 * (cosLat > 0.01 ? cosLat : 1.0));
-      const edgePt = this.latLngToScreenVp(Number(origin.lat), Number(origin.lon) + dLon);
-      if (edgePt) {
-        const r = Math.hypot(edgePt.x - pt.x, edgePt.y - pt.y);
-        if (!isNaN(r) && r > 20) {
-          this.dynamicRadarRadius = r;
-        }
+    // 2. 墨卡托代数半径计算 (通过目标连贯缩放级别解耦，消除爆大/缩小跳变)
+    const maxDistKm = getMaxFlightDistanceKm(this.currentMinutes);
+    const latRad = Number(origin.lat) * Math.PI / 180.0;
+    const cosLat = Math.cos(latRad);
+    const dLonDeg = maxDistKm / (111.32 * (cosLat > 0.01 ? cosLat : 1.0));
+
+    // 使用与 currentMinutes 同步的目标视口 Zoom 级别，消解时序交错造成的屏幕突变失真
+    const targetZoom = getContinuousZoomLevel(this.currentMinutes);
+    const scale = Math.pow(2, targetZoom);
+    const worldSize = 256.0 * scale;
+    const targetRadiusVp = dLonDeg * (worldSize / 360.0);
+
+    if (!isNaN(targetRadiusVp) && targetRadiusVp > 20) {
+      if (Math.abs(this.dynamicRadarRadius - targetRadiusVp) > 1.0) {
+        animateTo({
+          duration: 350,
+          curve: Curve.EaseOut
+        }, () => {
+          this.dynamicRadarRadius = targetRadiusVp;
+        });
+      } else {
+        this.dynamicRadarRadius = targetRadiusVp;
       }
     }
   }
 
-  /**
-   * 🎯 将相机 Target 纬度固定偏南 1.82°，把 CTU 地标、雷达圈与缩放轴心精准回降定格在完美黄金中轴 (Y ≈ 305vp)
-   */
-  private getCenteredCameraLatitude(originLat: number, _zoomLevel: number): number {
-    return originLat - 1.82;
-  }
+  // ─────────────────────────────────────────────
+  // 触感反馈
+  // ─────────────────────────────────────────────
 
-  private huaweiMapOptions: mapCommon.MapOptions = {
-    position: {
-      target: { latitude: 30.5607 - 1.82, longitude: 103.9426 }, // 🎯 精准回降至 Y ≈ 305vp 黄金中轴
-      zoom: 5.54,
-      tilt: 0
-    },
-    mapType: mapCommon.MapType.SATELLITE, // 卫星地图模式
-    zoomControlsEnabled: false,
-    compassControlsEnabled: false
-  };
-
-  aboutToAppear() {
-    if (this.initialMinutes && this.initialMinutes > 0) {
-      this.currentMinutes = this.initialMinutes;
-    } else {
-      this.currentMinutes = 15;
-    }
-    this.lastSnappedMinutes = this.currentMinutes;
-    if (this.selectedCode) {
-      this.currentSelectedCode = this.selectedCode;
-      this.updateRouteDistance(this.currentSelectedCode);
-    } else {
-      this.currentSelectedCode = '';
-    }
-    this.updateCandidateAirports(this.currentMinutes);
-    this.initRulerScroll();
-  }
-
-  aboutToDisappear() {
-    if (this.destPulseTimer !== -1) {
-      clearInterval(this.destPulseTimer);
-      this.destPulseTimer = -1;
-    }
-    if (this.currentPolyline) {
-      try {
-        const p = this.currentPolyline as object as Record<string, () => void>;
-        if (typeof p['remove'] === 'function') {
-          p['remove']();
-        }
-      } catch (e) {}
-      this.currentPolyline = undefined;
-    }
-    if (this.airportMarkers && this.airportMarkers.length > 0) {
-      this.airportMarkers.forEach(entry => {
-        try { entry.marker.remove(); } catch (e) {}
-      });
-      this.airportMarkers = [];
-    }
-    if (this.originMarker) {
-      try { this.originMarker.remove(); } catch (e) {}
-      this.originMarker = undefined;
-    }
-  }
-
-  /**
-   * 🎯 对标 BackButton 标准系统的触控微脉冲引擎 (分级机械触感)
-   */
   private triggerTickHaptic(isMajor: boolean = false, isMedium: boolean = false) {
     const now = Date.now();
-    if (now - this.lastVibrateTime < 25) {
-      return;
-    }
+    if (now - this.lastVibrateTime < 25) return;
     this.lastVibrateTime = now;
-
     try {
       vibrator.startVibration({
         type: 'time',
         duration: isMajor ? 35 : (isMedium ? 20 : 10)
-      }, {
-        id: 0,
-        usage: 'touch'
-      });
-    } catch (e) {
-      console.error('vibrator startVibration error:', JSON.stringify(e));
-    }
+      }, { id: 0, usage: 'touch' });
+    } catch (e) {}
   }
+
+  // ─────────────────────────────────────────────
+  // 刻度尺控制
+  // ─────────────────────────────────────────────
 
   private initRulerScroll() {
     const idx = RULER_FIVE_MIN_UNITS.findIndex(t => t.minutes === this.currentMinutes);
@@ -397,177 +281,71 @@ export struct FlightMapSelectOverlay {
     let tickIdx = Math.round(xOffset / RULER_STEP_WIDTH);
     if (tickIdx < 0) tickIdx = 0;
     if (tickIdx >= RULER_FIVE_MIN_UNITS.length) tickIdx = RULER_FIVE_MIN_UNITS.length - 1;
-
-    const snapX = tickIdx * RULER_STEP_WIDTH;
-    // 移除松手时的二次重复震动，保证单次滚动过程触感干净利落
     this.rulerScroller.scrollTo({
-      xOffset: snapX,
+      xOffset: tickIdx * RULER_STEP_WIDTH,
       yOffset: 0,
       animation: { duration: 180, curve: Curve.FastOutSlowIn }
     });
-
     const targetMin = RULER_FIVE_MIN_UNITS[tickIdx].minutes;
-    const isMinChanged = (targetMin !== this.lastSnappedMinutes);
+    const isMinChanged = targetMin !== this.lastSnappedMinutes;
     this.currentMinutes = targetMin;
-
     if (isMinChanged) {
       this.lastSnappedMinutes = targetMin;
       this.updateCandidateAirports(targetMin);
       this.drawRoute(this.currentSelectedCode, true);
       this.updateCameraZoomSmoothly(targetMin);
     } else {
-      // 即使分钟数未改变（微滑松手），也更新候选数据，但绝对不销毁重绘地图 Marker 与动画
       this.updateCandidateAirports(targetMin);
     }
     this.refreshCtuScreenPosition();
   }
 
-  private lerpByKnots(minutes: number, times: number[], values: number[]): number {
-    if (minutes <= times[0]) return values[0];
-    if (minutes >= times[times.length - 1]) return values[values.length - 1];
+  // ─────────────────────────────────────────────
+  // 相机与缩放
+  // ─────────────────────────────────────────────
 
-    for (let i = 0; i < times.length - 1; i++) {
-      if (minutes >= times[i] && minutes <= times[i + 1]) {
-        const t = (minutes - times[i]) / (times[i + 1] - times[i]);
-        return values[i] + t * (values[i + 1] - values[i]);
-      }
-    }
-    return values[values.length - 1];
-  }
-
-  private getMaxFlightDistanceKm(minutes: number): number {
-    const times = [15, 25, 45, 60, 90, 120, 180, 240];
-    const maxDists = [420, 850, 1650, 2300, 3800, 5800, 9500, 12000];
-    return this.lerpByKnots(minutes, times, maxDists);
-  }
-
-  private getMinFlightDistanceKm(minutes: number): number {
-    const times = [15, 25, 45, 60, 90, 120, 180, 240];
-    const minDists = [80, 350, 700, 1100, 1800, 2800, 4800, 6500];
-    return this.lerpByKnots(minutes, times, minDists);
-  }
-
-  // 🎯 连续视界缩放算法：自适应对齐 155vp 稳定雷达圈，确保对应分钟数的候选目的地 100% 全员容纳在雷达圈内
-  private getContinuousZoomLevel(minutes: number): number {
-    const maxDist = this.getMaxFlightDistanceKm(minutes);
-    const targetZoom = Math.log2(20893.5 / maxDist);
-    return Math.max(1.8, Math.min(5.6, targetZoom));
-  }
-
-  // 🎯 动态视界缩放引擎 (自适应获取当前最佳 Zoom)
-  private getBestZoomLevelForMinutes(minutes: number): number {
-    return this.getContinuousZoomLevel(minutes);
-  }
-
-  // 🎯 专用于高频拖拽过程的 60fps 实时跟手视界拉伸引擎
-  private updateCameraZoomDirectly(minutes: number) {
-    if (!this.huaweiMapController) return;
-    const origin = findAirportByCode('CTU');
-    if (!origin || origin.lat === undefined || origin.lon === undefined) return;
-    try {
-      const targetZoom = this.getContinuousZoomLevel(minutes);
-      this.currentZoomLevel = targetZoom;
-      this.huaweiMapController.moveCamera(map.newCameraPosition({
-        target: {
-          latitude: this.getCenteredCameraLatitude(origin.lat, targetZoom),
-          longitude: origin.lon
-        },
-        zoom: targetZoom
-      }));
-    } catch (e) {
-      console.error('updateCameraZoomDirectly error:', JSON.stringify(e));
-    }
-  }
-
-  // 🎯 专用于松手吸附与点选的 850ms 电影级超长柔和推拉引擎 (EaseInOut 缓入缓出，呼吸感拉满)
   private updateCameraZoomSmoothly(minutes: number) {
     if (!this.huaweiMapController) return;
     const origin = findAirportByCode('CTU');
     if (!origin || origin.lat === undefined || origin.lon === undefined) return;
     try {
-      const targetZoom = this.getContinuousZoomLevel(minutes);
+      const targetZoom = getContinuousZoomLevel(minutes);
       this.currentZoomLevel = targetZoom;
       this.huaweiMapController.animateCamera(map.newCameraPosition({
-        target: {
-          latitude: this.getCenteredCameraLatitude(origin.lat, targetZoom),
-          longitude: origin.lon
-        },
+        target: { latitude: getCenteredCameraLatitude(origin.lat), longitude: origin.lon },
         zoom: targetZoom
       }), 850);
-    } catch (e) {
-      console.error('updateCameraZoomSmoothly error:', JSON.stringify(e));
-    }
+    } catch (e) {}
   }
 
-  private getBearingDeg(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const dLon = (lon2 - lon1) * Math.PI / 180.0;
-    const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180.0);
-    const x = Math.cos(lat1 * Math.PI / 180.0) * Math.sin(lat2 * Math.PI / 180.0) -
-              Math.sin(lat1 * Math.PI / 180.0) * Math.cos(lat2 * Math.PI / 180.0) * Math.cos(dLon);
-    return (Math.atan2(y, x) * 180.0 / Math.PI + 360.0) % 360.0;
+  private zoomIn() {
+    if (!this.huaweiMapController) return;
+    const target = Math.min(18, this.currentZoomLevel + 0.5);
+    this.currentZoomLevel = target;
+    const cam = this.huaweiMapController.getCameraPosition();
+    this.huaweiMapController.animateCamera(map.newCameraPosition({
+      target: cam?.target || { latitude: 30.5607, longitude: 103.9426 },
+      zoom: target
+    }), 300);
   }
+
+  private zoomOut() {
+    if (!this.huaweiMapController) return;
+    try {
+      const cam = this.huaweiMapController.getCameraPosition();
+      const current = (cam && typeof cam.zoom === 'number') ? cam.zoom : this.currentZoomLevel;
+      const target = Math.max(current - 0.5, 1.5);
+      this.currentZoomLevel = parseFloat(target.toFixed(1));
+      this.huaweiMapController.animateCamera({ zoom: target }, 300);
+    } catch (e) {}
+  }
+
+  // ─────────────────────────────────────────────
+  // 候选机场管理
+  // ─────────────────────────────────────────────
 
   private updateCandidateAirports(minutes: number) {
-    const origin = findAirportByCode('CTU');
-    if (!origin || origin.lat === undefined || origin.lon === undefined) {
-      this.candidateAirports = POPULAR_AIRPORTS.slice(0, 6);
-      return;
-    }
-
-    const maxDist = this.getMaxFlightDistanceKm(minutes);
-    const minDist = this.getMinFlightDistanceKm(minutes);
-    const midDist = (minDist + maxDist) / 2.0;
-
-    const inRange = POPULAR_AIRPORTS.filter(apt => {
-      if (apt.code === 'CTU' || apt.code === 'TFU' || apt.lat === undefined || apt.lon === undefined) return false;
-      const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
-      return dist >= minDist && dist <= maxDist;
-    });
-
-    // 🎯 360° 八方位全向散射算法：在每个扇区内挑选最接近航程黄金中心点 (midDist) 的代表性机场！
-    const sectors: Airport[][] = [[], [], [], [], [], [], [], []];
-    inRange.forEach(apt => {
-      const b = this.getBearingDeg(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
-      const sIdx = Math.floor(b / 45.0) % 8;
-      sectors[sIdx].push(apt);
-    });
-
-    const scatteredList: Airport[] = [];
-    sectors.forEach(sec => {
-      if (sec.length > 0) {
-        // 挑选距离最贴近 midDist 的代表性机场
-        sec.sort((a, b) => {
-          const d1 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(a.lat), Number(a.lon));
-          const d2 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(b.lat), Number(b.lon));
-          return Math.abs(d1 - midDist) - Math.abs(d2 - midDist);
-        });
-        scatteredList.push(sec[0]);
-      }
-    });
-
-    // 如果方向抽样后数量不足 6 个，按最贴近 midDist 的距离排序补充
-    if (scatteredList.length < 6) {
-      const candidates = inRange.filter(apt => !scatteredList.some(item => item.code === apt.code));
-      candidates.sort((a, b) => {
-        const d1 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(a.lat), Number(a.lon));
-        const d2 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(b.lat), Number(b.lon));
-        return Math.abs(d1 - midDist) - Math.abs(d2 - midDist);
-      });
-      for (let i = 0; i < candidates.length && scatteredList.length < 8; i++) {
-        scatteredList.push(candidates[i]);
-      }
-    }
-
-    // 按照与出发地的实际飞行距离由近及远排序
-    scatteredList.sort((a, b) => {
-      const d1 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(a.lat), Number(a.lon));
-      const d2 = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(b.lat), Number(b.lon));
-      return d1 - d2;
-    });
-
-    this.candidateAirports = scatteredList.length > 0 ? scatteredList : POPULAR_AIRPORTS.slice(0, 6);
-
-    // 如果当前选中的机场不在候选列表内，清空选中
+    this.candidateAirports = filterAndSampleCandidateAirports(minutes, getBearingDeg);
     if (this.currentSelectedCode) {
       const exists = this.candidateAirports.some(apt => apt.code === this.currentSelectedCode);
       if (!exists) {
@@ -575,7 +353,24 @@ export struct FlightMapSelectOverlay {
         this.routeDistanceKm = 0;
       }
     }
+    this.prewarmMarkerCache(this.candidateAirports);
   }
+
+  private prewarmMarkerCache(airports: Airport[]) {
+    if (!airports || airports.length === 0) return;
+    const origin = findAirportByCode('CTU');
+    airports.forEach(apt => {
+      if (apt.code !== 'CTU' && apt.lat !== undefined && apt.lon !== undefined) {
+        const dist = (origin && origin.lat !== undefined && origin.lon !== undefined)
+          ? getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon)) : 0;
+        this.generateMarkerPixelMap(apt.code, apt.city || apt.name, dist, true, false);
+      }
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // 选择逻辑
+  // ─────────────────────────────────────────────
 
   private selectMinutes(minutes: number, index?: number) {
     this.currentMinutes = minutes;
@@ -585,7 +380,6 @@ export struct FlightMapSelectOverlay {
     this.drawRoute(this.currentSelectedCode, true);
     this.updateCameraZoomSmoothly(minutes);
     this.refreshCtuScreenPosition();
-
     if (index !== undefined) {
       this.rulerScroller.scrollTo({
         xOffset: index * RULER_STEP_WIDTH,
@@ -603,224 +397,259 @@ export struct FlightMapSelectOverlay {
   }
 
   private updateRouteDistance(targetCode: string) {
-    if (!targetCode) {
-      this.routeDistanceKm = 0;
-      return;
-    }
+    if (!targetCode) { this.routeDistanceKm = 0; return; }
     const origin = findAirportByCode('CTU');
     const target = findAirportByCode(targetCode);
-    if (origin && target && origin.lat !== undefined && origin.lon !== undefined && target.lat !== undefined && target.lon !== undefined) {
+    if (origin && target &&
+        origin.lat !== undefined && origin.lon !== undefined &&
+        target.lat !== undefined && target.lon !== undefined) {
       const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(target.lat), Number(target.lon));
-      if (!isNaN(dist) && dist > 0) {
-        this.routeDistanceKm = dist;
-      }
+      if (!isNaN(dist) && dist > 0) this.routeDistanceKm = dist;
     }
   }
 
-  /**
-   * 🎯 航线飞抵终点时，点亮目标机场地标 (通过带精确锚点的 addMarker 替换，100% 杜绝 setIcon 导致的锚点丢失偏移)
-   */
-  private async activateDestMarker(destCode: string) {
-    if (!destCode || !this.huaweiMapController || !this.airportMarkers || this.airportMarkers.length === 0) return;
-    const entryIdx = this.airportMarkers.findIndex(item => item.code === destCode);
-    if (entryIdx !== -1) {
-      const entry = this.airportMarkers[entryIdx];
-      const targetApt = findAirportByCode(destCode);
-      if (targetApt && targetApt.lat !== undefined && targetApt.lon !== undefined) {
-        try {
-          // 1. 安全清理旧 Marker
-          if (entry.marker) {
-            try { entry.marker.remove(); } catch (e) {}
-          }
-          // 2. 使用显式 anchorU: 0.148, anchorV: 0.5 重新创建红色到达 Marker，绝对零偏移
-          const optDest: mapCommon.MarkerOptions = {
-            position: { latitude: targetApt.lat, longitude: targetApt.lon },
-            icon: AirportMarkerHelper.getDestActiveIcon(destCode),
-            anchorU: 0.148,
-            anchorV: 0.5,
-            clickable: true,
-            zIndex: 35,
-            title: `(${destCode})`
-          };
-          const newMarker = await this.huaweiMapController.addMarker(optDest);
-          if (newMarker) {
-            this.airportMarkers[entryIdx] = {
-              marker: newMarker,
-              code: destCode,
-              isTemporary: entry.isTemporary
-            };
-          }
-          this.triggerTickHaptic(true, false);
-        } catch (e) {
-          console.error('activateDestMarker error:', JSON.stringify(e));
-        }
-      }
+  private confirmSelection() {
+    if (!this.currentSelectedCode) {
+      try { promptAction.showToast({ message: '请先选择目的地机场 🛫', duration: 2000 }); } catch (e) {}
+      return;
+    }
+    const selected = findAirportByCode(this.currentSelectedCode);
+    if (selected && this.onDestinationSelected) this.onDestinationSelected(selected, this.currentMinutes);
+    if (this.controller) this.controller.close();
+  }
+
+  // ─────────────────────────────────────────────
+  // 地标快照生成
+  // ─────────────────────────────────────────────
+
+  @Builder
+  private snapshotMarkerBuilder(code: string, name: string, distanceKm: number, isSelected: boolean, isOrigin: boolean) {
+    CustomAirportMarkerBuilder(code, name, distanceKm, isSelected, isOrigin);
+  }
+
+  private async generateMarkerPixelMap(
+    code: string, name: string, distanceKm: number, isSelected: boolean, isOrigin: boolean = false
+  ): Promise<image.PixelMap | undefined> {
+    const cacheKey = isOrigin ? `${code}_orig` : (isSelected ? `${code}_dest` : `${code}_cand`);
+    if (this.markerPixelMapCache.has(cacheKey)) return this.markerPixelMapCache.get(cacheKey);
+    try {
+      const pixmap: image.PixelMap = await componentSnapshot.createFromBuilder(() => {
+        this.snapshotMarkerBuilder(code, name, distanceKm, isSelected, isOrigin);
+      });
+      if (pixmap) this.markerPixelMapCache.set(cacheKey, pixmap);
+      return pixmap;
+    } catch (e) {
+      console.error(`generateMarkerPixelMap error for ${code}:`, JSON.stringify(e));
+      return undefined;
     }
   }
+
+  // ─────────────────────────────────────────────
+  // 终点地标激活动效
+  // ─────────────────────────────────────────────
+
+  private async activateDestMarker(destCode: string) {
+    if (!destCode || !this.huaweiMapController || !this.airportMarkers || this.airportMarkers.length === 0) return;
+    const targetApt = findAirportByCode(destCode);
+    if (!targetApt || targetApt.lat === undefined || targetApt.lon === undefined) return;
+
+    const origin = findAirportByCode('CTU');
+    const dist = (origin && origin.lat !== undefined && origin.lon !== undefined)
+      ? getDistanceKm(Number(origin.lat), Number(origin.lon), Number(targetApt.lat), Number(targetApt.lon)) : 0;
+
+    const pt = this.latLngToScreenVp(targetApt.lat, targetApt.lon);
+    if (pt) { this.destScreenX = pt.x; this.destScreenY = pt.y; }
+
+    this.activeDestCode = destCode;
+    this.activeDestName = targetApt.city || targetApt.name;
+    this.activeDestDist = dist;
+    this.triggerTickHaptic(true, false);
+
+    // 纯透明度平滑交叉淡入 (无任何缩放回弹)
+    this.destActiveOverlayVisible = true;
+    this.destActiveOpacity = 0.0;
+    animateTo({
+      duration: 250,
+      curve: Curve.EaseOut,
+      onFinish: () => {
+        animateTo({
+          duration: 120,
+          curve: Curve.EaseOut,
+          onFinish: () => { this.destActiveOverlayVisible = false; }
+        }, () => { this.destActiveOpacity = 0.0; });
+      }
+    }, () => { this.destActiveOpacity = 1.0; });
+
+    // 异步更新底层 MapKit Marker 贴图
+    try {
+      const activePix = await this.generateMarkerPixelMap(destCode, targetApt.city || targetApt.name, dist, true, false);
+      const entryIdx = this.airportMarkers.findIndex(item => item.code === destCode);
+      if (entryIdx !== -1) {
+        const entry = this.airportMarkers[entryIdx];
+        if (entry && entry.marker && activePix) {
+          const dm = entry.marker as object as Record<string, (icon: image.PixelMap) => void>;
+          if (typeof dm['setIcon'] === 'function') dm['setIcon'](activePix);
+          const dmZ = entry.marker as object as Record<string, (z: number) => void>;
+          if (typeof dmZ['setZIndex'] === 'function') dmZ['setZIndex'](35);
+        }
+      }
+    } catch (e) {}
+  }
+
+  // ─────────────────────────────────────────────
+  // 航线绘制与小飞机动画
+  // ─────────────────────────────────────────────
 
   private async drawRoute(destCode: string, force: boolean = false) {
     if (!this.huaweiMapController) return;
     const origin = findAirportByCode('CTU');
     if (!origin || origin.lat === undefined || origin.lon === undefined) return;
 
-    // 1. 清理旧 Polyline 航线
+    // 清理旧 Polyline
     if (this.currentPolyline) {
       try {
         const p = this.currentPolyline as object as Record<string, () => void>;
-        if (typeof p['remove'] === 'function') {
-          p['remove']();
-        }
+        if (typeof p['remove'] === 'function') p['remove']();
       } catch (e) {}
       this.currentPolyline = undefined;
     }
 
-    // 2. 确保起点 CTU 跑道胶囊航空地标 Marker 仅初始化一次
+    // CTU 起点地标（仅初始化一次）
     if (!this.originMarker) {
       try {
+        const originPix = await this.generateMarkerPixelMap(origin.code, origin.city || origin.name, 0, false, true);
         const optOrigin: mapCommon.MarkerOptions = {
           position: { latitude: origin.lat, longitude: origin.lon },
-          icon: $rawfile('textures/markers/mk_CTU_orig.png'),
-          anchorU: 0.148,
-          anchorV: 0.5,
-          clickable: false,
-          zIndex: 10,
-          title: '(CTU)'
+          icon: originPix || $rawfile('textures/markers/mk_CTU_orig.png'),
+          anchorU: 0.5, anchorV: 0.5, clickable: false, zIndex: 10, title: '(CTU)'
         };
         this.originMarker = await this.huaweiMapController.addMarker(optOrigin);
-      } catch (e) {
-        console.error('add origin marker error', JSON.stringify(e));
-      }
+      } catch (e) {}
     }
 
-    // 3. 🎯 0 闪烁与 0 偏移核心：切换城市时，通过显式 anchor 重置所有候选 Marker
-    if (this.airportMarkers && this.airportMarkers.length > 0) {
-      this.airportMarkers.forEach(entry => {
-        try { entry.marker.remove(); } catch (e) {}
-      });
-      this.airportMarkers = [];
-    }
+    // 增量重用候选 Marker（0 闪烁、0 延迟）
+    let renderList = this.candidateAirports.filter(apt =>
+      apt.code !== 'CTU' && apt.lat !== undefined && apt.lon !== undefined
+    ).slice(0, 8);
 
-    let renderList = this.candidateAirports.filter(apt => apt.code !== 'CTU' && apt.lat !== undefined && apt.lon !== undefined);
-    if (!destCode && renderList.length > 7) {
-      renderList = renderList.slice(0, 7);
-    } else if (destCode) {
-      const hasDest = renderList.some(apt => apt.code === destCode);
-      if (!hasDest) {
-        const destApt = findAirportByCode(destCode);
-        if (destApt) renderList.push(destApt);
-      }
-      if (renderList.length > 8) {
-        const selectedApt = renderList.find(apt => apt.code === destCode);
-        const others = renderList.filter(apt => apt.code !== destCode).slice(0, 7);
-        renderList = selectedApt ? [selectedApt, ...others] : others;
-      }
-    }
+    const existingCodes = this.airportMarkers.map(m => m.code);
+    const targetCodes = renderList.map(a => a.code);
+    const isListSame = existingCodes.length === targetCodes.length &&
+      existingCodes.every((val, i) => val === targetCodes[i]);
 
-    for (let i = 0; i < renderList.length; i++) {
-      const apt = renderList[i];
-      const isSelected = (apt.code === destCode);
-      const iconRes = AirportMarkerHelper.getCandidateIcon(apt.code);
-
-      const optCand: mapCommon.MarkerOptions = {
-        position: { latitude: apt.lat, longitude: apt.lon },
-        icon: iconRes,
-        anchorU: 0.148,
-        anchorV: 0.5,
-        clickable: true,
-        zIndex: isSelected ? 25 : 5,
-        title: `(${apt.code})`
-      };
-
-      try {
-        const m = await this.huaweiMapController.addMarker(optCand);
-        if (m) {
-          if (destCode && !isSelected) {
-            try {
-              const dm = m as object as Record<string, (a: number) => void>;
-              if (typeof dm['setAlpha'] === 'function') {
-                dm['setAlpha'](0.65);
-              }
-            } catch (e) {}
-          }
-          this.airportMarkers.push({ marker: m, code: apt.code });
+    if (isListSame && this.airportMarkers.length > 0) {
+      for (let i = 0; i < renderList.length; i++) {
+        const apt = renderList[i];
+        const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
+        const markerPix = await this.generateMarkerPixelMap(apt.code, apt.city || apt.name, dist, false, false);
+        const entry = this.airportMarkers[i];
+        if (entry && entry.marker) {
+          try {
+            if (markerPix) {
+              const dm = entry.marker as object as Record<string, (icon: image.PixelMap) => void>;
+              if (typeof dm['setIcon'] === 'function') dm['setIcon'](markerPix);
+            }
+            const dmZ = entry.marker as object as Record<string, (z: number) => void>;
+            if (typeof dmZ['setZIndex'] === 'function') dmZ['setZIndex'](5);
+          } catch (e) {}
         }
-      } catch (e) {
-        console.error('add candidate marker error', JSON.stringify(e));
+      }
+    } else {
+      this.airportMarkers.forEach(entry => { try { entry.marker.remove(); } catch (e) {} });
+      this.airportMarkers = [];
+      this.pendingScanTargets = [];
+
+      // 1. 并发离屏快照生成
+      const pixmapPromises = renderList.map(apt => {
+        const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
+        return this.generateMarkerPixelMap(apt.code, apt.city || apt.name, dist, false, false);
+      });
+      const pixmaps = await Promise.all(pixmapPromises);
+
+      // 2. 将底册 Marker 写入地图 (初始完全透明 setAlpha(0.0))
+      const ctrl = this.huaweiMapController;
+      if (ctrl) {
+        for (let i = 0; i < renderList.length; i++) {
+          const apt = renderList[i];
+          const markerPix = pixmaps[i];
+          const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
+          const optCand: mapCommon.MarkerOptions = {
+            position: { latitude: apt.lat, longitude: apt.lon },
+            icon: markerPix || AirportMarkerHelper.getCandidateIcon(apt.code),
+            anchorU: 0.5, anchorV: 0.5, clickable: true, zIndex: 5, title: `(${apt.code})`
+          };
+          try {
+            const m = await ctrl.addMarker(optCand);
+            if (m) {
+              try { m.setAlpha(0.0); } catch (e) {}
+              const markerItem: AirportMarkerEntry = { marker: m, code: apt.code };
+              this.airportMarkers.push(markerItem);
+              if (apt.lat !== undefined && apt.lon !== undefined) {
+                const bearing = getBearingDeg(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
+                const scanItem: ScanTargetMarker = {
+                  marker: m,
+                  code: apt.code,
+                  lat: Number(apt.lat),
+                  lon: Number(apt.lon),
+                  bearing: bearing
+                };
+                this.pendingScanTargets.push(scanItem);
+              }
+            }
+          } catch (e) {}
+        }
+      }
+
+      // 3. 🎯 仅在初始未扫频时启动扫频旋转，避免滑动刻度尺时重复打乱自旋角速度
+      if (this.scanStartTime <= 0) {
+        this.startRadarScanSequence();
+      } else {
+        this.schedulePendingScanPings();
       }
     }
 
-    // 4. 🎯 绘制原生抗锯齿贝塞尔航线 (具有生长展开动效，航线飞抵终点时瞬间点亮目标 Marker)
+    // 绘制贝塞尔航线流光 + 领航小飞机
     if (destCode) {
       const target = findAirportByCode(destCode);
       if (target && target.lat !== undefined && target.lon !== undefined) {
         try {
-          const originLat = Number(origin.lat);
-          const originLon = Number(origin.lon);
-          const targetLat = Number(target.lat);
-          const targetLon = Number(target.lon);
-
-          const midLat = (originLat + targetLat) / 2;
-          const midLon = (originLon + targetLon) / 2;
-          const dLat = targetLat - originLat;
-          const dLon = targetLon - originLon;
-          // 偏移控制点制造优雅弧度 (绝不生硬折角)
-          const ctrlLat = midLat - dLon * 0.15;
-          const ctrlLon = midLon + dLat * 0.15;
-
-          const totalSteps = 45;
-          const fullCurve: mapCommon.LatLng[] = [];
-          for (let i = 0; i <= totalSteps; i++) {
-            const t = i / totalSteps;
-            const lat = (1 - t) * (1 - t) * originLat + 2 * (1 - t) * t * ctrlLat + t * t * targetLat;
-            const lon = (1 - t) * (1 - t) * originLon + 2 * (1 - t) * t * ctrlLon + t * t * targetLon;
-            const curvePt: mapCommon.LatLng = { latitude: lat, longitude: lon };
-            fullCurve.push(curvePt);
-          }
-
-          const firstPt: mapCommon.LatLng = { latitude: originLat, longitude: originLon };
+          const fullCurve = calculateBezierCurve(
+            Number(origin.lat), Number(origin.lon),
+            Number(target.lat), Number(target.lon)
+          );
+          const firstPt: mapCommon.LatLng = { latitude: Number(origin.lat), longitude: Number(origin.lon) };
           this.currentPolyline = await this.huaweiMapController.addPolyline({
-            points: [firstPt],
-            color: 0xFFF06553,
-            width: 6,
-            zIndex: 20
+            points: [firstPt], color: 0xFFF06553, width: 6, zIndex: 20
           }) as Object;
 
           const currentPolylineRef = this.currentPolyline;
           const polyObj = currentPolylineRef as object as Record<string, (points: mapCommon.LatLng[]) => void>;
+          const totalSteps = 45;
+          const totalFrames = 22;
 
           if (typeof polyObj['setPoints'] === 'function') {
             let frame = 1;
-            const totalFrames = 22; // 约 350ms 平滑飞行流光
             const timerId = setInterval(() => {
-              // 航线被切换或销毁时立即停止当前动画
               if (frame >= totalFrames || this.currentPolyline !== currentPolylineRef) {
                 if (this.currentPolyline === currentPolylineRef) {
-                  polyObj['setPoints'](fullCurve); // 确保最后完整画完
-                  // 🎯 航线飞抵终点！点亮目标 Marker 并震动反馈！
+                  polyObj['setPoints'](fullCurve);
                   this.activateDestMarker(destCode);
-                  // 🎯 飞抵终点后小飞机瞬间优雅淡出隐藏，绝不残留
-                  this.isFlightPlaneVisible = false;
-                } else {
-                  this.isFlightPlaneVisible = false;
                 }
+                this.isFlightPlaneVisible = false;
                 clearInterval(timerId);
                 return;
               }
-
-              // Cubic Ease-Out 缓动算法，使连线呈现“快出慢落”的丝滑感
               const progress = frame / totalFrames;
               const easeOut = 1 - Math.pow(1 - progress, 3);
               const targetIndex = Math.max(1, Math.floor(easeOut * totalSteps));
-
               polyObj['setPoints'](fullCurve.slice(0, targetIndex + 1));
 
-              // ✈️ 实时驱动前导领航小飞机沿航线切线极速飞行
               const headGeo = fullCurve[targetIndex];
               const prevGeo = fullCurve[Math.max(0, targetIndex - 1)];
-              const dLatDeg = headGeo.latitude - prevGeo.latitude;
-              const dLonDeg = headGeo.longitude - prevGeo.longitude;
-              const bearing = (Math.atan2(dLonDeg, dLatDeg) * 180 / Math.PI + 360) % 360;
-
+              const bearing = (Math.atan2(
+                headGeo.longitude - prevGeo.longitude,
+                headGeo.latitude - prevGeo.latitude
+              ) * 180 / Math.PI + 360) % 360;
               const pt = this.latLngToScreenVp(headGeo.latitude, headGeo.longitude);
               if (pt) {
                 this.flightPlaneX = pt.x;
@@ -830,172 +659,252 @@ export struct FlightMapSelectOverlay {
                 this.flightPlaneOpacity = 1.0;
                 this.isFlightPlaneVisible = true;
               }
-
               frame++;
             }, 16);
           }
-        } catch (e) {
-          console.error('add polyline error', JSON.stringify(e));
-        }
+        } catch (e) {}
       }
     }
 
-    // 6. 智能镜头：只有在 force 为 true 时（切换时长或首次加载）才平移镜头，普通选城市时绝对保持静止，彻底消除地标抖动与位移！
+    // 智能镜头：force=true 时平移
     if (force) {
       try {
-        const targetZoom = this.getBestZoomLevelForMinutes(this.currentMinutes);
+        const targetZoom = getContinuousZoomLevel(this.currentMinutes);
         this.currentZoomLevel = targetZoom;
-
         this.huaweiMapController.animateCamera(map.newCameraPosition({
-           target: {
-             latitude: this.getCenteredCameraLatitude(origin.lat, targetZoom),
-             longitude: origin.lon
-           },
-           zoom: targetZoom
+          target: { latitude: getCenteredCameraLatitude(origin.lat), longitude: origin.lon },
+          zoom: targetZoom
         }), 700);
-      } catch (e) {
-        console.error('animate camera error', JSON.stringify(e));
-      }
+      } catch (e) {}
     }
   }
+
+  private triggerRadarPingAt(code: string, lat: number, lon: number) {
+    const pt = this.latLngToScreenVp(lat, lon);
+    if (pt) {
+      const pingId = `${code}_${Date.now()}`;
+      const ping: RadarPingWave = { id: pingId, x: pt.x, y: pt.y, code: code };
+      this.activePingWaves.push(ping);
+      this.triggerTickHaptic(false, true);
+      setTimeout(() => {
+        this.activePingWaves = this.activePingWaves.filter(p => p.id !== pingId);
+      }, 650);
+    }
+  }
+
+  private startRadarScanSequence() {
+    this.activeScanTimerIds.forEach(id => clearTimeout(id));
+    this.activeScanTimerIds = [];
+
+    if (this.pendingScanTargets) {
+      this.pendingScanTargets.forEach(target => {
+        const record = target as object as Record<string, boolean>;
+        record['_scheduled'] = false;
+        try { target.marker.setAlpha(0.0); } catch (e) {}
+      });
+    }
+
+    this.scanStartTime = Date.now();
+    this.scanAngle = 0;
+    this.scanBeamOpacity = 1.0;
+
+    // 1. 旋转动画延长至 1.5 圈 (540°)，全程 7800ms 匀速连续旋转，绝无停顿
+    animateTo({
+      duration: 7800,
+      curve: Curve.Linear,
+      onFinish: () => {
+        this.scanBeamOpacity = 0.0;
+      }
+    }, () => {
+      this.scanAngle = 540;
+    });
+
+    // 2. 满 1 圈 (5200ms / 360°) 时，启动半圈 (2600ms / 180°) 在旋转中平滑淡出动画
+    const fadeTimerId = setTimeout(() => {
+      animateTo({
+        duration: 2600,
+        curve: Curve.EaseOut
+      }, () => {
+        this.scanBeamOpacity = 0.0;
+      });
+    }, 5200);
+    this.activeScanTimerIds.push(fadeTimerId);
+
+    this.schedulePendingScanPings();
+  }
+
+  private schedulePendingScanPings() {
+    if (this.scanStartTime <= 0 || !this.pendingScanTargets || this.pendingScanTargets.length === 0) return;
+    const elapsed = Date.now() - this.scanStartTime;
+    this.pendingScanTargets.forEach(target => {
+      const record = target as object as Record<string, boolean>;
+      if (record['_scheduled']) return;
+      record['_scheduled'] = true;
+
+      // 🎯 单圈 360° 旋转对应 5200ms，根据极坐标正北方位角精确匹配雷达划过该机场的时间点
+      const revealDelay = Math.max(80, Math.min(5000, Math.round((target.bearing / 360.0) * 5200)));
+      const remainingDelay = revealDelay - elapsed;
+
+      if (remainingDelay <= 0) {
+        try {
+          target.marker.setAlpha(1.0);
+          const mObj = target.marker as object as Record<string, Function>;
+          if (typeof mObj['setVisible'] === 'function') mObj['setVisible'](true);
+          this.triggerTickHaptic(false, true);
+        } catch (e) {}
+      } else {
+        const timerId = setTimeout(() => {
+          try {
+            target.marker.setAlpha(1.0);
+            const mObj = target.marker as object as Record<string, Function>;
+            if (typeof mObj['setVisible'] === 'function') mObj['setVisible'](true);
+            this.triggerTickHaptic(false, true);
+          } catch (e) {}
+        }, remainingDelay);
+        this.activeScanTimerIds.push(timerId);
+      }
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // 地图 Callback
+  // ─────────────────────────────────────────────
 
   private huaweiMapCallback = async (err: Error, controller: map.MapComponentController) => {
     if (!err) {
       this.huaweiMapController = controller;
-
-      // 🎯 设置地图控件内边距遮挡 (88vp top, 420vp bottom)，把地图相机视角中心与雷达缩放轴心整体向上平移至 Y ≈ 280vp 黄金位置
       try {
         const ctrlAny = controller as object as Record<string, Function>;
-        if (typeof ctrlAny['setPadding'] === 'function') {
-          ctrlAny['setPadding'](88, 0, 420, 0);
-        }
+        if (typeof ctrlAny['setPadding'] === 'function') ctrlAny['setPadding'](88, 0, 420, 0);
       } catch (e) {}
 
-      this.drawRoute(this.currentSelectedCode);
+      // 📍 映射控制器就绪瞬间同步计算 CTU 精确屏幕 VP 坐标，消除定位错位与二次平移动画
       this.refreshCtuScreenPosition();
 
-      // 🎯 动态监听 Marker 点击事件，支持直接在地图上点击候选机场胶囊切换目的地！
+      // ⚡⚡⚡ 同步挂载 UI 组件并标记地图就绪
+      this.mapOpacity = 1.0;
+      this.isMapReady = true;
+
+      // 🎯 绘制航线与底册 Marker，Marker 批量就绪后精准同步启动雷达扫频
+      await this.drawRoute(this.currentSelectedCode);
+      this.refreshCtuScreenPosition();
+
       try {
         controller.on('markerClick', (markerObj: Object) => {
           try {
             const m = markerObj as map.Marker;
             if (m && this.airportMarkers && this.airportMarkers.length > 0) {
               const entry = this.airportMarkers.find(item => item.marker === m);
-              if (entry && entry.code && entry.code !== 'CTU') {
-                this.selectCity(entry.code);
-              }
+              if (entry && entry.code && entry.code !== 'CTU') this.selectCity(entry.code);
             }
-          } catch (err) {}
+          } catch (_e) {}
         });
       } catch (e) {}
 
-      // 🎯 动态监听地图拖拽平移与 Pinch 缩放，采用花瓣 Native Projection 实时极速刷新雷达物理 vp 坐标！
       try {
         controller.on('cameraChange', (_data: Object) => {
           try {
             const cam = controller.getCameraPosition();
             if (cam && typeof cam.zoom === 'number' && !isNaN(cam.zoom)) {
               const newZoom = parseFloat(cam.zoom.toFixed(1));
-              if (this.currentZoomLevel !== newZoom) {
-                this.currentZoomLevel = newZoom;
-              }
+              if (this.currentZoomLevel !== newZoom) this.currentZoomLevel = newZoom;
             }
             this.refreshCtuScreenPosition();
-          } catch (err) { }
+          } catch (_e) {}
         });
-
-        // 🎯 额外监听 cameraMove 实现拖拽时的 60帧丝滑跟随，解决松开才复位的问题
-        try {
-          // 使用类型断言绕过 TypeScript 对字面量类型的过严检查
-          const ctrlAny = controller as object as Record<string, Function>;
-          if (typeof ctrlAny.on === 'function') {
-            ctrlAny.on('cameraMove', (_data: Object) => {
-              try {
-                this.refreshCtuScreenPosition();
-              } catch (err) { }
-            });
-          }
-        } catch (e) {}
-      } catch (e) {
-        console.error('camera listener error', JSON.stringify(e));
-      }
+        const ctrlAny = controller as object as Record<string, Function>;
+        if (typeof ctrlAny.on === 'function') {
+          ctrlAny.on('cameraMove', (_data: Object) => {
+            try { this.refreshCtuScreenPosition(); } catch (_e) {}
+          });
+        }
+      } catch (e) {}
     }
   };
 
-  private zoomIn() {
-    if (this.huaweiMapController) {
-      const target = Math.min(18, this.currentZoomLevel + 0.5);
-      this.currentZoomLevel = target;
-      const cam = this.huaweiMapController.getCameraPosition();
-      this.huaweiMapController.animateCamera(map.newCameraPosition({
-        target: cam?.target || { latitude: 30.5607, longitude: 103.9426 },
-        zoom: target
-      }), 300);
-    }
-  }
-
-  private zoomOut() {
-    if (!this.huaweiMapController) return;
-    try {
-      const cam = this.huaweiMapController.getCameraPosition();
-      const current = (cam && typeof cam.zoom === 'number') ? cam.zoom : this.currentZoomLevel;
-      const target = Math.max(current - 0.5, 1.5);
-      this.currentZoomLevel = parseFloat(target.toFixed(1));
-      this.huaweiMapController.animateCamera({ zoom: target }, 300);
-    } catch (e) {
-      console.error('zoom out error', JSON.stringify(e));
-    }
-  }
-
-  private confirmSelection() {
-    if (!this.currentSelectedCode) {
-      try {
-        promptAction.showToast({ message: '请先选择目的地机场 🛫', duration: 2000 });
-      } catch (e) { }
-      return;
-    }
-    const selected = findAirportByCode(this.currentSelectedCode);
-    if (selected && this.onDestinationSelected) {
-      this.onDestinationSelected(selected, this.currentMinutes);
-    }
-    if (this.controller) {
-      this.controller.close();
-    }
-  }
+  // ─────────────────────────────────────────────
+  // build()
+  // ─────────────────────────────────────────────
 
   build() {
     Stack({ alignContent: Alignment.BottomStart }) {
-      // 1. 原生花瓣卫星地图底图
+      // 1. 原生花瓣卫星地图底图 (平滑 Fade-In 溶入，消除硬切闪烁)
       MapComponent({ mapOptions: this.huaweiMapOptions, mapCallback: this.huaweiMapCallback })
         .width('100%')
         .height('100%')
+        .opacity(this.mapOpacity)
+        .animation({ duration: 450, curve: Curve.EaseInOut })
 
-      // 1.5 🎯 专注领航辐射圈动效层 (圆心 100% 锁死 CTU 出发机场，半径随地图缩放与专注分钟数绝对地理锁定)
-      RadarScanOverlay({ radius: this.dynamicRadarRadius, currentMinutes: this.currentMinutes })
-        .position({ x: this.ctuScreenX, y: this.ctuScreenY })
-        .markAnchor({ x: this.dynamicRadarRadius, y: this.dynamicRadarRadius })
-        .zIndex(10)
-        .hitTestBehavior(HitTestMode.None)
-
-      // 1.6 🎯 终点机场到达雷达声纳光晕脉冲层 (扩散高光)
-      // 1.6 🎯 终点雷达脉冲微光晕 (抵达时声纳扩散)
-      if (this.destPulseOpacity > 0.01) {
-        Stack()
-          .width(this.destPulseRadius * 2)
-          .height(this.destPulseRadius * 2)
-          .borderRadius(this.destPulseRadius)
-          .border({ width: 2, color: `rgba(240, 101, 83, ${this.destPulseOpacity.toFixed(2)})` })
-          .backgroundColor(`rgba(240, 101, 83, ${(this.destPulseOpacity * 0.25).toFixed(2)})`)
-          .position({ x: this.destScreenX, y: this.destScreenY })
-          .markAnchor({ x: this.destPulseRadius, y: this.destPulseRadius })
-          .zIndex(15)
+      // 2. 专注航程测距指示圈（地图就绪后平滑淡入，包含 360° 单圈扫频与平滑淡出）
+      if (this.isMapReady) {
+        RadarScanOverlay({
+          radius: this.dynamicRadarRadius,
+          currentMinutes: this.currentMinutes,
+          scanAngle: this.scanAngle,
+          scanBeamOpacity: this.scanBeamOpacity
+        })
+          .position({ x: this.ctuScreenX, y: this.ctuScreenY })
+          .markAnchor({ x: this.dynamicRadarRadius, y: this.dynamicRadarRadius })
+          .opacity(this.isMapReady ? 1.0 : 0.0)
+          .zIndex(10)
           .hitTestBehavior(HitTestMode.None)
       }
-      // 1.7 ✈️ 航线前导领航小飞机 (纯净纯白矢量剪影，零方块阴影，沿航线切线极速飞行)
+
+      // 3. 终点机场到达平滑渐变层（纯透明度交叉淡入，零回弹零脉冲）
+      if (this.destActiveOverlayVisible) {
+        Row({ space: 5 }) {
+          Row().width(105)
+
+          Stack({ alignContent: Alignment.Center }) {
+            Column() {
+              Row()
+                .width(2).height(6)
+                .backgroundColor('#FFFFFF').borderRadius(1).opacity(0.9)
+              Blank()
+              Row()
+                .width(2).height(6)
+                .backgroundColor('#FFFFFF').borderRadius(1).opacity(0.9)
+            }
+            .width(18).height(42)
+            .padding({ top: 4, bottom: 4 })
+            .alignItems(HorizontalAlign.Center)
+            Image($r('app.media.ic_plane_topview'))
+              .width(13).height(13)
+              .objectFit(ImageFit.Contain)
+              .fillColor('#FFFFFF')
+          }
+          .width(18).height(42)
+          .backgroundColor('#451717').borderRadius(9)
+          .border({ width: 1.5, color: '#E05A47' })
+          .shadow({ radius: 8, color: 'rgba(224, 90, 71, 0.5)', offsetY: 1 })
+
+          Column({ space: 0.5 }) {
+            Text(this.activeDestCode)
+              .fontSize(14).fontWeight(FontWeight.Bolder).fontColor('#F06553')
+              .textShadow({ radius: 3, color: '#000000', offsetX: 1, offsetY: 1 })
+            Text(this.activeDestName.endsWith('机场') ? this.activeDestName : `${this.activeDestName}机场`)
+              .fontSize(11.5).fontWeight(FontWeight.Bold).fontColor('#FFFFFF')
+              .textShadow({ radius: 3, color: '#000000', offsetX: 1, offsetY: 1 })
+            Text(this.activeDestDist > 0 ? `目的地 · ${Math.round(this.activeDestDist)}km` : '目的地')
+              .fontSize(9.5).fontWeight(FontWeight.Regular).fontColor('#FFB4A9')
+              .textShadow({ radius: 2, color: '#000000', offsetX: 1, offsetY: 1 })
+          }
+          .width(105)
+          .alignItems(HorizontalAlign.Start)
+        }
+        .width(238).height(46)
+        .justifyContent(FlexAlign.Center)
+        .position({ x: this.destScreenX, y: this.destScreenY })
+        .markAnchor({ x: 119, y: 23 })
+        .opacity(this.destActiveOpacity)
+        .zIndex(27)
+        .hitTestBehavior(HitTestMode.None)
+      }
+
+      // 4. 领航小飞机（沿航线切线极速飞行）
       if (this.isFlightPlaneVisible) {
         Image($r('app.media.ic_plane_topview'))
-          .width(22)
-          .height(22)
+          .width(22).height(22)
           .objectFit(ImageFit.Contain)
           .fillColor('#FFFFFF')
           .position({ x: this.flightPlaneX, y: this.flightPlaneY })
@@ -1007,397 +916,83 @@ export struct FlightMapSelectOverlay {
           .hitTestBehavior(HitTestMode.None)
       }
 
-      Row() {
-        Row({ space: 10 }) {
-          Row({ space: 6 }) {
-            Text('成都')
-              .fontSize(13)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#F8FAFC')
-            Text('✈️')
-              .fontSize(11)
-            Text(this.currentSelectedCode ? (findAirportByCode(this.currentSelectedCode)?.city || this.currentSelectedCode) : '选择目的地')
-              .fontSize(13)
-              .fontWeight(FontWeight.Bold)
-              .fontColor(this.currentSelectedCode ? '#F06553' : 'rgba(255, 255, 255, 0.55)')
-            Text(`[X:${Math.round(this.ctuScreenX)} Y:${Math.round(this.ctuScreenY)} Z:${this.currentZoomLevel}]`)
-              .fontSize(9)
-              .fontColor('#FFD700')
-          }
-
-          Divider()
-            .vertical(true)
-            .height(12)
-            .color('rgba(255, 255, 255, 0.2)')
-
-          Text(this.currentSelectedCode ? `${Math.round(this.routeDistanceKm)} km · ${this.currentMinutes}min` : `待选择 · ${this.currentMinutes}min`)
-            .fontSize(12)
-            .fontWeight(FontWeight.Medium)
-            .fontColor('#94A3B8')
-        }
-        .padding({ left: 16, right: 16, top: 9, bottom: 9 })
-        .backgroundColor('rgba(15, 23, 42, 0.88)')
-        .borderRadius(20)
-        .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
-        .shadow({ radius: 10, color: 'rgba(0, 0, 0, 0.35)', offsetY: 3 })
-
-        Blank()
-
-        // 右侧关闭 ✕
-        Row() {
-          Text('✕')
-            .fontSize(14)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#94A3B8')
-        }
-        .width(36)
-        .height(36)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(VerticalAlign.Center)
-        .backgroundColor('rgba(15, 23, 42, 0.88)')
-        .borderRadius(18)
-        .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
-        .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.3)', offsetY: 2 })
-        .onClick(() => {
-          if (this.controller) {
-            this.controller.close();
-          }
-        })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16 })
+      // 5. 顶部状态条
+      FlightMapTopBar({
+        selectedCode: this.currentSelectedCode,
+        currentMinutes: this.currentMinutes,
+        routeDistanceKm: this.routeDistanceKm,
+        ctuScreenX: this.ctuScreenX,
+        ctuScreenY: this.ctuScreenY,
+        currentZoomLevel: this.currentZoomLevel,
+        onClose: () => { if (this.controller) this.controller.close(); }
+      })
       .position({ x: 0, y: 44 })
-      .hitTestBehavior(HitTestMode.Transparent)
 
-      // 3. 右侧极简地图缩放倍率悬浮面板 (+ / - Controls)
-      Column({ space: 4 }) {
-        Row() {
-          Text('+')
-            .fontSize(18)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#F8FAFC')
-        }
-        .width(34)
-        .height(34)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(VerticalAlign.Center)
-        .backgroundColor('rgba(15, 23, 42, 0.85)')
-        .borderRadius(17)
-        .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
-        .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.3)', offsetY: 2 })
-        .onClick(() => {
-          this.zoomIn();
-        })
-
-        Column({ space: 1 }) {
-          Text(`${this.currentZoomLevel.toFixed(1)}x`)
-            .fontSize(10)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#F06553')
-        }
-        .padding({ top: 2, bottom: 2 })
-
-        Row() {
-          Text('−')
-            .fontSize(18)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#F8FAFC')
-        }
-        .width(34)
-        .height(34)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(VerticalAlign.Center)
-        .backgroundColor('rgba(15, 23, 42, 0.85)')
-        .borderRadius(17)
-        .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)' })
-        .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.3)', offsetY: 2 })
-        .onClick(() => {
-          this.zoomOut();
-        })
-      }
+      // 6. 右侧缩放控制器
+      FlightMapZoomControls({
+        currentZoomLevel: this.currentZoomLevel,
+        onZoomIn: () => { this.zoomIn(); },
+        onZoomOut: () => { this.zoomOut(); }
+      })
       .position({ x: '86%', y: 105 })
-      .hitTestBehavior(HitTestMode.Transparent)
 
-      // 4. 底部渐变半透明导航控制面板 (电影级暗角渐变 + 图2专属排版)
-      Column({ space: 12 }) {
-        // (1) 目的地分区标题
-        Text('目的地')
-          .fontSize(13)
-          .fontWeight(FontWeight.Medium)
-          .fontColor('rgba(255, 255, 255, 0.75)')
-          .width('100%')
-          .textAlign(TextAlign.Start)
-
-        // (2) 候选城市名牌横向滑块 (微磨砂透光胶囊)
-        Scroll() {
-          Row({ space: 8 }) {
-            ForEach(this.candidateAirports, (apt: Airport) => {
-              Row({ space: 6 }) {
-                Text(apt.city || apt.name)
-                  .fontSize(14)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(this.currentSelectedCode === apt.code ? '#FFFFFF' : '#F1F5F9')
-                Text(apt.code)
-                  .fontSize(11)
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor(this.currentSelectedCode === apt.code ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.6)')
-              }
-              .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-              .backgroundColor(this.currentSelectedCode === apt.code ? '#F06553' : 'rgba(15, 23, 42, 0.48)')
-              .borderRadius(18)
-              .border({ width: 1, color: this.currentSelectedCode === apt.code ? 'transparent' : 'rgba(255, 255, 255, 0.22)' })
-              .onClick(() => {
-                this.selectCity(apt.code);
-              })
-            })
+      // 7. 底部控制面板
+      FlightMapBottomPanel({
+        currentMinutes: this.currentMinutes,
+        currentSelectedCode: this.currentSelectedCode,
+        candidateAirports: this.candidateAirports,
+        rulerContainerWidth: this.rulerContainerWidth,
+        rulerScroller: this.rulerScroller,
+        onSelectCity: (code: string) => { this.selectCity(code); },
+        onSelectMinutes: (minutes: number, index: number) => { this.selectMinutes(minutes, index); },
+        onScrollMinutesChange: (minutes: number) => {
+          if (minutes !== this.currentMinutes) {
+            this.currentMinutes = minutes;
+            this.updateCandidateAirports(minutes);
+            this.refreshCtuScreenPosition();
           }
-          .padding({ left: 2, right: 2 })
-        }
-        .scrollable(ScrollDirection.Horizontal)
-        .scrollBar(BarState.Off)
-        .width('100%')
-
-        // (3) 专注时长与高亮数字行 (超过60分钟自动转换为小时显示)
-        Row() {
-          Text('专注时长')
-            .fontSize(13)
-            .fontWeight(FontWeight.Medium)
-            .fontColor('rgba(255, 255, 255, 0.75)')
-
-          Blank()
-
-          Row({ space: 2 }) {
-            if (this.currentMinutes < 60) {
-              Text(`${this.currentMinutes}`)
-                .fontSize(16)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#F06553')
-              Text('分钟')
-                .fontSize(13)
-                .fontWeight(FontWeight.Medium)
-                .fontColor('rgba(255, 255, 255, 0.85)')
-            } else {
-              Text(`${Math.floor(this.currentMinutes / 60)}`)
-                .fontSize(16)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#F06553')
-              Text('小时')
-                .fontSize(13)
-                .fontWeight(FontWeight.Medium)
-                .fontColor('rgba(255, 255, 255, 0.85)')
-              if (this.currentMinutes % 60 > 0) {
-                Text(`${this.currentMinutes % 60}`)
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor('#F06553')
-                Text('分钟')
-                  .fontSize(13)
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor('rgba(255, 255, 255, 0.85)')
-              }
-            }
-          }
-        }
-        .width('100%')
-        .margin({ top: 4 })
-
-        // (4) 纯透明悬浮刻度尺 (精密航空仪表级三级细分标尺)
-        Column({ space: 2 }) {
-          // 横向自由滑动卷轴刻度尺
-          Scroll(this.rulerScroller) {
-            Row({ space: 0 }) {
-              // 动态精确中点垫片 (确保 index=0 的刻度线 100% 居中在屏幕正中央中轴线上)
-              // 减去 18vp，是因为包裹 Scroll 的父容器拥有 .padding({ left: 18, right: 18 })
-              Blank()
-                .width(Math.max(0, this.rulerContainerWidth / 2.0 - (RULER_SUB_WIDTH / 2.0) - 18))
-
-              ForEach(RULER_FIVE_MIN_UNITS, (unit: RulerFiveMinUnit, index: number) => {
-                Row({ space: 0 }) {
-                  // 1. 5分钟主刻度单元 (可点击选择)
-                  Column({ space: 4 }) {
-                    // (A) 顶部游标：朝上飞行的纯正红色小飞机矢量图标 (仅在当前选中的刻度线正上方精准显示)
-                    if (unit.minutes === this.currentMinutes) {
-                      Image($r('app.media.ic_ruler_plane_pointer'))
-                        .width(14)
-                        .height(14)
-                    } else {
-                      Row()
-                        .width(1)
-                        .height(14)
-                    }
-
-                    // (B) 刻度数字：当前选中的为大字红字 (如 25)；其他 15 分钟大刻度为白色数字
-                    if (unit.minutes === this.currentMinutes) {
-                      Text(`${unit.minutes}`)
-                        .fontSize(14)
-                        .fontWeight(FontWeight.Bold)
-                        .fontColor('#F06553')
-                        .textAlign(TextAlign.Center)
-                        .width(48)
-                        .height(16)
-                        .margin({ left: -20, right: -20 })
-                        .maxLines(1)
-                        .textOverflow({ overflow: TextOverflow.None })
-                    } else if (unit.isMajor) {
-                      Text(`${unit.minutes}`)
-                        .fontSize(11)
-                        .fontWeight(FontWeight.Medium)
-                        .fontColor('rgba(255, 255, 255, 0.85)')
-                        .textAlign(TextAlign.Center)
-                        .width(48)
-                        .height(16)
-                        .margin({ left: -20, right: -20 })
-                        .maxLines(1)
-                        .textOverflow({ overflow: TextOverflow.None })
-                    } else {
-                      Row()
-                        .width(1)
-                        .height(16)
-                    }
-
-                    // (C) 底部刻度线：当前选中的高18/加粗红色，主刻度15min高14/纯白，中刻度5min高9.5/清晰白
-                    Column()
-                      .width(unit.minutes === this.currentMinutes ? 2.5 : (unit.isMajor ? 1.8 : 1.4))
-                      .height(unit.minutes === this.currentMinutes ? 18 : (unit.isMajor ? 14 : 9.5))
-                      .backgroundColor(
-                        unit.minutes === this.currentMinutes 
-                          ? '#F06553' 
-                          : (unit.isMajor ? '#FFFFFF' : 'rgba(255, 255, 255, 0.75)')
-                      )
-                      .borderRadius(unit.minutes === this.currentMinutes ? 1.5 : (unit.isMajor ? 1.0 : 0.7))
-                  }
-                  .width(RULER_SUB_WIDTH)
-                  .height(56)
-                  .clip(false)
-                  .alignItems(HorizontalAlign.Center)
-                  .justifyContent(FlexAlign.End)
-                  .onClick(() => {
-                    this.selectMinutes(unit.minutes, index);
-                  })
-
-                  // 2. 5分钟之间的 3 个紧凑小刻度 (不可选，纯精致视觉修饰)
-                  if (unit.minutes < 240) {
-                    ForEach([1, 2, 3], (_subIdx: number) => {
-                      Column({ space: 4 }) {
-                        Row()
-                          .width(1)
-                          .height(14)
-
-                        Row()
-                          .width(1)
-                          .height(16)
-
-                        Column()
-                          .width(1.0)
-                          .height(5.5)
-                          .backgroundColor('rgba(255, 255, 255, 0.40)')
-                          .borderRadius(0.5)
-                      }
-                      .width(RULER_SUB_WIDTH)
-                      .height(56)
-                      .alignItems(HorizontalAlign.Center)
-                      .justifyContent(FlexAlign.End)
-                      .hitTestBehavior(HitTestMode.None)
-                    }, (subIdx: number) => `${unit.minutes}_sub_${subIdx}`)
-                  }
-                }
-              }, (unit: RulerFiveMinUnit) => `${unit.minutes}`)
-
-              Blank()
-                .width(Math.max(0, this.rulerContainerWidth / 2.0 - (RULER_SUB_WIDTH / 2.0) - 18))
-            }
-          }
-          .scrollable(ScrollDirection.Horizontal)
-          .scrollBar(BarState.Off)
-          .width('100%')
-          .onAreaChange((oldArea, newArea) => {
-            this.rulerContainerWidth = Number(newArea.width);
-          })
-          .onScroll(() => {
-            const xOffset = this.rulerScroller.currentOffset().xOffset;
-            const tickIdx = Math.round(xOffset / RULER_STEP_WIDTH);
-            if (tickIdx >= 0 && tickIdx < RULER_FIVE_MIN_UNITS.length) {
-              if (tickIdx !== this.lastHapticTickIndex) {
-                this.lastHapticTickIndex = tickIdx;
-                const unit = RULER_FIVE_MIN_UNITS[tickIdx];
-                this.triggerTickHaptic(unit.isMajor, true);
-              }
-              const targetMin = RULER_FIVE_MIN_UNITS[tickIdx].minutes;
-              if (targetMin !== this.currentMinutes) {
-                this.currentMinutes = targetMin;
-                this.updateCandidateAirports(targetMin);
-                this.refreshCtuScreenPosition();
-              }
-            }
-          })
-          .onScrollStop(() => {
-            this.snapToNearestTick();
-          })
-        }
-        .width('100%')
-        .padding({ top: 4, bottom: 4 })
-        .gesture(
-          PanGesture({ direction: PanDirection.Horizontal })
-            .onActionStart(() => {
-              this.lastPanOffsetX = 0;
-            })
-            .onActionUpdate((event: GestureEvent) => {
-              if (!event) return;
-              const deltaX = event.offsetX - this.lastPanOffsetX;
-              this.lastPanOffsetX = event.offsetX;
-
-              const currentScrollX = this.rulerScroller.currentOffset().xOffset;
-              // 0.85 自然平滑拖动手感
-              const targetScrollX = Math.max(0, currentScrollX - deltaX * 0.85);
-
-              // 🎯 仅需驱动 Scroll，由 onScroll 统一极速响应 60fps 跟手缩放，避免重复触发
-              this.rulerScroller.scrollTo({
-                xOffset: targetScrollX,
-                yOffset: 0
-              });
-            })
-            .onActionEnd(() => {
-              this.snapToNearestTick();
-            })
-        )
-
-        // (5) 底部主操作按钮
-        Button() {
-          Row({ space: 6 }) {
-            Text('开始专注旅程')
-              .fontSize(16)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFFFFF')
-          }
-        }
-        .width('100%')
-        .height(48)
-        .backgroundColor('#F06553')
-        .borderRadius(24)
-        .shadow({ radius: 12, color: 'rgba(240, 101, 83, 0.45)', offsetY: 4 })
-        .margin({ top: 6 })
-        .onClick(() => {
-          this.confirmSelection();
-        })
-      }
-      .width('100%')
-      .padding({ left: 18, right: 18, top: 32, bottom: 28 })
-      .linearGradient({
-        angle: 180,
-        colors: [
-          ['rgba(10, 15, 26, 0.0)', 0.0],
-          ['rgba(10, 15, 26, 0.28)', 0.22],
-          ['rgba(10, 15, 26, 0.62)', 0.58],
-          ['rgba(10, 15, 26, 0.86)', 1.0]
-        ]
+        },
+        onScrollStop: () => { this.snapToNearestTick(); },
+        onConfirm: () => { this.confirmSelection(); },
+        onRulerWidthChange: (w: number) => { this.rulerContainerWidth = w; }
       })
     }
     .width('100%')
     .height('100%')
+    .backgroundColor('#1A263B')
     .onAreaChange((_oldArea, newArea) => {
       if (newArea.width && Number(newArea.width) > 0) {
         this.rulerContainerWidth = Number(newArea.width);
+        this.refreshCtuScreenPosition();
       }
     })
   }
 }
+
+@Component
+struct RadarPingWaveItem {
+  @State scaleValue: number = 0.2;
+  @State opacityValue: number = 0.85;
+
+  aboutToAppear() {
+    animateTo({
+      duration: 600,
+      curve: Curve.EaseOut
+    }, () => {
+      this.scaleValue = 1.8;
+      this.opacityValue = 0.0;
+    });
+  }
+
+  build() {
+    Stack()
+      .width(48)
+      .height(48)
+      .borderRadius(24)
+      .border({ width: 1.5, color: '#F06553' })
+      .shadow({ radius: 8, color: 'rgba(240, 101, 83, 0.6)', offsetY: 0 })
+      .scale({ x: this.scaleValue, y: this.scaleValue })
+      .opacity(this.opacityValue)
+  }
+}
+
