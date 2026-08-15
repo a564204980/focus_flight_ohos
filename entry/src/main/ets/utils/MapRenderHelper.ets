@@ -1,6 +1,7 @@
 import { map, mapCommon } from '@kit.MapKit';
 import { image } from '@kit.ImageKit';
 import { getCustomRunwaysForAirport, getCustomTaxiwaysForAirport } from '../models/AirportRunwayConfig';
+import { Airport, findAirportByCode } from '../models/AirportModel';
 import { ctuAirportConfig } from '../models/airports/ctu';
 import { pekAirportConfig } from '../models/airports/pek';
 import {
@@ -10,6 +11,8 @@ import {
   generatePAPILightPoints,
   generateGreatCirclePoints,
   generateQuadraticBezierPoints,
+  generateCubicBezierPoints,
+  chaikinSmoothPath,
   LatLngPoint,
   interpolateLatLng
 } from './GeodesicUtils';
@@ -203,8 +206,8 @@ export class MapRenderHelper {
   /**
    * ✈️ 绘制稳固前方预告未飞航线（前方待解锁实心导引线）
    */
-  public static async drawUnflownPreviewRoute(controller: map.MapComponentController): Promise<void> {
-    const allPoints = MapRenderHelper.getFullFlightPathPoints();
+  public static async drawUnflownPreviewRoute(controller: map.MapComponentController, destAirport?: Airport): Promise<void> {
+    const allPoints = MapRenderHelper.getFullFlightPathPoints(destAirport);
     if (!allPoints || allPoints.length < 2) return;
 
     // 1. 半透明天蓝外光晕
@@ -368,13 +371,13 @@ export class MapRenderHelper {
   ];
 
   /**
-   * 🌈 根据航线点集与连续相机缩放等级，生成屏幕恒定宽度 (36px) 的单向 6 色平行彩虹光带地理坐标
+   * 🌈 根据航线点集生成宽大厚重（总宽 36px 饱满彩虹）、6 色完全等宽、绝对零黑缝的单向 6 色平行彩虹光带
    * @param basePoints 原始航线已飞过点集合
-   * @param continuousZoom 当前相机连续缩放等级 (浮点数，无量化阶跃)
+   * @param zoomLevel 当前相机缩放等级 (默认 17.0)
    */
   public static generateParallelRainbowStripes(
     basePoints: mapCommon.LatLng[],
-    continuousZoom: number = 17.0
+    zoomLevel: number = 17.0
   ): Array<mapCommon.LatLng[]> {
     if (!basePoints || basePoints.length === 0) {
       return [[], [], [], [], [], []];
@@ -399,11 +402,10 @@ export class MapRenderHelper {
     }
 
     const lat0 = pts[0].latitude;
-    // 使用高精度连续浮点缩放比例，杜绝 0.1 阶跃抖动
-    const meterPerPixel = 156543.03392 * Math.cos(lat0 * Math.PI / 180) / Math.pow(2, continuousZoom);
+    const meterPerPixel = 156543.03392 * Math.cos(lat0 * Math.PI / 180) / Math.pow(2, zoomLevel);
 
-    // 6 条色带在屏幕上的中心偏移像素 (紧密贴合无缝，中心距 3.0px，与 14px 线宽重叠咬合，100% 紧密挨在一起零黑缝)
-    const offsetsPx: number[] = [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5];
+    // 6 条色带在屏幕上的中心偏移像素 (间距 2.6px，总外宽严丝合缝匹配机翼跨度，配合 10px 宽度产生 4.8px 深度重叠，100% 杜绝任何黑缝！)
+    const offsetsPx: number[] = [-6.5, -3.9, -1.3, 1.3, 3.9, 6.5];
     const result: Array<mapCommon.LatLng[]> = [[], [], [], [], [], []];
 
     // 2. 预计算每个航线点的切线朝向 (Heading)
@@ -425,8 +427,8 @@ export class MapRenderHelper {
     headings[0] = 202.5;
 
     // 3. 计算 6 条平行色带经纬度坐标
-    // 顶端精准延伸 +3.5 屏幕像素进入飞机机翼主梁内部，100% 严密被机翼覆盖
-    const tipAdvancePx = 3.5;
+    // 顶端微延伸 2.5 像素深埋于机翼与机身内部，被机翼遮盖
+    const tipAdvancePx = 2.5;
 
     for (let k = 0; k < 6; k++) {
       const offsetM = offsetsPx[k] * meterPerPixel;
@@ -469,7 +471,7 @@ export class MapRenderHelper {
   /**
    * ✈️ 一键完整加载跑道、滑行道与加粗预告航线
    */
-  public static async setupRunwaysAndRoutes(controller: map.MapComponentController): Promise<void> {
+  public static async setupRunwaysAndRoutes(controller: map.MapComponentController, destAirport?: Airport): Promise<void> {
     const customRunwayPolygons = getCustomRunwaysForAirport('CTU');
     if (customRunwayPolygons) {
       for (const corners of customRunwayPolygons) {
@@ -477,41 +479,95 @@ export class MapRenderHelper {
       }
     }
 
-    await MapRenderHelper.drawUnflownPreviewRoute(controller);
+    await MapRenderHelper.drawUnflownPreviewRoute(controller, destAirport);
   }
 
   /**
    * ✈️ 获取完整的全程三阶段飞行航线点集（离场滑跑 -> 离场爬升弧 -> 高空巡航 -> 进近降落）
+   * @param destAirport 目标目的地机场 (如未提供，则自动从 AppStorage 读取或默认使用北京首都 PEK)
    */
-  public static getFullFlightPathPoints(): mapCommon.LatLng[] {
+  public static getFullFlightPathPoints(destAirport?: Airport): mapCommon.LatLng[] {
     const ctuStart = getCtuRunwayStart();
     const ctuEnd = getCtuRunwayEnd();
-    const pekStart = getPekRunwayStart();
-    const pekEnd = getPekRunwayEnd();
 
+    // 解析目标目的地机场
+    let targetDest: Airport | undefined = destAirport;
+    if (!targetDest) {
+      const storedDest = AppStorage.get<Airport>('selectedDestinationAirport');
+      if (storedDest) {
+        targetDest = storedDest;
+      }
+    }
+    if (!targetDest) {
+      const storedCode = AppStorage.get<string>('selectedDestinationCode');
+      if (storedCode) {
+        targetDest = findAirportByCode(storedCode);
+      }
+    }
+    if (!targetDest) {
+      targetDest = findAirportByCode('PEK');
+    }
+
+    let destStart: LatLngPoint;
+    let destEnd: LatLngPoint;
+
+    if (targetDest && targetDest.code === 'PEK') {
+      destStart = getPekRunwayStart();
+      destEnd = getPekRunwayEnd();
+    } else if (targetDest && targetDest.lat !== undefined && targetDest.lon !== undefined) {
+      const dLat = Number(targetDest.lat);
+      const dLon = Number(targetDest.lon);
+      destStart = { latitude: dLat, longitude: dLon };
+      if (targetDest.runwayEndLat !== undefined && targetDest.runwayEndLon !== undefined) {
+        destEnd = { latitude: Number(targetDest.runwayEndLat), longitude: Number(targetDest.runwayEndLon) };
+      } else {
+        // 计算标准着陆跑道延伸点 (沿航线朝向延伸约 2.5km)
+        destEnd = { latitude: dLat + 0.015, longitude: dLon + 0.015 };
+      }
+    } else {
+      destStart = getPekRunwayStart();
+      destEnd = getPekRunwayEnd();
+    }
+
+    // 1. 跑道滑跑拉升段 (直线沿跑道 202.5°)
     const turnStartPoint = interpolateLatLng(ctuStart, ctuEnd, 0.65);
-    const departureControlPoint = interpolateLatLng(ctuStart, ctuEnd, 3.2);
-
-    const ctuVertex: mapCommon.LatLng = { latitude: ctuStart.latitude, longitude: ctuStart.longitude };
-    const pekVertex: mapCommon.LatLng = { latitude: pekStart.latitude, longitude: pekStart.longitude };
-
-    const turnEndPoint = interpolateLatLng(ctuVertex, pekVertex, 0.02);
-
-    const landingStartPoint = interpolateLatLng(ctuVertex, pekVertex, 0.98);
-    const arrivalControlPoint = interpolateLatLng(pekVertex, pekEnd, -0.7);
-    const landingEndPoint = interpolateLatLng(pekVertex, pekEnd, 0.65);
-
     const taxiSegment: mapCommon.LatLng[] = generateGreatCirclePoints(ctuStart, turnStartPoint, 20);
-    const departureArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(turnStartPoint, departureControlPoint, turnEndPoint, 300);
-    const cruiseSegment: mapCommon.LatLng[] = generateGreatCirclePoints(turnEndPoint, landingStartPoint, 150);
-    const arrivalArc: mapCommon.LatLng[] = generateQuadraticBezierPoints(landingStartPoint, arrivalControlPoint, landingEndPoint, 300);
-    const landingSegment: mapCommon.LatLng[] = generateGreatCirclePoints(landingEndPoint, pekEnd, 15);
 
-    return taxiSegment
+    // 2. 离场平滑切线转弯段 (使用三阶贝塞尔切线连续曲线，彻底消除硬折角和直角)
+    // 跑道延伸控制点 C0 (确保与跑道直线 100% 相切)
+    const c0 = interpolateLatLng(ctuStart, ctuEnd, 2.2);
+
+    // 巡航衔接点 P3 与巡航切线控制点 C1 (位于大圆航线起端约 30km 处，确保与高空巡航线 100% 平滑相切)
+    const ctuVertex: mapCommon.LatLng = { latitude: ctuStart.latitude, longitude: ctuStart.longitude };
+    const destVertex: mapCommon.LatLng = { latitude: destStart.latitude, longitude: destStart.longitude };
+
+    const cruiseStartPoint = interpolateLatLng(ctuVertex, destVertex, 0.04);
+    const c1 = interpolateLatLng(cruiseStartPoint, ctuVertex, 0.5);
+
+    const departureArc: mapCommon.LatLng[] = generateCubicBezierPoints(turnStartPoint, c0, c1, cruiseStartPoint, 250);
+
+    // 3. 高空大圆巡航段
+    const landingStartPoint = interpolateLatLng(ctuVertex, destVertex, 0.96);
+    const cruiseSegment: mapCommon.LatLng[] = generateGreatCirclePoints(cruiseStartPoint, landingStartPoint, 200);
+
+    // 4. 进近降落平滑切线弧线
+    const a0 = interpolateLatLng(landingStartPoint, destVertex, 0.5);
+    const a1 = interpolateLatLng(destVertex, destEnd, -0.6);
+    const landingEndPoint = interpolateLatLng(destVertex, destEnd, 0.5);
+
+    const arrivalArc: mapCommon.LatLng[] = generateCubicBezierPoints(landingStartPoint, a0, a1, landingEndPoint, 250);
+
+    // 5. 跑道着陆滑行段
+    const landingSegment: mapCommon.LatLng[] = generateGreatCirclePoints(landingEndPoint, destEnd, 20);
+
+    const rawPoints = taxiSegment
       .concat(departureArc.slice(1))
       .concat(cruiseSegment.slice(1))
       .concat(arrivalArc.slice(1))
       .concat(landingSegment.slice(1));
+
+    // 使用 Chaikin 平滑算法消除任何残留微小硬折角
+    return chaikinSmoothPath(rawPoints, 2);
   }
 
   /**

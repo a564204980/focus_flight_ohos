@@ -16,6 +16,7 @@ import {
   LatLngPoint,
   interpolateLatLng
 } from '../utils/GeodesicUtils';
+import { Airport, findAirportByCode } from '../models/AirportModel';
 import { ctuAirportConfig } from '../models/airports/ctu';
 import { pekAirportConfig } from '../models/airports/pek';
 
@@ -82,6 +83,7 @@ struct Index {
   @State selectedFocusDurationMinutes: number = 45; // 用户在图2刻度尺选定的专注飞行时长 (默认45分钟)
   private animTimer: number = -1;
 
+  @StorageLink('selectedDestinationAirport') currentDestinationAirport?: Airport = undefined;
   @State isCameraFollowLocked: boolean = true; // 飞行跟随锁定状态 (true: 自动跟拍居中, false: 用户自由拖拽地图)
   @State currentMapType: mapCommon.MapType = mapCommon.MapType.SATELLITE; // 默认使用卫星遥感地图
   @State isFlightPaused: boolean = false;        // 飞行暂停标志位
@@ -310,8 +312,8 @@ struct Index {
         });
       } catch (e) { }
 
-      // 1. 模块化加载跑道、滑行道网络及三阶段战术航线发光线条
-      await MapRenderHelper.setupRunwaysAndRoutes(controller);
+      // 1. 模块化加载跑道、滑行道网络及三阶段战术航线发光线条 (动态匹配用户目的地)
+      await MapRenderHelper.setupRunwaysAndRoutes(controller, this.currentDestinationAirport);
 
       // 2. 清理旧 Marker 并挂载唯一原生地图 Marker 实例 (支持 PixelMap 代码级任意像素动态缩放)
       if (this.currentPlaneMarker) {
@@ -556,6 +558,8 @@ struct Index {
       'sprint': '极速冲刺'
     };
     const tagName = tagMap[tagId] || '深度专注';
+    const destApt = this.currentDestinationAirport || findAirportByCode('PEK');
+    const destCode = destApt ? destApt.code : 'PEK';
 
     // 存储当前飞行专注会话状态
     FlightSessionStore.saveSession({
@@ -565,7 +569,7 @@ struct Index {
       taskTitle: tagName,
       durationMin: this.selectedFocusDurationMinutes,
       originCode: 'CTU',
-      destCode: 'PEK',
+      destCode: destCode,
       startTimeMs: Date.now()
     });
 
@@ -645,7 +649,7 @@ struct Index {
   /**
    * ✈️ 2秒无缝过渡淡出结束后，直接动力全推起飞并进入 60 FPS 巡航！
    */
-  private startFlightAnimationDirectly(): void {
+  private async startFlightAnimationDirectly(): Promise<void> {
     // 1. 机头角绑定双流跑道西南至东北实际绝对方位角 202.5 度 (顺时针旋转 180 度正对起飞前方)
     const rStart = getCtuRunwayStart();
     this.planeMarkerRotation = 202.5; AppStorage.setOrCreate('hudPlaneRotation', this.planeMarkerRotation);
@@ -674,12 +678,17 @@ struct Index {
     this.rainbowTraversedPoints = [];
     this.lastTraversedPointIndex = 0;
 
-    this.honkToastText = `🚀 动力全推，离开成都双流 (CTU)！专注时长 ${durationMinutes} 分钟，开启漫游巡航...`;
+    const destApt = this.currentDestinationAirport || findAirportByCode('PEK');
+    const destCity = destApt ? destApt.city : '北京';
+    const destName = destApt ? destApt.name : '北京首都国际机场';
+    const destCode = destApt ? destApt.code : 'PEK';
+
+    this.honkToastText = `🚀 动力全推，离开成都双流 (CTU)！专注 ${durationMinutes} 分钟，飞往 ${destCity} · ${destName} (${destCode})...`;
     this.isHonkToastVisible = true;
     setTimeout(() => { this.isHonkToastVisible = false; }, 4000);
 
-    // 2. 获取全程三阶段高密度航线点集
-    const points: mapCommon.LatLng[] = MapRenderHelper.getFullFlightPathPoints();
+    // 2. 获取全程三阶段高密度航线点集 (动态适配目标目的地)
+    const points: mapCommon.LatLng[] = MapRenderHelper.getFullFlightPathPoints(this.currentDestinationAirport);
     if (!points || points.length < 2) {
       return;
     }
@@ -689,26 +698,30 @@ struct Index {
       const p0 = points[0];
       this.rainbowTraversedPoints = [p0];
 
-      // 创建 6 条纯正矢量单向平行光带 (每条 14px 紧密咬合 3px 间距，放大缩小均 100% 严密贴合零黑缝)
+      // 严格按照 k = 0..5 预分配有序数组，消除异步 resolve 乱序导致的色带交叉与黑缝！
+      const polyWidths: number[] = [8.0, 10.0, 10.0, 10.0, 10.0, 8.0];
+      const polyPromises: Promise<map.MapPolyline>[] = [];
       for (let k = 0; k < MapRenderHelper.RAINBOW_PARALLEL_COLORS.length; k++) {
         const color = MapRenderHelper.RAINBOW_PARALLEL_COLORS[k];
-        this.huaweiMapController.addPolyline({
+        polyPromises.push(this.huaweiMapController.addPolyline({
           points: [p0, p0],
-          width: 14.0,
+          width: polyWidths[k],
           color: color,
           zIndex: 60 + k
-        }).then((poly: map.MapPolyline) => {
-          this.rainbowPolylines.push(poly);
-        }).catch(() => { });
+        }));
       }
+      try {
+        const createdPolys = await Promise.all(polyPromises);
+        this.rainbowPolylines = createdPolys;
+      } catch (e) { }
     }
 
       // 3b. 预计算物理距离数组 (Cumulative Distance)，让飞机保持真实的地理巡航速度，
-      // 同时通过“虚拟速度权重”满足用户对各阶段相对快慢的调节需求，且严格保证总耗时不变。
-      const cumulativeDistances = new Float64Array(points.length);
-      cumulativeDistances[0] = 0;
-      let totalRouteDistance = 0;
+      // 同时通过“连续平滑速度权重”实现起飞从容、巡航高效、降落稳健，彻底消除任何弯道突发加速缺陷。
       const deg2rad = Math.PI / 180;
+      const physicalDistances = new Float64Array(points.length);
+      physicalDistances[0] = 0;
+      let rawTotalPhysicalDist = 0;
       for (let i = 1; i < points.length; i++) {
         const p1 = points[i - 1];
         const p2 = points[i];
@@ -717,24 +730,41 @@ struct Index {
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                   Math.cos(p1.latitude * deg2rad) * Math.cos(p2.latitude * deg2rad) *
                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const physicalDist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // 地球半径 6371km
-        
-        // 动态调速权重 (Weight): 
-        // 增加极端的相对时间权重：为了让短距离的起飞转弯在视觉上表现得像真实客机一样从容，
-        // 我们给起飞和降落赋予 20 倍的虚拟距离膨胀，这将使起飞阶段占用整个专注时长的约 22%。
+        const d = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // km
+        rawTotalPhysicalDist += d;
+        physicalDistances[i] = rawTotalPhysicalDist;
+      }
+
+      const cumulativeDistances = new Float64Array(points.length);
+      cumulativeDistances[0] = 0;
+      let totalRouteDistance = 0;
+
+      for (let i = 1; i < points.length; i++) {
+        const segPhysDist = physicalDistances[i] - physicalDistances[i - 1];
+        const ratio = rawTotalPhysicalDist > 0 ? physicalDistances[i] / rawTotalPhysicalDist : 0;
+
+        // 基于航程物理比例的平滑余弦过渡调速权重：
+        // 0% ~ 4%（起飞滑跑与完整第一弯道）：保持流畅自然的适度速度（weight = 3.2，既不爬行也不暴冲）
+        // 4% ~ 8%：平滑余弦加速进入巡航
+        // 8% ~ 92%：高空稳定巡航（weight = 1.0）
+        // 92% ~ 96%：平滑余弦减速进入降落
+        // 96% ~ 100%：稳健慢速降落接地（weight = 3.2）
         let weight = 1.0;
-        if (i <= 318) {
-          // 起飞、爬升与转弯段 (index 1~318)：视觉上大幅度减速，慢慢欣赏起飞曲线
-          weight = 20.0; 
-        } else if (i <= 467) {
-          // 高空巡航段 (index 319~467)：保持基准速度
+        if (ratio <= 0.04) {
+          weight = 3.2;
+        } else if (ratio < 0.08) {
+          const t = (ratio - 0.04) / 0.04;
+          weight = 3.2 - (3.2 - 1.0) * (0.5 - 0.5 * Math.cos(Math.PI * t));
+        } else if (ratio <= 0.92) {
           weight = 1.0;
+        } else if (ratio < 0.96) {
+          const t = (ratio - 0.92) / 0.04;
+          weight = 1.0 + (3.2 - 1.0) * (0.5 - 0.5 * Math.cos(Math.PI * t));
         } else {
-          // 进近与降落段 (index 468~780)：大幅度减速，平稳降落
-          weight = 20.0;
+          weight = 3.2;
         }
-        
-        totalRouteDistance += (physicalDist * weight);
+
+        totalRouteDistance += (segPhysDist * weight);
         cumulativeDistances[i] = totalRouteDistance;
       }
 
@@ -767,7 +797,11 @@ struct Index {
         if (overallProgress >= 1.0) {
           if (this.flightDisplaySync) { this.flightDisplaySync.stop(); this.flightDisplaySync = undefined; }
           this.isFlightInProgress = false;
-          this.honkToastText = `🛬 专注 ${durationMinutes} 分钟完成！成功降落抵达北京首都国际机场 (PEK)`;
+          const destApt = this.currentDestinationAirport || findAirportByCode('PEK');
+          const destCity = destApt ? destApt.city : '北京';
+          const destName = destApt ? destApt.name : '北京首都国际机场';
+          const destCode = destApt ? destApt.code : 'PEK';
+          this.honkToastText = `🛬 专注 ${durationMinutes} 分钟完成！成功降落抵达 ${destCity} · ${destName} (${destCode})`;
           this.isHonkToastVisible = true;
           return;
         }
@@ -850,14 +884,17 @@ struct Index {
         const displayPoints = this.rainbowTraversedPoints.slice();
         displayPoints.push(interpPos);
 
-        const currentActiveZoom = this.isCameraFollowLocked ? cinematicZoom : this.currentZoomLevel;
-        const parallelStripes = MapRenderHelper.generateParallelRainbowStripes(displayPoints, currentActiveZoom);
-        for (let k = 0; k < this.rainbowPolylines.length; k++) {
-          const poly = this.rainbowPolylines[k];
-          if (poly && parallelStripes[k]) {
-            try {
-              poly.setPoints(parallelStripes[k]);
-            } catch (e) { }
+        if (this.rainbowPolylines.length > 0) {
+          const currentCam = this.huaweiMapController?.getCameraPosition();
+          const realZoom = (currentCam && currentCam.zoom) ? currentCam.zoom : (this.isCameraFollowLocked ? cinematicZoom : this.currentZoomLevel);
+          const parallelStripes = MapRenderHelper.generateParallelRainbowStripes(displayPoints, realZoom);
+          for (let k = 0; k < this.rainbowPolylines.length; k++) {
+            const poly = this.rainbowPolylines[k];
+            if (poly && parallelStripes[k]) {
+              try {
+                poly.setPoints(parallelStripes[k]);
+              } catch (e) { }
+            }
           }
         }
 
@@ -925,11 +962,13 @@ struct Index {
    * 🌈 用户在任何缩放倍率下，即时刷新彩虹各色带地理坐标，确保放大至 20x 仍 100% 严密贴合无黑缝且尾部平整
    */
   private refreshRainbowPolylines(): void {
-    if (this.rainbowPolylines.length === 0 || this.rainbowTraversedPoints.length === 0) {
+    if (this.rainbowTraversedPoints.length === 0 || this.rainbowPolylines.length === 0) {
       return;
     }
     const displayPoints = this.rainbowTraversedPoints.slice();
-    const parallelStripes = MapRenderHelper.generateParallelRainbowStripes(displayPoints, this.currentZoomLevel);
+    const currentCam = this.huaweiMapController?.getCameraPosition();
+    const realZoom = (currentCam && currentCam.zoom) ? currentCam.zoom : this.currentZoomLevel;
+    const parallelStripes = MapRenderHelper.generateParallelRainbowStripes(displayPoints, realZoom);
     for (let k = 0; k < this.rainbowPolylines.length; k++) {
       const poly = this.rainbowPolylines[k];
       if (poly && parallelStripes[k]) {
@@ -1336,9 +1375,12 @@ struct Index {
 
       // 5. 底部专注控制面板
       HomeFocusPanel({
-        onStartFlight: (minutes?: number) => {
+        onStartFlight: (minutes?: number, dest?: Airport) => {
           if (minutes && minutes > 0) {
             this.selectedFocusDurationMinutes = minutes;
+          }
+          if (dest) {
+            this.currentDestinationAirport = dest;
           }
           this.triggerPureScaleAnimation();
         }

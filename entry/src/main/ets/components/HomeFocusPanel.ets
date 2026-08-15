@@ -17,7 +17,7 @@ export struct HomeFocusPanel {
   @State selectedDestination?: Airport = undefined; // 默认不指定目的地，等待用户自主选择
   @State routeDistanceKm: number = 0;
   
-  onStartFlight?: (minutes: number) => void;
+  onStartFlight?: (minutes?: number, dest?: Airport) => void;
 
   destinationDialogController: CustomDialogController = new CustomDialogController({
     builder: FlightMapSelectOverlay({
@@ -25,6 +25,8 @@ export struct HomeFocusPanel {
       initialMinutes: this.timerMinutes,
       onDestinationSelected: (airport: Airport, minutes?: number) => {
         this.selectedDestination = airport;
+        AppStorage.setOrCreate('selectedDestinationAirport', airport);
+        AppStorage.setOrCreate('selectedDestinationCode', airport.code);
         this.calculateRouteDistance(airport);
         if (minutes && minutes > 0) {
           this.timerMinutes = minutes;
@@ -101,7 +103,9 @@ export struct HomeFocusPanel {
         }
         this.isRunning = !this.isRunning;
         if (this.onStartFlight) {
-          this.onStartFlight(this.timerMinutes);
+          AppStorage.setOrCreate('selectedDestinationAirport', this.selectedDestination);
+          AppStorage.setOrCreate('selectedDestinationCode', this.selectedDestination.code);
+          this.onStartFlight(this.timerMinutes, this.selectedDestination);
         } else {
           promptAction.showToast({
             message: this.isRunning ? '🛫 航班起飞，进入巡航专注！' : '🛬 专注结束，回到停机坪！',
