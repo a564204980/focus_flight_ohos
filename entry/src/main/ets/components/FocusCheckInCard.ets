@@ -54,7 +54,7 @@ export struct FocusCheckInCard {
       }
     }),
     alignment: DialogAlignment.Bottom,
-    maskColor: 'rgba(2, 6, 23, 0.88)',
+    maskColor: '#000000',
     customStyle: true,
     offset: { dx: 0, dy: 0 }
   });

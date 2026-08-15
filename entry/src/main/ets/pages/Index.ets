@@ -1,4 +1,4 @@
-import { promptAction, router } from '@kit.ArkUI';
+import { display, promptAction, router } from '@kit.ArkUI';
 import { vibrator } from '@kit.SensorServiceKit';
 import { image } from '@kit.ImageKit';
 import { displaySync } from '@kit.ArkGraphics2D';
@@ -47,6 +47,7 @@ struct Index {
   @State planeY: number = -45;                   // 飞机及阴影纵向位置（固定原位）
   @State planeX: number = 0;                     // 飞机及阴影横向对齐偏移（地图模式对齐跑道红点）
   @State planeScale: number = 1.0;               // 飞机与阴影原位 3D 缩放比例
+  @State planeOpacity: number = 1.0;             // 缩小后重合时透明度渐变为 0
   @State planeRotate: number = 0;                // 飞机偏航旋转角度
   @State isPlaneMarkerActive: boolean = false;   // 动画完成后是否交接给地图原生 Marker
   @State currentZoomScale: number = 1.0;         // 随地图 Zoom 级别动态计算的物理比例 (2^(zoom - 17.2))
@@ -71,6 +72,10 @@ struct Index {
   private huaweiMapController?: map.MapComponentController;
   private currentPlaneMarker?: map.Marker;
   private currentPlaneMarkerHD?: map.Marker;
+  private rainbowPolyline?: map.MapPolyline; // 🌈 纯正单向 6 色彩虹光带实例 (紫 -> 蓝 -> 绿 -> 黄 -> 橙 -> 红)
+  private rainbowPolylines: Array<map.MapPolyline> = []; // 6 条单向平行彩虹 Polyline 实例
+  private rainbowTraversedPoints: Array<mapCommon.LatLng> = []; // 已飞过的历史航线点集合
+  private lastTraversedPointIndex: number = 0;
   private flightDisplaySync: displaySync.DisplaySync | undefined = undefined;
   @State flightCurrentIndex: number = 0;
   @State isFlightInProgress: boolean = false;
@@ -287,6 +292,7 @@ struct Index {
               const newLevel = parseFloat(cam.zoom.toFixed(1));
               if (this.currentZoomLevel !== newLevel) {
                 this.currentZoomLevel = newLevel; AppStorage.setOrCreate('hudZoomLevel', this.currentZoomLevel);
+                this.refreshRainbowPolylines();
               }
               const baseZoom = 17.2;
               const newScale = parseFloat(Math.pow(2, cam.zoom - baseZoom).toFixed(3));
@@ -329,6 +335,7 @@ struct Index {
         anchorV: 0.5,
         flat: true,
         rotation: 202.5,
+        zIndex: 100,
         clickable: false
       });
       this.currentPlaneMarker.setAlpha(1.0);
@@ -338,8 +345,9 @@ struct Index {
   }
 
   /**
-   * ✈️ 使用鸿蒙 PixelMap 原生 API 对飞机主高清原图进行代码级动态缩放
-   * @param targetWidthPx 目标屏幕宽度像素 (如 140/175/220)，控制飞机 Marker 的大小
+   * ✈️ 使用鸿蒙 PixelMap 原生 API 对飞机高清原图与机身阴影进行代码级高质感融合
+   * 采用对称画布设计，确保 Marker 的中心 (0.5, 0.5) 与飞机机身中轴线 100% 绝对同轴对齐！
+   * @param targetWidthPx 目标屏幕宽度像素 (如 175)
    */
   private async getScaledPlaneMarkerIcon(targetWidthPx: number): Promise<image.PixelMap | undefined> {
     try {
@@ -347,55 +355,133 @@ struct Index {
       if (!resourceMgr) {
         return undefined;
       }
-      const fileData = await resourceMgr.getMediaContent($r('app.media.b737_800_top_3').id);
-      const imageSource = image.createImageSource(fileData.buffer);
+
       const targetHeightPx = Math.round(targetWidthPx * 1.43);
-      const pixelMap = await imageSource.createPixelMap({
+      // 🌟 显著加大阴影偏移距离（右偏 18px，下偏 32px），让机翼与机尾投射出清晰可见的 3D 立体悬浮阴影
+      const shadowOffsetX = Math.round(18 * (targetWidthPx / 175));
+      const shadowOffsetY = Math.round(32 * (targetWidthPx / 175));
+
+      // 🛡️ 核心对称画布设计：在四周留出完全对称的 padding，
+      // 使得飞机的几何中心就是画布的绝对中心 (canvasW/2, canvasH/2)，
+      // 进而保证 anchorU: 0.5, anchorV: 0.5 在任意旋转角度下，飞机机身中轴线绝对不发生任何偏移！
+      const padX = shadowOffsetX + 12;
+      const padY = shadowOffsetY + 12;
+      const canvasW = targetWidthPx + padX * 2;
+      const canvasH = targetHeightPx + padY * 2;
+      const planeOffsetX = padX;
+      const planeOffsetY = padY;
+      const shadowDstX = padX + shadowOffsetX;
+      const shadowDstY = padY + shadowOffsetY;
+
+      // 1. 加载飞机实体
+      const planeData = await resourceMgr.getMediaContent($r('app.media.b737_800_top_3').id);
+      const planeImgSource = image.createImageSource(planeData.buffer);
+      const planePm = await planeImgSource.createPixelMap({
         desiredSize: { width: targetWidthPx, height: targetHeightPx }
       });
+      const planeBuf = new ArrayBuffer(targetWidthPx * targetHeightPx * 4);
+      await planePm.readPixelsToBuffer(planeBuf);
+      const planePixels = new Uint8Array(planeBuf);
 
-      // 🔴 在 PixelMap 的机头顶端位置写入鲜艳的红色准星圆点
-      try {
-        const buffer = new ArrayBuffer(targetWidthPx * targetHeightPx * 4);
-        await pixelMap.readPixelsToBuffer(buffer);
-        const uint8Arr = new Uint8Array(buffer);
+      // 2. 加载机身地面柔和阴影
+      const shadowData = await resourceMgr.getMediaContent($r('app.media.b737_800_top_3_shadow').id);
+      const shadowImgSource = image.createImageSource(shadowData.buffer);
+      const shadowPm = await shadowImgSource.createPixelMap({
+        desiredSize: { width: targetWidthPx, height: targetHeightPx }
+      });
+      const shadowBuf = new ArrayBuffer(targetWidthPx * targetHeightPx * 4);
+      await shadowPm.readPixelsToBuffer(shadowBuf);
+      const shadowPixels = new Uint8Array(shadowBuf);
 
-        const cX = Math.floor(targetWidthPx / 2);
-        const cY = Math.floor(targetHeightPx * 0.04);
-        const radiusOuter = 10;
-        const radiusInner = 6;
+      // 3. 创建对称合成画布
+      const canvasPm = await planeImgSource.createPixelMap({
+        desiredSize: { width: canvasW, height: canvasH }
+      });
+      const canvasBuf = new ArrayBuffer(canvasW * canvasH * 4);
+      const canvasPixels = new Uint8Array(canvasBuf);
 
-        for (let y = cY - radiusOuter; y <= cY + radiusOuter; y++) {
-          for (let x = cX - radiusOuter; x <= cX + radiusOuter; x++) {
-            if (x >= 0 && x < targetWidthPx && y >= 0 && y < targetHeightPx) {
-              const distSq = (x - cX) * (x - cX) + (y - cY) * (y - cY);
-              if (distSq <= radiusOuter * radiusOuter) {
-                const idx = (y * targetWidthPx + x) * 4;
-                if (distSq <= radiusInner * radiusInner) {
-                  // 🔴 内部纯鲜红色
-                  uint8Arr[idx] = 255;     // R
-                  uint8Arr[idx + 1] = 0;   // G
-                  uint8Arr[idx + 2] = 0;   // B
-                  uint8Arr[idx + 3] = 255; // A
-                } else {
-                  // ⚪ 外圈高亮白边
-                  uint8Arr[idx] = 255;
-                  uint8Arr[idx + 1] = 255;
-                  uint8Arr[idx + 2] = 255;
-                  uint8Arr[idx + 3] = 255;
+      // 4. 将高对比度柔和阴影渲染至偏移位置
+      for (let y = 0; y < targetHeightPx; y++) {
+        for (let x = 0; x < targetWidthPx; x++) {
+          const sIdx = (y * targetWidthPx + x) * 4;
+          const sA = shadowPixels[sIdx + 3];
+          if (sA > 10) {
+            const dstX = x + shadowDstX;
+            const dstY = y + shadowDstY;
+            if (dstX >= 0 && dstX < canvasW && dstY >= 0 && dstY < canvasH) {
+              const dIdx = (dstY * canvasW + dstX) * 4;
+              // 深度纯黑半透明阴影，在浅色地面和深色跑道均有清晰边界
+              canvasPixels[dIdx] = 12;
+              canvasPixels[dIdx + 1] = 16;
+              canvasPixels[dIdx + 2] = 24;
+              canvasPixels[dIdx + 3] = Math.min(220, Math.round(sA * 1.15)); // 增强阴影浓度
+            }
+          }
+        }
+      }
+
+      // 5. 将飞机实体叠加上层（机身居于画布绝对中心）
+      for (let y = 0; y < targetHeightPx; y++) {
+        for (let x = 0; x < targetWidthPx; x++) {
+          const pIdx = (y * targetWidthPx + x) * 4;
+          const pA = planePixels[pIdx + 3] / 255.0;
+          if (pA > 0) {
+            const dstX = x + planeOffsetX;
+            const dstY = y + planeOffsetY;
+            if (dstX >= 0 && dstX < canvasW && dstY >= 0 && dstY < canvasH) {
+              const dIdx = (dstY * canvasW + dstX) * 4;
+              if (pA >= 0.99) {
+                canvasPixels[dIdx] = planePixels[pIdx];
+                canvasPixels[dIdx + 1] = planePixels[pIdx + 1];
+                canvasPixels[dIdx + 2] = planePixels[pIdx + 2];
+                canvasPixels[dIdx + 3] = planePixels[pIdx + 3];
+              } else {
+                const dstA = canvasPixels[dIdx + 3] / 255.0;
+                const outA = pA + dstA * (1.0 - pA);
+                if (outA > 0.001) {
+                  canvasPixels[dIdx] = Math.round((planePixels[pIdx] * pA + canvasPixels[dIdx] * dstA * (1.0 - pA)) / outA);
+                  canvasPixels[dIdx + 1] = Math.round((planePixels[pIdx + 1] * pA + canvasPixels[dIdx + 1] * dstA * (1.0 - pA)) / outA);
+                  canvasPixels[dIdx + 2] = Math.round((planePixels[pIdx + 2] * pA + canvasPixels[dIdx + 2] * dstA * (1.0 - pA)) / outA);
+                  canvasPixels[dIdx + 3] = Math.round(outA * 255);
                 }
               }
             }
           }
         }
-        await pixelMap.writeBufferToPixels(buffer);
-      } catch (err) {
-        console.error('Error drawing red dot on pixelMap:', JSON.stringify(err));
       }
 
-      return pixelMap;
+      // 6. 🔴 在飞机机头正中写入鲜艳的红色准星圆点
+      const cX = planeOffsetX + Math.floor(targetWidthPx / 2);
+      const cY = planeOffsetY + Math.floor(targetHeightPx * 0.04);
+      const radiusOuter = 10;
+      const radiusInner = 6;
+
+      for (let y = cY - radiusOuter; y <= cY + radiusOuter; y++) {
+        for (let x = cX - radiusOuter; x <= cX + radiusOuter; x++) {
+          if (x >= 0 && x < canvasW && y >= 0 && y < canvasH) {
+            const distSq = (x - cX) * (x - cX) + (y - cY) * (y - cY);
+            if (distSq <= radiusOuter * radiusOuter) {
+              const idx = (y * canvasW + x) * 4;
+              if (distSq <= radiusInner * radiusInner) {
+                canvasPixels[idx] = 255;
+                canvasPixels[idx + 1] = 0;
+                canvasPixels[idx + 2] = 0;
+                canvasPixels[idx + 3] = 255;
+              } else {
+                canvasPixels[idx] = 255;
+                canvasPixels[idx + 1] = 255;
+                canvasPixels[idx + 2] = 255;
+                canvasPixels[idx + 3] = 255;
+              }
+            }
+          }
+        }
+      }
+
+      await canvasPm.writeBufferToPixels(canvasBuf);
+      return canvasPm;
     } catch (e) {
-      console.error('Failed to create scaled plane PixelMap:', JSON.stringify(e));
+      console.error('Failed to create scaled plane PixelMap with shadow:', JSON.stringify(e));
       return undefined;
     }
   }
@@ -410,6 +496,21 @@ struct Index {
     this.startAnimationSequence();
   }
 
+  /**
+   * ✈️ 计算与精修机场地图原生 Marker (targetWidthPx = 175) 1:1 绝对一致的 planeScale 尺寸
+   * 确保点击“开始专注”后，机身 3D 缩小落定的尺寸与地图上的飞机 Marker 像素级严格对齐！
+   */
+  private getTargetMarkerPlaneScale(): number {
+    try {
+      const displayInfo = display.getDefaultDisplaySync();
+      const density = displayInfo.densityPixels || 3.5;
+      const targetMarkerVp = 175 / density; // 175px 在当前屏幕的真实 vp 宽度 (约 49.2vp)
+      return targetMarkerVp / 315; // 对应 315vp 飞机原图的精确缩放比 (约 0.156)
+    } catch (e) {
+      return 0.156;
+    }
+  }
+
   private async checkAndRestoreActiveSession(): Promise<void> {
     try {
       const params = router.getParams() as Record<string, Object>;
@@ -417,7 +518,7 @@ struct Index {
         this.isCabinExposed = false;
         this.isFullFocusMode = false;
         this.isMapBackgroundVisible = true;
-        this.planeScale = 0.45;
+        this.planeScale = this.getTargetMarkerPlaneScale();
         this.planeY = 0;
         this.planeX = 0;
         this.isVehiclesDocked = true;
@@ -440,11 +541,35 @@ struct Index {
   }
 
   /**
-   * 当用户在首页放大的机舱中点击任意座椅时：
+   * 当用户在首页放大的机舱中点击任意座椅或确认就座起飞时：
    * 彻底取消页面跳转！在当前页面内实现纯 3D 无缝缩小退场与背后华为 Petal Maps 地图的平滑浮现
    */
-  private onSeatSelectedInIndex(seatId: string) {
-    this.honkToastText = `✨ 已选择座位 ${seatId} · 战术航线与地图无缝就绪`;
+  private onSeatSelectedInIndex(seatId: string, tagId: string = 'study', durationMinutes?: number) {
+    if (durationMinutes && durationMinutes > 0) {
+      this.selectedFocusDurationMinutes = durationMinutes;
+    }
+    const tagMap: Record<string, string> = {
+      'study': '深度学习',
+      'work': '高效工作',
+      'create': '创意灵感',
+      'relax': '正念冥想',
+      'sprint': '极速冲刺'
+    };
+    const tagName = tagMap[tagId] || '深度专注';
+
+    // 存储当前飞行专注会话状态
+    FlightSessionStore.saveSession({
+      isFlightActive: true,
+      flightNo: 'FF-2026',
+      seatId: seatId,
+      taskTitle: tagName,
+      durationMin: this.selectedFocusDurationMinutes,
+      originCode: 'CTU',
+      destCode: 'PEK',
+      startTimeMs: Date.now()
+    });
+
+    this.honkToastText = `✨ 座位 ${seatId} · ${tagName} (${this.selectedFocusDurationMinutes}m) 桌板已放下，准备起飞`;
     this.isHonkToastVisible = true;
     setTimeout(() => {
       this.isHonkToastVisible = false;
@@ -455,8 +580,8 @@ struct Index {
       this.shellSplitOffset = 0;
     });
 
-    // 2. 0.35 秒后隐藏机舱透视，飞机平滑 3D 缩小至 1/3 (0.33)，背后的华为 Petal Maps 地图无缝淡入浮现！
-    setTimeout(() => {
+    // 2. 0.35 秒后隐藏机舱透视，飞机平滑 3D 缩小至与精修地图飞机完全 1:1 的尺寸，背后的华为 Petal Maps 地图无缝淡入浮现！
+    setTimeout(async () => {
       this.isCabinExposed = false;
       this.isFullFocusMode = false;
       this.isMapBackgroundVisible = true; // 背后华为花瓣地图无缝出现！
@@ -468,15 +593,39 @@ struct Index {
             zoom: 17.2,
             bearing: CTU_RUNWAY_BEARING,
             tilt: 0
-          }), 1200);
+          }), 1000);
+
+          // 预先在跑道起点挂载好原生 Marker，准备与上方缩小的 3D 飞机无缝交叉淡入淡出
+          if (this.currentPlaneMarker) { try { this.currentPlaneMarker.remove(); } catch (e) { } }
+          if (this.currentPlaneMarkerHD) { try { this.currentPlaneMarkerHD.remove(); } catch (e) { } }
+
+          const planePixelMap = await this.getScaledPlaneMarkerIcon(175);
+          this.planeMarkerRotation = 202.5; AppStorage.setOrCreate('hudPlaneRotation', this.planeMarkerRotation);
+
+          this.currentPlaneMarker = await this.huaweiMapController.addMarker({
+            position: getCtuRunwayStart(),
+            icon: planePixelMap || $r('app.media.b737_800_top_3_medium'),
+            anchorU: 0.5,
+            anchorV: 0.5,
+            flat: true,
+            rotation: 202.5,
+            zIndex: 100,
+            clickable: false
+          });
+          this.currentPlaneMarker.setAlpha(1.0);
         } catch (e) { }
       }
 
-      // 飞机在当前页面平滑 3D 缩小至 0.45 比例（与适中 Marker 100% 尺寸对齐）
-      this.getUIContext()?.animateTo({ duration: 1600, curve: Curve.FastOutSlowIn }, () => {
-        this.planeScale = 0.45;
+      // 飞机在 2 秒内持续平滑 3D 缩小至 1:1，并在这完整的 2 秒内同步平滑将透明度降到 0（绝不在最后停顿才开始变透明！）
+      const targetScale = this.getTargetMarkerPlaneScale();
+      this.planeOpacity = 1.0;
+      this.getUIContext()?.animateTo({ duration: 2000, curve: Curve.FastOutSlowIn }, () => {
+        this.planeScale = targetScale;
         this.planeY = 0;
         this.planeX = 0;
+      });
+      this.getUIContext()?.animateTo({ duration: 2000, curve: Curve.EaseInOut }, () => {
+        this.planeOpacity = 0;
       });
 
       // 恢复周围地勤设备与 HUD 界面
@@ -485,43 +634,18 @@ struct Index {
         this.isHudVisible = true;
       });
 
-      // 3. 1600ms 物理缩小动效落定瞬间：无缝交接给双地图原生 3D Marker 交叉渐变渲染！
-      setTimeout(async () => {
-        if (this.huaweiMapController) {
-          try {
-            if (this.currentPlaneMarker) { try { this.currentPlaneMarker.remove(); } catch (e) { } }
-            if (this.currentPlaneMarkerHD) { try { this.currentPlaneMarkerHD.remove(); } catch (e) { } }
-
-            const planePixelMap = await this.getScaledPlaneMarkerIcon(175);
-
-            this.planeMarkerRotation = 202.5; AppStorage.setOrCreate('hudPlaneRotation', this.planeMarkerRotation);
-
-            this.currentPlaneMarker = await this.huaweiMapController.addMarker({
-              position: getCtuRunwayStart(),
-              icon: planePixelMap || $r('app.media.b737_800_top_3_medium'),
-              anchorU: 0.5,
-              anchorV: 0.5,
-              flat: true,
-              rotation: 202.5,
-              clickable: false
-            });
-            this.currentPlaneMarker.setAlpha(1.0);
-          } catch (e) { }
-        }
-        this.getUIContext()?.animateTo({ duration: 250, curve: Curve.EaseOut }, () => {
-          this.isPlaneMarkerActive = true;
-        });
-
-        // 🚀 选座完成后，平滑缩小落定后，触发 2 秒跑道等待与自动沿线起飞引擎！
-        this.startFlightAnimationAfterPause();
-      }, 1600);
+      // 3. 2 秒过渡期满（UI 飞机已完全无缝淡出至 0），由底层地图 Marker 立即接管并直接动力全推起飞！
+      setTimeout(() => {
+        this.isPlaneMarkerActive = true;
+        this.startFlightAnimationDirectly();
+      }, 2000);
     }, 350);
   }
 
   /**
-   * ✈️ 选座落定后，停靠 2 秒自动触发【60 FPS 物理级极尽丝滑平滑插值起飞引擎】
+   * ✈️ 2秒无缝过渡淡出结束后，直接动力全推起飞并进入 60 FPS 巡航！
    */
-  private startFlightAnimationAfterPause(): void {
+  private startFlightAnimationDirectly(): void {
     // 1. 机头角绑定双流跑道西南至东北实际绝对方位角 202.5 度 (顺时针旋转 180 度正对起飞前方)
     const rStart = getCtuRunwayStart();
     this.planeMarkerRotation = 202.5; AppStorage.setOrCreate('hudPlaneRotation', this.planeMarkerRotation);
@@ -534,20 +658,50 @@ struct Index {
 
     const durationMinutes = this.selectedFocusDurationMinutes > 0 ? this.selectedFocusDurationMinutes : 45;
 
-    // 2. 在跑道起点静止停靠等待 2 秒（显示沉浸战术广播）
-    this.honkToastText = `✈️ 跑道对正就绪 · 选定专注 ${durationMinutes} 分钟 (2秒后起飞)...`;
-    this.isHonkToastVisible = true;
-
-    setTimeout(() => {
-      this.honkToastText = `🚀 动力全推，离开成都双流 (CTU)！专注时长 ${durationMinutes} 分钟，开启漫游巡航...`;
-      this.isHonkToastVisible = true;
-      setTimeout(() => { this.isHonkToastVisible = false; }, 4000);
-
-      // 3. 2 秒等待倒计时结束，获取全程三阶段高密度航线点集
-      const points: mapCommon.LatLng[] = MapRenderHelper.getFullFlightPathPoints();
-      if (!points || points.length < 2) {
-        return;
+    // 清理并重置彩虹光带
+    if (this.rainbowPolyline) {
+      try { this.rainbowPolyline.remove(); } catch (e) { }
+      this.rainbowPolyline = undefined;
+    }
+    if (this.rainbowPolylines.length > 0) {
+      for (const p of this.rainbowPolylines) {
+        try {
+          p.remove();
+        } catch (e) { }
       }
+      this.rainbowPolylines = [];
+    }
+    this.rainbowTraversedPoints = [];
+    this.lastTraversedPointIndex = 0;
+
+    this.honkToastText = `🚀 动力全推，离开成都双流 (CTU)！专注时长 ${durationMinutes} 分钟，开启漫游巡航...`;
+    this.isHonkToastVisible = true;
+    setTimeout(() => { this.isHonkToastVisible = false; }, 4000);
+
+    // 2. 获取全程三阶段高密度航线点集
+    const points: mapCommon.LatLng[] = MapRenderHelper.getFullFlightPathPoints();
+    if (!points || points.length < 2) {
+      return;
+    }
+
+    // 初始化单向 6 色平行彩虹光带 (紫->蓝->绿->黄->橙->红)
+    if (this.huaweiMapController) {
+      const p0 = points[0];
+      this.rainbowTraversedPoints = [p0];
+
+      // 创建 6 条纯正矢量单向平行光带 (每条 14px 紧密咬合 3px 间距，放大缩小均 100% 严密贴合零黑缝)
+      for (let k = 0; k < MapRenderHelper.RAINBOW_PARALLEL_COLORS.length; k++) {
+        const color = MapRenderHelper.RAINBOW_PARALLEL_COLORS[k];
+        this.huaweiMapController.addPolyline({
+          points: [p0, p0],
+          width: 14.0,
+          color: color,
+          zIndex: 60 + k
+        }).then((poly: map.MapPolyline) => {
+          this.rainbowPolylines.push(poly);
+        }).catch(() => { });
+      }
+    }
 
       // 3b. 预计算物理距离数组 (Cumulative Distance)，让飞机保持真实的地理巡航速度，
       // 同时通过“虚拟速度权重”满足用户对各阶段相对快慢的调节需求，且严格保证总耗时不变。
@@ -672,6 +826,41 @@ struct Index {
 
         const interpPos = getSmoothPos(rawIndex);
 
+        // 🌈 60 FPS 连续平滑拉伸 6 色同心彩虹色带（红橙黄绿蓝紫完全等宽，飞过的航线 100% 纹丝不动！）
+        const currentIntIdx = Math.floor(rawIndex);
+        if (currentIntIdx > this.lastTraversedPointIndex) {
+          for (let ptIdx = this.lastTraversedPointIndex; ptIdx < currentIntIdx; ptIdx++) {
+            this.rainbowTraversedPoints.push(points[ptIdx]);
+          }
+          this.lastTraversedPointIndex = currentIntIdx;
+        }
+
+        // 🎬 电影级视距伸缩：前 10% 17.2 -> 13，后 10% 13 -> 17.2 (连续无级平滑浮点)
+        let cinematicZoom = 13.0;
+        if (overallProgress <= 0.1) {
+          const t = overallProgress / 0.1;
+          const easeT = 1 - Math.pow(1 - t, 3);
+          cinematicZoom = 17.2 - (17.2 - 13.0) * easeT;
+        } else if (overallProgress >= 0.9) {
+          const t = (overallProgress - 0.9) / 0.1;
+          const easeT = (1 - Math.cos(Math.PI * t)) / 2;
+          cinematicZoom = 13.0 + (17.2 - 13.0) * easeT;
+        }
+
+        const displayPoints = this.rainbowTraversedPoints.slice();
+        displayPoints.push(interpPos);
+
+        const currentActiveZoom = this.isCameraFollowLocked ? cinematicZoom : this.currentZoomLevel;
+        const parallelStripes = MapRenderHelper.generateParallelRainbowStripes(displayPoints, currentActiveZoom);
+        for (let k = 0; k < this.rainbowPolylines.length; k++) {
+          const poly = this.rainbowPolylines[k];
+          if (poly && parallelStripes[k]) {
+            try {
+              poly.setPoints(parallelStripes[k]);
+            } catch (e) { }
+          }
+        }
+
         // 【先】算目标角度，确保 Camera 与 Marker 同帧使用同一旋转角，消除 1 帧偏差导致的滑行抽帧
         // 起飞直线跑道段锁死 202.5°；其他段使用平滑曲线的前视点作为真实的连续切线
         if (segIndex < 20) {
@@ -693,19 +882,6 @@ struct Index {
         // currentMapBearing 由 cameraChange 回调更新，此处不重复赋值，避免多余 @State 重绘
         if (this.huaweiMapController && this.isCameraFollowLocked) {
           try {
-            // 🎬 电影级视距伸缩：前 10% 17.2 -> 13，后 10% 13 -> 17.2
-            let cinematicZoom = 13.0;
-            if (overallProgress <= 0.1) {
-              const t = overallProgress / 0.1;
-              // 使用 Cubic Ease-Out 缓动：让起飞初期视距拉远更明显，提供即时视觉反馈
-              const easeT = 1 - Math.pow(1 - t, 3);
-              cinematicZoom = 17.2 - (17.2 - 13.0) * easeT;
-            } else if (overallProgress >= 0.9) {
-              const t = (overallProgress - 0.9) / 0.1;
-              // 降落阶段使用余弦缓动：平稳下压
-              const easeT = (1 - Math.cos(Math.PI * t)) / 2;
-              cinematicZoom = 13.0 + (17.2 - 13.0) * easeT;
-            }
             
             // 🔥 核心修复：高频的 moveCamera(16ms) 会导致底层 SDK 认为相机一直未停稳，
             // 从而不触发 'cameraChange' 回调。必须在此处手动将解算的 zoom 同步给 @State 刷新 UI 面板！
@@ -738,12 +914,30 @@ struct Index {
           try {
             this.currentPlaneMarker.setPosition(interpPos);
             this.currentPlaneMarker.setRotation(this.planeMarkerRotation);
-            this.currentPlaneMarker.setAlpha(this.isCameraFollowLocked ? 0.0 : 1.0);
+            this.currentPlaneMarker.setAlpha(1.0);
           } catch (e) { }
         }
       });
       this.flightDisplaySync.start();
-    }, 2000);
+  }
+
+  /**
+   * 🌈 用户在任何缩放倍率下，即时刷新彩虹各色带地理坐标，确保放大至 20x 仍 100% 严密贴合无黑缝且尾部平整
+   */
+  private refreshRainbowPolylines(): void {
+    if (this.rainbowPolylines.length === 0 || this.rainbowTraversedPoints.length === 0) {
+      return;
+    }
+    const displayPoints = this.rainbowTraversedPoints.slice();
+    const parallelStripes = MapRenderHelper.generateParallelRainbowStripes(displayPoints, this.currentZoomLevel);
+    for (let k = 0; k < this.rainbowPolylines.length; k++) {
+      const poly = this.rainbowPolylines[k];
+      if (poly && parallelStripes[k]) {
+        try {
+          poly.setPoints(parallelStripes[k]);
+        } catch (e) { }
+      }
+    }
   }
 
   /**
@@ -1046,16 +1240,6 @@ struct Index {
               }
             })
         }
-
-        // 1b. 跟拍模式专属的绝对定位中心飞机 UI (剥离 Map Engine，消除底层 C++ 相机与 Marker 16ms 步进带来的非同步微小抖动)
-        if (this.isMapBackgroundVisible && this.isFlightInProgress && this.isCameraFollowLocked && !this.isCabinExposed) {
-          Image($r('app.media.b737_800_top_3_medium'))
-            .width(58)
-            .height(58)
-            .objectFit(ImageFit.Contain)
-            .hitTestBehavior(HitTestMode.None)
-            .zIndex(150)
-        }
       }
       .width('100%')
       .height('100%')
@@ -1128,11 +1312,14 @@ struct Index {
         onTractorClick: () => this.onTractorClick()
       })
 
+
       // 4. 飞机实体与剖开机舱图层
       PlaneCabinShellOverlay({
         isMapBackgroundVisible: this.isMapBackgroundVisible,
         isCabinExposed: this.isCabinExposed,
+        isFullFocusMode: this.isFullFocusMode,
         planeScale: this.planeScale,
+        planeOpacity: this.planeOpacity,
         currentZoomScale: this.currentZoomScale,
         planeX: this.planeX,
         planeY: this.planeY,
@@ -1140,8 +1327,12 @@ struct Index {
         shellSplitOffset: this.shellSplitOffset,
         onSeatClick: (seatId: string): void => {
           this.onSeatSelectedInIndex(seatId);
+        },
+        onConfirmFlight: (seatId: string, tagId: string, durationMinutes: number): void => {
+          this.onSeatSelectedInIndex(seatId, tagId, durationMinutes);
         }
       })
+        .hitTestBehavior(HitTestMode.Transparent)
 
       // 5. 底部专注控制面板
       HomeFocusPanel({
@@ -1159,23 +1350,21 @@ struct Index {
         .animation({ duration: 800, curve: Curve.EaseOut })
         .zIndex(100)
 
-      // 6. 客舱透视或纯净地图模式下的左上角返回按钮
+      // 6. 客舱透视或纯净地图模式下的左上角大厂极简圆形返回按钮 (Apple / HarmonyOS Translucent Floating Glass Back Button)
       if (this.isCabinExposed || (this.isMapBackgroundVisible && !this.isCabinExposed)) {
-        Row() {
-          Image($r('app.media.ic_back_btn'))
-            .width(20)
-            .height(20)
+        Stack({ alignContent: Alignment.Center }) {
+          Image($r('app.media.ic_back_btn_dark'))
+            .width(16)
+            .height(16)
             .objectFit(ImageFit.Contain)
         }
-        .width(42)
-        .height(42)
-        .borderRadius(21)
-        .backgroundColor('rgba(10, 15, 26, 0.85)')
-        .border({ width: 1, color: 'rgba(255, 255, 255, 0.25)', radius: 21 })
-        .shadow({ radius: 12, color: 'rgba(0, 0, 0, 0.4)', offsetY: 2 })
-        .justifyContent(FlexAlign.Center)
-        .alignItems(VerticalAlign.Center)
-        .position({ x: 18, y: 44 })
+        .width(36)
+        .height(36)
+        .borderRadius(18)
+        .backgroundColor('rgba(255, 255, 255, 0.92)')
+        .border({ width: 1, color: 'rgba(0, 0, 0, 0.06)', radius: 18 })
+        .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.08)', offsetY: 2 })
+        .position({ x: 18, y: 48 })
         .zIndex(200)
         .onClick(() => {
           this.triggerPureScaleAnimation();
@@ -1262,27 +1451,27 @@ struct Index {
    */
   private triggerPureScaleAnimation() {
     if (!this.isFullFocusMode) {
-      this.isFullFocusMode = true;
       this.isMapBackgroundVisible = false;
+      this.planeOpacity = 1.0;
 
       // 阶段一：2.5 秒内飞机原位平滑放大到 11.8 倍
       this.getUIContext()?.animateTo({ duration: 2500, curve: Curve.EaseInOut }, () => {
+        this.isFullFocusMode = true;
         this.planeScale = 11.8;
         this.planeY = 1200;
       });
 
-      // 阶段二：放大完毕后，剖开机舱
+      // 阶段二：放大完毕后，露出机舱选座
       setTimeout(() => {
         if (this.isFullFocusMode) {
           this.getUIContext()?.animateTo({ duration: 600, curve: Curve.EaseOut }, () => {
             this.isCabinExposed = true;
-            this.isMapBackgroundVisible = true;
           });
           this.getUIContext()?.animateTo({ duration: 900, curve: Curve.EaseOut }, () => {
             this.shellSplitOffset = 160;
           });
         }
-      }, 2400);
+      }, 1200);
 
       this.getUIContext()?.animateTo({ duration: 1000, curve: Curve.EaseOut }, () => {
         this.isVehiclesDocked = false;
@@ -1297,6 +1486,7 @@ struct Index {
       setTimeout(() => {
         this.isCabinExposed = false;
         this.isFullFocusMode = false;
+        this.planeOpacity = 1.0;
 
         this.getUIContext()?.animateTo({ duration: 2000, curve: Curve.EaseInOut }, () => {
           this.planeScale = 1.0;

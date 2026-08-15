@@ -55,6 +55,10 @@ export struct FlightMapSelectOverlay {
   @State routeDistanceKm: number = 0;
   @State candidateAirports: Airport[] = [];
   @State currentZoomLevel: number = 6.2;
+  private radarZoom: number = 6.2;     // 专用于雷达半径视觉大小计算（目标预期缩放）
+  private rulerAnimatingUntil: number = 0;
+  private isRulerDragging: boolean = false;
+  private rulerDraggingTimeout: number = 0;
   @State rulerContainerWidth: number = 360;
   @State ctuScreenX: number = 189;
   @State ctuScreenY: number = 339;
@@ -117,6 +121,7 @@ export struct FlightMapSelectOverlay {
   aboutToAppear() {
     this.currentMinutes = (this.initialMinutes && this.initialMinutes > 0) ? this.initialMinutes : 15;
     this.lastSnappedMinutes = this.currentMinutes;
+    this.radarZoom = getContinuousZoomLevel(this.currentMinutes); // 初始化雷达缩放基准，确保首次渲染半径正确
     if (this.selectedCode) {
       this.currentSelectedCode = this.selectedCode;
       this.updateRouteDistance(this.currentSelectedCode);
@@ -206,40 +211,86 @@ export struct FlightMapSelectOverlay {
     const origin = findAirportByCode('CTU');
     if (!origin || origin.lat === undefined || origin.lon === undefined) return;
 
-    // 1. 实实时时将雷达中心 100% 精确磁吸贴合在 CTU 机场的屏幕真实投影点上
-    const pt = this.latLngToScreenVp(Number(origin.lat), Number(origin.lon));
-    if (pt && !isNaN(pt.x) && !isNaN(pt.y)) {
-      this.ctuScreenX = pt.x;
-      this.ctuScreenY = pt.y;
+    // 1. 实时将雷达中心磁吸贴合在 CTU 机场的屏幕真实投影点上
+    const ptCenter = this.latLngToScreenVp(Number(origin.lat), Number(origin.lon));
+    if (ptCenter && !isNaN(ptCenter.x) && !isNaN(ptCenter.y)) {
+      this.ctuScreenX = ptCenter.x;
+      this.ctuScreenY = ptCenter.y;
     } else {
       const containerW = this.rulerContainerWidth > 0 ? this.rulerContainerWidth : 360.0;
       this.ctuScreenX = containerW / 2.0;
       this.ctuScreenY = 305.0;
     }
 
-    // 2. 墨卡托代数半径计算 (通过目标连贯缩放级别解耦，消除爆大/缩小跳变)
+    // 防御性清理超时的拖动状态
+    if (this.isRulerDragging && Date.now() > this.rulerDraggingTimeout) {
+      this.isRulerDragging = false;
+    }
+
+    // 以"刻度尺目标 zoom"或真实 zoom 为基准计算半径
+    let renderZoom = this.radarZoom > 0 ? this.radarZoom : this.currentZoomLevel;
+    if (!this.isRulerDragging && Date.now() > this.rulerAnimatingUntil) {
+      try {
+        if (this.huaweiMapController) {
+          const cam = this.huaweiMapController.getCameraPosition();
+          if (cam && typeof cam.zoom === 'number' && !isNaN(cam.zoom)) {
+            renderZoom = cam.zoom;
+          }
+        }
+      } catch(e) {}
+    }
+
     const maxDistKm = getMaxFlightDistanceKm(this.currentMinutes);
     const latRad = Number(origin.lat) * Math.PI / 180.0;
     const cosLat = Math.cos(latRad);
     const dLonDeg = maxDistKm / (111.32 * (cosLat > 0.01 ? cosLat : 1.0));
 
-    // 使用与 currentMinutes 同步的目标视口 Zoom 级别，消解时序交错造成的屏幕突变失真
-    const targetZoom = getContinuousZoomLevel(this.currentMinutes);
-    const scale = Math.pow(2, targetZoom);
-    const worldSize = 256.0 * scale;
-    const targetRadiusVp = dLonDeg * (worldSize / 360.0);
-
-    if (!isNaN(targetRadiusVp) && targetRadiusVp > 20) {
-      if (Math.abs(this.dynamicRadarRadius - targetRadiusVp) > 1.0) {
-        animateTo({
-          duration: 350,
-          curve: Curve.EaseOut
-        }, () => {
-          this.dynamicRadarRadius = targetRadiusVp;
-        });
-      } else {
-        this.dynamicRadarRadius = targetRadiusVp;
+    // 优先尝试基于起点 CTU 的真实屏幕投影采样测距 (正东边缘点)
+    let calculatedRadius: number = -1;
+    const ptEdge = this.latLngToScreenVp(Number(origin.lat), Number(origin.lon) + dLonDeg);
+    if (ptCenter && ptEdge && !isNaN(ptCenter.x) && !isNaN(ptEdge.x)) {
+      const projDist = Math.abs(ptEdge.x - ptCenter.x);
+      if (projDist > 10 && projDist < 3000) {
+        calculatedRadius = projDist;
       }
+    }
+
+    // 若投影采样点超出视口或尚未准备就绪，使用第一性原理推导的标准墨卡托降级公式:
+    // radius_vp = maxDistKm * (256 * 2^zoom) / 40075.16
+    if (calculatedRadius <= 0) {
+      calculatedRadius = (maxDistKm * 256.0 * Math.pow(2, renderZoom)) / 40075.16;
+    }
+
+    // 🌟 自适应雷达包络 (Adaptive Radar Envelope)：
+    // 在墨卡托高纬度拉伸影响下，遍历当前候选机场在屏幕上的 VP 距离。
+    // 取所有候选机场最大的屏幕 VP 距离 * 1.05 作为半径包络上限，
+    // 确保如圣彼得堡（LED）等高纬度机场被刚好包覆在雷达圈内边缘。
+    if (ptCenter && !isNaN(ptCenter.x) && !isNaN(ptCenter.y) && this.candidateAirports && this.candidateAirports.length > 0) {
+      let maxCandidateVpDist = 0;
+      this.candidateAirports.forEach(apt => {
+        if (apt.lat !== undefined && apt.lon !== undefined && apt.code !== 'CTU') {
+          const aptPt = this.latLngToScreenVp(Number(apt.lat), Number(apt.lon));
+          if (aptPt && !isNaN(aptPt.x) && !isNaN(aptPt.y)) {
+            const dx = aptPt.x - ptCenter.x;
+            const dy = aptPt.y - ptCenter.y;
+            const vpDist = Math.sqrt(dx * dx + dy * dy);
+            if (!isNaN(vpDist) && vpDist > maxCandidateVpDist) {
+              maxCandidateVpDist = vpDist;
+            }
+          }
+        }
+      });
+
+      if (maxCandidateVpDist > 0) {
+        const envelopeRadius = maxCandidateVpDist * 1.05;
+        if (envelopeRadius > calculatedRadius) {
+          calculatedRadius = envelopeRadius;
+        }
+      }
+    }
+
+    if (!isNaN(calculatedRadius) && calculatedRadius > 20) {
+      this.dynamicRadarRadius = calculatedRadius;
     }
   }
 
@@ -293,7 +344,7 @@ export struct FlightMapSelectOverlay {
       this.lastSnappedMinutes = targetMin;
       this.updateCandidateAirports(targetMin);
       this.drawRoute(this.currentSelectedCode, true);
-      this.updateCameraZoomSmoothly(targetMin);
+      this.updateCameraZoomSmoothly(targetMin);  // 同时更新 radarZoom（在内部完成）
     } else {
       this.updateCandidateAirports(targetMin);
     }
@@ -311,10 +362,20 @@ export struct FlightMapSelectOverlay {
     try {
       const targetZoom = getContinuousZoomLevel(minutes);
       this.currentZoomLevel = targetZoom;
+      this.radarZoom = targetZoom;  // ← 立即锁定雷达半径到目标值，不受后续动画帧影响
+      this.rulerAnimatingUntil = Date.now() + 950;
       this.huaweiMapController.animateCamera(map.newCameraPosition({
-        target: { latitude: getCenteredCameraLatitude(origin.lat), longitude: origin.lon },
+        target: { latitude: getCenteredCameraLatitude(origin.lat, targetZoom), longitude: origin.lon },
         zoom: targetZoom
       }), 850);
+
+      // 当 SDK 最小 zoom（约 2.0）小于目标 zoom 时，animateCamera 被拒绝，地图不动，
+      // 因此 cameraChange 事件不会触发，rulerAnimatingUntil 到期后圆圈不会自动更新。
+      // 这里补一个 970ms 的延迟刷新，确保动画窗口结束后雷达圈能自动放大到正确尺寸，
+      // 无需用户手动触碰地图触发 cameraChange。
+      setTimeout(() => {
+        this.refreshCtuScreenPosition();
+      }, 970);
     } catch (e) {}
   }
 
@@ -394,6 +455,57 @@ export struct FlightMapSelectOverlay {
     this.currentSelectedCode = code;
     this.updateRouteDistance(code);
     this.drawRoute(code);
+    this.focusCameraBetweenOriginAndDest(code);
+  }
+
+  /**
+   * 智能相机聚焦：自动计算起点 CTU 与选中的目的地中点及自适应 Zoom，
+   * 确保起点和目的地全览同屏呈现在上半部分视口中。
+   */
+  private focusCameraBetweenOriginAndDest(destCode: string) {
+    if (!destCode || !this.huaweiMapController) return;
+    const origin = findAirportByCode('CTU');
+    const dest = findAirportByCode(destCode);
+    if (!origin || !dest || origin.lat === undefined || origin.lon === undefined || dest.lat === undefined || dest.lon === undefined) return;
+
+    try {
+      const lat1 = Number(origin.lat);
+      const lon1 = Number(origin.lon);
+      const lat2 = Number(dest.lat);
+      const lon2 = Number(dest.lon);
+
+      let dLon = lon2 - lon1;
+      if (dLon > 180) dLon -= 360;
+      else if (dLon < -180) dLon += 360;
+
+      const centerLat = (lat1 + lat2) / 2.0;
+      let centerLon = lon1 + dLon / 2.0;
+      while (centerLon > 180) centerLon -= 360;
+      while (centerLon < -180) centerLon += 360;
+
+      const distKm = getDistanceKm(lat1, lon1, lat2, lon2);
+
+      // 计算恰好将起终点全览并留出边距的视口 Zoom
+      let fitZoom = Math.log2(18000.0 / Math.max(100, distKm));
+      fitZoom = Math.max(1.8, Math.min(6.2, fitZoom));
+
+      // 考虑屏幕下半部 BottomPanel 遮挡，将中心点 Latitude 稍微向上避让（减去度数偏移）
+      const degPerPixel = 360.0 / (256.0 * Math.pow(2, fitZoom));
+      const adjustedLat = centerLat - (35.0 * degPerPixel);
+
+      this.currentZoomLevel = parseFloat(fitZoom.toFixed(1));
+      this.radarZoom = fitZoom;
+      this.rulerAnimatingUntil = Date.now() + 850;
+
+      this.huaweiMapController.animateCamera(map.newCameraPosition({
+        target: { latitude: adjustedLat, longitude: centerLon },
+        zoom: fitZoom
+      }), 750);
+
+      setTimeout(() => {
+        this.refreshCtuScreenPosition();
+      }, 800);
+    } catch (e) {}
   }
 
   private updateRouteDistance(targetCode: string) {
@@ -450,50 +562,37 @@ export struct FlightMapSelectOverlay {
 
   private async activateDestMarker(destCode: string) {
     if (!destCode || !this.huaweiMapController || !this.airportMarkers || this.airportMarkers.length === 0) return;
+    const origin = findAirportByCode('CTU');
+
+    // 遍历所有当前存在的 airportMarkers，确保只有当前 destCode 是红色激活态，其余全部恢复为普通候选态
+    for (const entry of this.airportMarkers) {
+      const isTarget = entry.code === destCode;
+      const apt = findAirportByCode(entry.code);
+      if (!apt || apt.lat === undefined || apt.lon === undefined) continue;
+
+      const dist = (origin && origin.lat !== undefined && origin.lon !== undefined)
+        ? getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon)) : 0;
+
+      try {
+        const pix = await this.generateMarkerPixelMap(entry.code, apt.city || apt.name, dist, isTarget, false);
+        if (entry.marker && pix) {
+          const dm = entry.marker as object as Record<string, (icon: image.PixelMap) => void>;
+          if (typeof dm['setIcon'] === 'function') dm['setIcon'](pix);
+          const dmZ = entry.marker as object as Record<string, (z: number) => void>;
+          if (typeof dmZ['setZIndex'] === 'function') dmZ['setZIndex'](isTarget ? 35 : 5);
+        }
+      } catch (e) {}
+    }
+
     const targetApt = findAirportByCode(destCode);
     if (!targetApt || targetApt.lat === undefined || targetApt.lon === undefined) return;
 
-    const origin = findAirportByCode('CTU');
-    const dist = (origin && origin.lat !== undefined && origin.lon !== undefined)
-      ? getDistanceKm(Number(origin.lat), Number(origin.lon), Number(targetApt.lat), Number(targetApt.lon)) : 0;
-
-    const pt = this.latLngToScreenVp(targetApt.lat, targetApt.lon);
-    if (pt) { this.destScreenX = pt.x; this.destScreenY = pt.y; }
-
     this.activeDestCode = destCode;
     this.activeDestName = targetApt.city || targetApt.name;
-    this.activeDestDist = dist;
+    const targetDist = (origin && origin.lat !== undefined && origin.lon !== undefined)
+      ? getDistanceKm(Number(origin.lat), Number(origin.lon), Number(targetApt.lat), Number(targetApt.lon)) : 0;
+    this.activeDestDist = targetDist;
     this.triggerTickHaptic(true, false);
-
-    // 纯透明度平滑交叉淡入 (无任何缩放回弹)
-    this.destActiveOverlayVisible = true;
-    this.destActiveOpacity = 0.0;
-    animateTo({
-      duration: 250,
-      curve: Curve.EaseOut,
-      onFinish: () => {
-        animateTo({
-          duration: 120,
-          curve: Curve.EaseOut,
-          onFinish: () => { this.destActiveOverlayVisible = false; }
-        }, () => { this.destActiveOpacity = 0.0; });
-      }
-    }, () => { this.destActiveOpacity = 1.0; });
-
-    // 异步更新底层 MapKit Marker 贴图
-    try {
-      const activePix = await this.generateMarkerPixelMap(destCode, targetApt.city || targetApt.name, dist, true, false);
-      const entryIdx = this.airportMarkers.findIndex(item => item.code === destCode);
-      if (entryIdx !== -1) {
-        const entry = this.airportMarkers[entryIdx];
-        if (entry && entry.marker && activePix) {
-          const dm = entry.marker as object as Record<string, (icon: image.PixelMap) => void>;
-          if (typeof dm['setIcon'] === 'function') dm['setIcon'](activePix);
-          const dmZ = entry.marker as object as Record<string, (z: number) => void>;
-          if (typeof dmZ['setZIndex'] === 'function') dmZ['setZIndex'](35);
-        }
-      }
-    } catch (e) {}
   }
 
   // ─────────────────────────────────────────────
@@ -527,85 +626,97 @@ export struct FlightMapSelectOverlay {
       } catch (e) {}
     }
 
-    // 增量重用候选 Marker（0 闪烁、0 延迟）
+    // 增量重用与平滑 Fade-In / Fade-Out 候选 Marker
     let renderList = this.candidateAirports.filter(apt =>
       apt.code !== 'CTU' && apt.lat !== undefined && apt.lon !== undefined
     ).slice(0, 8);
 
-    const existingCodes = this.airportMarkers.map(m => m.code);
     const targetCodes = renderList.map(a => a.code);
-    const isListSame = existingCodes.length === targetCodes.length &&
-      existingCodes.every((val, i) => val === targetCodes[i]);
+    const oldMarkers = this.airportMarkers.slice();
+    const keptMarkers: AirportMarkerEntry[] = [];
+    const removedMarkers: AirportMarkerEntry[] = [];
 
-    if (isListSame && this.airportMarkers.length > 0) {
-      for (let i = 0; i < renderList.length; i++) {
-        const apt = renderList[i];
-        const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
-        const markerPix = await this.generateMarkerPixelMap(apt.code, apt.city || apt.name, dist, false, false);
-        const entry = this.airportMarkers[i];
-        if (entry && entry.marker) {
-          try {
-            if (markerPix) {
-              const dm = entry.marker as object as Record<string, (icon: image.PixelMap) => void>;
-              if (typeof dm['setIcon'] === 'function') dm['setIcon'](markerPix);
-            }
-            const dmZ = entry.marker as object as Record<string, (z: number) => void>;
-            if (typeof dmZ['setZIndex'] === 'function') dmZ['setZIndex'](5);
-          } catch (e) {}
-        }
+    // 1. 分离保留与退场的旧 Marker
+    oldMarkers.forEach(entry => {
+      if (targetCodes.includes(entry.code)) {
+        keptMarkers.push(entry);
+      } else {
+        removedMarkers.push(entry);
       }
-    } else {
-      this.airportMarkers.forEach(entry => { try { entry.marker.remove(); } catch (e) {} });
-      this.airportMarkers = [];
-      this.pendingScanTargets = [];
+    });
 
-      // 1. 并发离屏快照生成
-      const pixmapPromises = renderList.map(apt => {
+    // 2. 超出航程退场的 Marker 优雅淡出 (Fade-Out)
+    removedMarkers.forEach(entry => {
+      try { entry.marker.setAlpha(0.0); } catch (e) {}
+      setTimeout(() => {
+        try { entry.marker.remove(); } catch (e) {}
+      }, 300);
+    });
+
+    // 3. 找出完全新增的机场
+    const keptCodes = keptMarkers.map(m => m.code);
+    const newAirports = renderList.filter(apt => !keptCodes.includes(apt.code));
+
+    this.airportMarkers = keptMarkers;
+
+    // 4. 为新机场并发生成离屏快照与挂载
+    if (newAirports.length > 0 && this.huaweiMapController) {
+      const pixmapPromises = newAirports.map(apt => {
         const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
         return this.generateMarkerPixelMap(apt.code, apt.city || apt.name, dist, false, false);
       });
       const pixmaps = await Promise.all(pixmapPromises);
-
-      // 2. 将底册 Marker 写入地图 (初始完全透明 setAlpha(0.0))
       const ctrl = this.huaweiMapController;
-      if (ctrl) {
-        for (let i = 0; i < renderList.length; i++) {
-          const apt = renderList[i];
-          const markerPix = pixmaps[i];
-          const dist = getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
-          const optCand: mapCommon.MarkerOptions = {
-            position: { latitude: apt.lat, longitude: apt.lon },
-            icon: markerPix || AirportMarkerHelper.getCandidateIcon(apt.code),
-            anchorU: 0.5, anchorV: 0.5, clickable: true, zIndex: 5, title: `(${apt.code})`
-          };
-          try {
-            const m = await ctrl.addMarker(optCand);
-            if (m) {
-              try { m.setAlpha(0.0); } catch (e) {}
-              const markerItem: AirportMarkerEntry = { marker: m, code: apt.code };
-              this.airportMarkers.push(markerItem);
-              if (apt.lat !== undefined && apt.lon !== undefined) {
-                const bearing = getBearingDeg(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
-                const scanItem: ScanTargetMarker = {
-                  marker: m,
-                  code: apt.code,
-                  lat: Number(apt.lat),
-                  lon: Number(apt.lon),
-                  bearing: bearing
-                };
-                this.pendingScanTargets.push(scanItem);
-              }
-            }
-          } catch (e) {}
-        }
-      }
 
-      // 3. 🎯 仅在初始未扫频时启动扫频旋转，避免滑动刻度尺时重复打乱自旋角速度
-      if (this.scanStartTime <= 0) {
-        this.startRadarScanSequence();
-      } else {
-        this.schedulePendingScanPings();
+      for (let i = 0; i < newAirports.length; i++) {
+        const apt = newAirports[i];
+        const markerPix = pixmaps[i];
+        const optCand: mapCommon.MarkerOptions = {
+          position: { latitude: apt.lat, longitude: apt.lon },
+          icon: markerPix || AirportMarkerHelper.getCandidateIcon(apt.code),
+          anchorU: 0.5, anchorV: 0.5, clickable: true, zIndex: 5, title: `(${apt.code})`
+        };
+        try {
+          const m = await ctrl.addMarker(optCand);
+          if (m) {
+            try { m.setAlpha(0.0); } catch (e) {}
+            const markerItem: AirportMarkerEntry = { marker: m, code: apt.code };
+            this.airportMarkers.push(markerItem);
+
+            // 柔和 Fade-In 渐变入场（如果初始扫频已过，按阶梯优雅错开淡入）
+            if (this.scanStartTime > 0) {
+              setTimeout(() => {
+                try {
+                  m.setAlpha(1.0);
+                  this.triggerTickHaptic(false, true);
+                } catch (e) {}
+              }, 120 + i * 80);
+            }
+          }
+        } catch (e) {}
       }
+    }
+
+    // 5. 重新配置待扫描目标列表并进行柔和显现
+    this.pendingScanTargets = [];
+    this.airportMarkers.forEach(entry => {
+      const apt = renderList.find(a => a.code === entry.code);
+      if (apt && apt.lat !== undefined && apt.lon !== undefined && origin && origin.lat !== undefined && origin.lon !== undefined) {
+        const bearing = getBearingDeg(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon));
+        this.pendingScanTargets.push({
+          marker: entry.marker,
+          code: entry.code,
+          lat: Number(apt.lat),
+          lon: Number(apt.lon),
+          bearing: bearing
+        });
+      }
+    });
+
+    if (this.scanStartTime <= 0) {
+      this.startRadarScanSequence();
+    } else {
+      this.schedulePendingScanPings();
     }
 
     // 绘制贝塞尔航线流光 + 领航小飞机
@@ -666,17 +777,8 @@ export struct FlightMapSelectOverlay {
       }
     }
 
-    // 智能镜头：force=true 时平移
-    if (force) {
-      try {
-        const targetZoom = getContinuousZoomLevel(this.currentMinutes);
-        this.currentZoomLevel = targetZoom;
-        this.huaweiMapController.animateCamera(map.newCameraPosition({
-          target: { latitude: getCenteredCameraLatitude(origin.lat), longitude: origin.lon },
-          zoom: targetZoom
-        }), 700);
-      } catch (e) {}
-    }
+    // 智能镜头：force=true 时的相机缩放由外部 updateCameraZoomSmoothly() 统一负责，
+    // 此处不再重复调用 animateCamera，避免与外部动画相互打断产生雷达跳变
   }
 
   private triggerRadarPingAt(code: string, lat: number, lon: number) {
@@ -792,10 +894,35 @@ export struct FlightMapSelectOverlay {
       try {
         controller.on('markerClick', (markerObj: Object) => {
           try {
-            const m = markerObj as map.Marker;
-            if (m && this.airportMarkers && this.airportMarkers.length > 0) {
-              const entry = this.airportMarkers.find(item => item.marker === m);
-              if (entry && entry.code && entry.code !== 'CTU') this.selectCity(entry.code);
+            if (!markerObj) return;
+            const m = markerObj as object as Record<string, Function>;
+            let clickedCode: string = '';
+
+            // 1. 优先尝试从 title 了解机场代码 (如 "(BNE)")
+            if (typeof m['getTitle'] === 'function') {
+              const titleStr = String(m['getTitle']());
+              const match = titleStr.match(/\(([A-Z]{3})\)/);
+              if (match && match[1]) clickedCode = match[1];
+            }
+
+            // 2. 若 title 未解析出，通过 getId() 或对象映射二次比对
+            if (!clickedCode && this.airportMarkers && this.airportMarkers.length > 0) {
+              const entry = this.airportMarkers.find(item => {
+                if (item.marker === (markerObj as map.Marker)) return true;
+                try {
+                  const itemM = item.marker as object as Record<string, Function>;
+                  if (typeof itemM['getId'] === 'function' && typeof m['getId'] === 'function') {
+                    return itemM['getId']() === m['getId']();
+                  }
+                } catch (e) {}
+                return false;
+              });
+              if (entry) clickedCode = entry.code;
+            }
+
+            // 3. 成功识别点击的机场并触发全套连线、缩放与选中联动
+            if (clickedCode && clickedCode !== 'CTU') {
+              this.selectCity(clickedCode);
             }
           } catch (_e) {}
         });
@@ -806,8 +933,13 @@ export struct FlightMapSelectOverlay {
           try {
             const cam = controller.getCameraPosition();
             if (cam && typeof cam.zoom === 'number' && !isNaN(cam.zoom)) {
-              const newZoom = parseFloat(cam.zoom.toFixed(1));
+              const newZoom = parseFloat(cam.zoom.toFixed(2));
               if (this.currentZoomLevel !== newZoom) this.currentZoomLevel = newZoom;
+              // 如果刻度尺动画锁已过期，说明是用户在手动操作（平移或捏合缩放）
+              // 实时同步 radarZoom 为实际 zoom，确保雷达圈自然跟随地图缩放
+              if (Date.now() > this.rulerAnimatingUntil) {
+                this.radarZoom = newZoom;
+              }
             }
             this.refreshCtuScreenPosition();
           } catch (_e) {}
@@ -947,12 +1079,18 @@ export struct FlightMapSelectOverlay {
         onSelectMinutes: (minutes: number, index: number) => { this.selectMinutes(minutes, index); },
         onScrollMinutesChange: (minutes: number) => {
           if (minutes !== this.currentMinutes) {
+            this.isRulerDragging = true;
+            this.rulerDraggingTimeout = Date.now() + 1500;
             this.currentMinutes = minutes;
+            this.radarZoom = getContinuousZoomLevel(minutes); // 与 currentMinutes 同步更新，防止半径计算失真
             this.updateCandidateAirports(minutes);
             this.refreshCtuScreenPosition();
           }
         },
-        onScrollStop: () => { this.snapToNearestTick(); },
+        onScrollStop: () => { 
+          this.isRulerDragging = false;
+          this.snapToNearestTick(); 
+        },
         onConfirm: () => { this.confirmSelection(); },
         onRulerWidthChange: (w: number) => { this.rulerContainerWidth = w; }
       })

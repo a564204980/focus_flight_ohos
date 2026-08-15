@@ -318,10 +318,11 @@ export struct SeatSelectionDialog {
       .padding({ top: 6 })
     }
     .width('100%')
+    .height('100%')
     .padding(20)
-    .backgroundColor('rgba(10, 15, 26, 0.95)')
+    .backgroundColor('#000000')
+    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
     .border({ width: 1, color: 'rgba(255, 255, 255, 0.15)', radius: 24 })
-    .borderRadius({ topLeft: 24, topRight: 24 })
     .shadow({ radius: 30, color: 'rgba(0, 0, 0, 0.95)', offsetY: -10 })
   }
 

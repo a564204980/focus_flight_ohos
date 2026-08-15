@@ -81,6 +81,7 @@ declare module '@kit.MapKit' {
       points: LatLng[];
       width?: number;
       color?: number;
+      customTexture?: image.PixelMap;
       patterns?: PatternItem[];
       zIndex?: number;
     }
@@ -123,13 +124,16 @@ declare module '@kit.MapKit' {
   }
 
   export namespace map {
-    export class Polyline {
+    export class MapPolyline {
+      setPoints(points: mapCommon.LatLng[]): void;
+      getPoints(): mapCommon.LatLng[];
       setPatterns(patterns: mapCommon.PatternItem[]): void;
       setWidth(width: number): void;
       setColor(color: number): void;
       setVisible(visible: boolean): void;
       remove(): void;
     }
+    export class Polyline extends MapPolyline { }
     export class Marker {
       setPosition(position: mapCommon.LatLng): void;
       setRotation(rotation: number): void;

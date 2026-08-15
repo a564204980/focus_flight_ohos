@@ -82,15 +82,13 @@ export function getMinFlightDistanceKm(minutes: number): number {
 export function getContinuousZoomLevel(minutes: number): number {
   const maxDist = getMaxFlightDistanceKm(minutes);
   const targetZoom = Math.log2(20893.5 / maxDist);
-  return Math.max(1.8, Math.min(5.6, targetZoom));
+  return Math.max(1.2, Math.min(5.6, targetZoom));
 }
 
-/**
- * 将相机 Target 纬度固定偏南 1.82°，把 CTU 地标、雷达圈与
- * 缩放轴心精准回降定格在完美黄金中轴 (Y ≈ 305vp)
- */
-export function getCenteredCameraLatitude(originLat: number): number {
-  return originLat - 1.82;
+export function getCenteredCameraLatitude(originLat: number, zoom: number = 2.0): number {
+  const degPerPixel = 360.0 / (256.0 * Math.pow(2, zoom));
+  const offsetDeg = 20.0 * degPerPixel;
+  return originLat - offsetDeg;
 }
 
 /** 计算两点正北方位角 (°) */
@@ -167,26 +165,38 @@ export function filterAndSampleCandidateAirports(
 }
 
 /**
- * 计算贝塞尔曲线路径点列表
+ * 计算贝塞尔曲线路径点列表（支持跨 180° 日界线最短路径计算）
  */
 export function calculateBezierCurve(
   originLat: number, originLon: number,
   targetLat: number, targetLon: number,
   totalSteps: number = 45
 ): mapCommon.LatLng[] {
-  const midLat = (originLat + targetLat) / 2;
-  const midLon = (originLon + targetLon) / 2;
+  let dLon = targetLon - originLon;
+  if (dLon > 180) {
+    dLon -= 360;
+  } else if (dLon < -180) {
+    dLon += 360;
+  }
+
   const dLat = targetLat - originLat;
-  const dLon = targetLon - originLon;
-  const ctrlLat = midLat - dLon * 0.15;
-  const ctrlLon = midLon + dLat * 0.15;
+  const midLat = (originLat + targetLat) / 2.0;
+  // 控制点坐标：基于最短 dLon 和 dLat 添加垂直法线弯曲系数
+  const ctrlLat = midLat - dLon * 0.12;
+  const ctrlLon = originLon + dLon * 0.5 + dLat * 0.12;
 
   const curve: mapCommon.LatLng[] = [];
   for (let i = 0; i <= totalSteps; i++) {
     const t = i / totalSteps;
     const lat = (1 - t) * (1 - t) * originLat + 2 * (1 - t) * t * ctrlLat + t * t * targetLat;
-    const lon = (1 - t) * (1 - t) * originLon + 2 * (1 - t) * t * ctrlLon + t * t * targetLon;
-    curve.push({ latitude: lat, longitude: lon });
+    const rawLon = (1 - t) * (1 - t) * originLon + 2 * (1 - t) * t * ctrlLon + t * t * (originLon + dLon);
+
+    // 标准化经度至 [-180, 180] 区间
+    let normLon = rawLon;
+    while (normLon > 180) normLon -= 360;
+    while (normLon < -180) normLon += 360;
+
+    curve.push({ latitude: lat, longitude: normLon });
   }
   return curve;
 }

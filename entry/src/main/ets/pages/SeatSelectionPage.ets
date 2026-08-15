@@ -317,7 +317,16 @@ struct SeatSelectionPage {
       .height('100%')
       .opacity(this.mapOpacity)
       .animation({ duration: 800, curve: Curve.EaseInOut })
-      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+      // ==========================================
+      // 1.5. 全屏纯黑背景层 (覆盖整个可视区域，位于选座卡片下边)
+      // ==========================================
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#000000')
+        .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+        .hitTestBehavior(HitTestMode.None)
+        .zIndex(10)
 
       // ==========================================
       // 2. 顶栏战术 Header (固定顶部，保持高层级 ZIndex)
@@ -693,26 +702,10 @@ struct SeatSelectionPage {
       this.selectedCabin = cabin;
       this.triggerHaptic();
 
-      // ✨ 当点击座椅时，整架飞机/选座舱卡片平滑 3D 缩小退场，100% 震撼露出背后的 Petal Maps & 战术航线地图！
-      this.getUIContext()?.animateTo({ duration: 750, curve: Curve.FastOutSlowIn }, () => {
-        this.isMapExposed = true;
-        this.seatCardScale = 0.48;
-        this.seatCardY = -40;
-        this.seatCardOpacity = 0.75;
-        this.mapOpacity = 1.0;
-        this.mapZoomScale = 1.12;
+      // ✨ 保持选座卡片稳定不变形抖动
+      this.getUIContext()?.animateTo({ duration: 300, curve: Curve.EaseOut }, () => {
+        this.seatCardY = 0;
       });
-
-      if (this.huaweiMapController) {
-        try {
-          this.huaweiMapController.animateCamera(map.newCameraPosition({
-            target: { latitude: 30.561432, longitude: 103.942466 },
-            zoom: 14.5,
-            bearing: 0,
-            tilt: 0
-          }), 1000);
-        } catch (e) { }
-      }
     })
   }
 }
