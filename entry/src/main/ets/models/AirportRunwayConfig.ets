@@ -1,6 +1,9 @@
 import { mapCommon } from '@kit.MapKit';
 import { ctuAirportConfig } from './airports/ctu';
 import { pekAirportConfig } from './airports/pek';
+import { naoAirportConfig } from './airports/nao';
+import { kgtAirportConfig } from './airports/kgt';
+import { lzoAirportConfig } from './airports/lzo';
 
 /**
  * 跑道四角经纬度多边形数据结构
@@ -41,7 +44,10 @@ export interface AirportRunwayConfig {
  */
 export const CUSTOM_AIRPORT_RUNWAYS: Record<string, AirportRunwayConfig> = {
   'CTU': ctuAirportConfig,
-  'PEK': pekAirportConfig
+  'PEK': pekAirportConfig,
+  'NAO': naoAirportConfig,
+  'KGT': kgtAirportConfig,
+  'LZO': lzoAirportConfig
 };
 
 /**

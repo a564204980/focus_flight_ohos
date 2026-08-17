@@ -34,6 +34,7 @@ export { FocusTagItem };
  */
 @Component
 export struct CabinInteriorOverlay {
+  @Prop selectedDurationMinutes: number = 15;
   @State selectedSeatId: string = ''; // 默认不选座
   @State selectedTagId: string = 'study';
   @State customTags: FocusTagItem[] = [];
@@ -478,6 +479,7 @@ export struct CabinInteriorOverlay {
         CabinBottomActionSheet({
           selectedSeatId: this.selectedSeatId,
           selectedTagId: this.selectedTagId,
+          selectedDurationMinutes: this.selectedDurationMinutes,
           tags: this.getAllTags(),
           onTagChange: (tagId: string) => {
             animateTo({ duration: 200, curve: Curve.FastOutSlowIn }, () => {

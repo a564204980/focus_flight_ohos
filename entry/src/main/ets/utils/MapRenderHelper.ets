@@ -1,6 +1,6 @@
 import { map, mapCommon } from '@kit.MapKit';
 import { image } from '@kit.ImageKit';
-import { getCustomRunwaysForAirport, getCustomTaxiwaysForAirport } from '../models/AirportRunwayConfig';
+import { getCustomRunwaysForAirport, getCustomTaxiwaysForAirport, CUSTOM_AIRPORT_RUNWAYS, AirportRunwayConfig } from '../models/AirportRunwayConfig';
 import { Airport, findAirportByCode } from '../models/AirportModel';
 import { ctuAirportConfig } from '../models/airports/ctu';
 import { pekAirportConfig } from '../models/airports/pek';
@@ -58,7 +58,7 @@ export interface RainbowTailColorBand {
 
 export class MapRenderHelper {
   /**
-   * ✈️ 绘制机场滑行道网络 (Cyan/Blue 发光实心折线，稳如磐石)
+   * ✈️ 绘制机场滑行道网络 (ICAO 翡翠绿发光夜航引导灯线)
    */
   public static async drawTaxiways(
     controller: map.MapComponentController,
@@ -66,16 +66,18 @@ export class MapRenderHelper {
   ): Promise<void> {
     if (!taxiwayPoints || taxiwayPoints.length < 2) return;
 
+    // 1. 翡翠绿发光外光晕
     await controller.addPolyline({
       points: taxiwayPoints,
-      width: 10,
-      color: 0x440284C7
+      width: 7,
+      color: 0x4410B981
     });
 
+    // 2. 翡翠绿高亮内芯导引线
     await controller.addPolyline({
       points: taxiwayPoints,
-      width: 4,
-      color: 0xCC00FFCC
+      width: 3,
+      color: 0xEE34D399
     });
   }
 
@@ -215,7 +217,7 @@ export class MapRenderHelper {
       points: allPoints,
       width: 8,
       color: 0x2238BDF8,
-      zIndex: 2
+      zIndex: 800
     });
 
     // 2. 稳固待解锁实心导引线
@@ -223,7 +225,7 @@ export class MapRenderHelper {
       points: allPoints,
       width: 3,
       color: 0x44CBD5E1,
-      zIndex: 3
+      zIndex: 801
     });
   }
 
@@ -270,15 +272,15 @@ export class MapRenderHelper {
 
       let idx = 0;
       for (let y = 0; y < height; y++) {
-        const normY = y / height;
-        let band = spectrum[spectrum.length - 1];
-        for (let k = 0; k < spectrum.length; k++) {
-          if (normY <= spectrum[k].maxRatio) {
-            band = spectrum[k];
-            break;
-          }
-        }
         for (let x = 0; x < width; x++) {
+          const normX = x / width;
+          let band = spectrum[spectrum.length - 1];
+          for (let k = 0; k < spectrum.length; k++) {
+            if (normX <= spectrum[k].maxRatio) {
+              band = spectrum[k];
+              break;
+            }
+          }
           data[idx] = band.r;
           data[idx + 1] = band.g;
           data[idx + 2] = band.b;
@@ -404,8 +406,8 @@ export class MapRenderHelper {
     const lat0 = pts[0].latitude;
     const meterPerPixel = 156543.03392 * Math.cos(lat0 * Math.PI / 180) / Math.pow(2, zoomLevel);
 
-    // 6 条色带在屏幕上的中心偏移像素 (间距 2.6px，总外宽严丝合缝匹配机翼跨度，配合 10px 宽度产生 4.8px 深度重叠，100% 杜绝任何黑缝！)
-    const offsetsPx: number[] = [-6.5, -3.9, -1.3, 1.3, 3.9, 6.5];
+    // 6 条色带中心偏移量 (间距 2.285，总跨度 11.42，配合 13~14px 线宽产生 6px 饱满重叠，绝对零间隙且总宽严格为飞机宽度一半)
+    const offsetsPx: number[] = [-5.71, -3.43, -1.14, 1.14, 3.43, 5.71];
     const result: Array<mapCommon.LatLng[]> = [[], [], [], [], [], []];
 
     // 2. 预计算每个航线点的切线朝向 (Heading)
@@ -479,6 +481,29 @@ export class MapRenderHelper {
       }
     }
 
+    const customTaxiwaySegments = getCustomTaxiwaysForAirport('CTU');
+    if (customTaxiwaySegments) {
+      for (const segment of customTaxiwaySegments) {
+        await MapRenderHelper.drawTaxiways(controller, segment);
+      }
+    }
+
+    // 绘制目标目的地机场的精修跑道 (如南充 NAO、北京 PEK 等)
+    if (destAirport && destAirport.code && destAirport.code !== 'CTU') {
+      const destRunwayPolygons = getCustomRunwaysForAirport(destAirport.code);
+      if (destRunwayPolygons) {
+        for (const corners of destRunwayPolygons) {
+          await MapRenderHelper.drawSingleRunway(controller, corners);
+        }
+      }
+      const destTaxiwaySegments = getCustomTaxiwaysForAirport(destAirport.code);
+      if (destTaxiwaySegments) {
+        for (const segment of destTaxiwaySegments) {
+          await MapRenderHelper.drawTaxiways(controller, segment);
+        }
+      }
+    }
+
     await MapRenderHelper.drawUnflownPreviewRoute(controller, destAirport);
   }
 
@@ -511,7 +536,11 @@ export class MapRenderHelper {
     let destStart: LatLngPoint;
     let destEnd: LatLngPoint;
 
-    if (targetDest && targetDest.code === 'PEK') {
+    const customConfig: AirportRunwayConfig | undefined = targetDest ? CUSTOM_AIRPORT_RUNWAYS[targetDest.code] : undefined;
+    if (customConfig && customConfig.takeoffRunway) {
+      destStart = { latitude: customConfig.takeoffRunway.start.latitude, longitude: customConfig.takeoffRunway.start.longitude };
+      destEnd = { latitude: customConfig.takeoffRunway.end.latitude, longitude: customConfig.takeoffRunway.end.longitude };
+    } else if (targetDest && targetDest.code === 'PEK') {
       destStart = getPekRunwayStart();
       destEnd = getPekRunwayEnd();
     } else if (targetDest && targetDest.lat !== undefined && targetDest.lon !== undefined) {

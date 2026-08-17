@@ -13,6 +13,7 @@ export struct GiantAircraftOverlay {
   @Prop flightNo: string = 'CA933';
   @Prop originCode: string = 'TFU';
   @Prop destCode: string = 'CDG';
+  @Prop durationMinutes: number = 15;
   @Prop backdropOpacity: number = 0;
   @Prop bodyOffsetY: string = '100%';
   @State selectedSeatId: string = '';
@@ -47,6 +48,7 @@ export struct GiantAircraftOverlay {
         flightNo: this.flightNo,
         originCode: this.originCode,
         destCode: this.destCode,
+        durationMin: this.durationMinutes,
         onConfirmSeat: (sId: string, taskTitle: string, dur: number) => {
           if (this.dialogController) {
             this.dialogController.close();

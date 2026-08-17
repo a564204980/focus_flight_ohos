@@ -17,6 +17,7 @@ export struct PlaneCabinShellOverlay {
   @Prop planeY: number = -45;
   @Prop planeRotate: number = 0;
   @Prop shellSplitOffset: number = 0;
+  @Prop selectedDurationMinutes: number = 15;
 
   onSeatClick?: (seatId: string) => void;
   onConfirmFlight?: (seatId: string, tagId: string, durationMinutes: number) => void;
@@ -65,6 +66,7 @@ export struct PlaneCabinShellOverlay {
       // 3. 放大后的机身无缝剖开与透视机舱
       if (this.isCabinExposed) {
         CabinInteriorOverlay({
+          selectedDurationMinutes: this.selectedDurationMinutes,
           onSeatClick: (seatId: string): void => {
             if (this.onSeatClick) {
               this.onSeatClick(seatId);

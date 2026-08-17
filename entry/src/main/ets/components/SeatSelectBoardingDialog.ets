@@ -22,6 +22,7 @@ export struct SeatSelectBoardingDialog {
   flightNo: string = 'CA933';
   originCode: string = 'CTU';
   destCode: string = 'CDG';
+  durationMin: number = 15;
   onConfirmSeat?: (seatId: string, taskTitle: string, durationMin: number) => void;
 
   @State selectedTask: string = '深度编程';
@@ -345,7 +346,8 @@ export struct SeatSelectBoardingDialog {
         this.triggerHaptic();
         const finalTask = this.getActiveTaskTitle();
         if (this.onConfirmSeat) {
-          this.onConfirmSeat(this.seatId, finalTask, 25);
+          const actualDur = this.durationMin > 0 ? this.durationMin : 15;
+          this.onConfirmSeat(this.seatId, finalTask, actualDur);
         }
         if (this.controller) {
           this.controller.close();

@@ -1,0 +1,38 @@
+[
+  {
+    "mapFeature": "poi",
+    "options": "all",
+    "paint": {
+      "text-opacity": 0,
+      "icon-opacity": 0
+    },
+    "visibility": "off"
+  },
+  {
+    "mapFeature": "road",
+    "featureName": "label",
+    "paint": {
+      "text-opacity": 0,
+      "icon-opacity": 0
+    },
+    "visibility": "off"
+  },
+  {
+    "mapFeature": "administrative",
+    "featureName": "label",
+    "paint": {
+      "text-opacity": 0,
+      "icon-opacity": 0
+    },
+    "visibility": "off"
+  },
+  {
+    "mapFeature": "transportation",
+    "featureName": "label",
+    "paint": {
+      "text-opacity": 0,
+      "icon-opacity": 0
+    },
+    "visibility": "off"
+  }
+]

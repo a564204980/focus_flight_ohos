@@ -22,6 +22,7 @@ import { FocusTagItem, CABIN_FOCUS_TAGS, getSeatTypeLabel } from './CabinTypes';
 export struct CabinBottomActionSheet {
   @Prop selectedSeatId: string = '';
   @Prop selectedTagId: string = 'study';
+  @Prop selectedDurationMinutes: number = 15;
   @Prop tags: FocusTagItem[] = CABIN_FOCUS_TAGS;
   onTagChange?: (tagId: string) => void;
   onOpenCustomDialog?: () => void;
@@ -178,7 +179,8 @@ export struct CabinBottomActionSheet {
       })
       .onClick(() => {
         if (this.onConfirm) {
-          this.onConfirm(this.selectedSeatId, this.selectedTagId, 45);
+          const actualDuration = this.selectedDurationMinutes > 0 ? this.selectedDurationMinutes : 15;
+          this.onConfirm(this.selectedSeatId, this.selectedTagId, actualDuration);
         }
       })
     }

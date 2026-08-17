@@ -1,10 +1,9 @@
 /**
  * HomeFocusPanel.ets
- * 首页底部专注沉浸面板 (包含专注时间交互刻度尺、Start Flight 暖珊瑚红按钮、行程信息与底部导航)
+ * 首页底部专注沉浸面板 (Start Flight 暖珊瑚红按钮、行程信息与底部导航)
  */
 
 import { router, promptAction } from '@kit.ArkUI';
-import { TimeRulerPicker } from './TimeRulerPicker';
 import { Airport, findAirportByCode, getDistanceKm } from '../models/AirportModel';
 import { DestinationSelectDialog } from './DestinationSelectDialog';
 import { FlightMapSelectOverlay } from './FlightMapSelectOverlay';
@@ -13,11 +12,12 @@ import { FlightMapSelectOverlay } from './FlightMapSelectOverlay';
 export struct HomeFocusPanel {
   @State selectedTab: number = 0;
   @State timerMinutes: number = 15;
-  @State isRunning: boolean = false;
-  @State selectedDestination?: Airport = undefined; // 默认不指定目的地，等待用户自主选择
+  @Prop isFlightInProgress: boolean = false;
+  @Watch('onDestinationChange') @StorageLink('selectedDestinationAirport') selectedDestination?: Airport = undefined;
   @State routeDistanceKm: number = 0;
   
   onStartFlight?: (minutes?: number, dest?: Airport) => void;
+  onShowTopToast?: (msg: string) => void;
 
   destinationDialogController: CustomDialogController = new CustomDialogController({
     builder: FlightMapSelectOverlay({
@@ -38,8 +38,19 @@ export struct HomeFocusPanel {
     customStyle: true
   });
 
+  aboutToAppear() {
+    this.calculateRouteDistance(this.selectedDestination);
+  }
+
+  onDestinationChange() {
+    this.calculateRouteDistance(this.selectedDestination);
+  }
+
   private calculateRouteDistance(destAirport?: Airport) {
-    if (!destAirport) return;
+    if (!destAirport) {
+      this.routeDistanceKm = 0;
+      return;
+    }
     try {
       const origin = findAirportByCode('CTU');
       if (origin && destAirport.lat !== undefined && destAirport.lon !== undefined) {
@@ -58,30 +69,15 @@ export struct HomeFocusPanel {
     } catch (e) {
       // fallback
     }
+    this.routeDistanceKm = 0;
   }
 
   build() {
     Column() {
-      // 1. 专注时间交互刻度尺 (绝对居中中轴线指针 + 36vp 醒目大数字)
-      TimeRulerPicker({
-        timerMinutes: this.timerMinutes,
-        onTimeChange: (min: number) => {
-          this.timerMinutes = min;
-        }
-      })
-
-      // 2. 专注时间（分钟）子标题
-      Text('专注时间（分钟）')
-        .fontSize(12)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#64748B')
-        .letterSpacing(1)
-        .margin({ top: 6, bottom: 14 })
-
-      // 3. Start Flight 暖珊瑚红主按钮 (绝对核心 CTA)
+      // 1. Start Flight 暖珊瑚红主按钮 (绝对核心 CTA)
       Button() {
         Row({ space: 8 }) {
-          Text(this.isRunning ? '飞行中...' : '开始飞行')
+          Text(this.isFlightInProgress ? '飞行中...' : '开始飞行')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
             .fontColor('#FFFFFF')
@@ -94,27 +90,27 @@ export struct HomeFocusPanel {
       .shadow({ radius: 16, color: 'rgba(250, 107, 86, 0.35)', offsetY: 6 })
       .onClick(() => {
         if (!this.selectedDestination) {
-          promptAction.showToast({
-            message: '✈️ 请先选择您的飞行目的地',
-            duration: 2000
-          });
+          if (this.onShowTopToast) {
+            this.onShowTopToast('✈️ 请先选择您的飞行目的地');
+          } else {
+            try {
+              promptAction.showToast({
+                message: '✈️ 请先选择您的飞行目的地',
+                duration: 2000
+              });
+            } catch (e) { }
+          }
           this.destinationDialogController.open();
           return;
         }
-        this.isRunning = !this.isRunning;
         if (this.onStartFlight) {
           AppStorage.setOrCreate('selectedDestinationAirport', this.selectedDestination);
           AppStorage.setOrCreate('selectedDestinationCode', this.selectedDestination.code);
           this.onStartFlight(this.timerMinutes, this.selectedDestination);
-        } else {
-          promptAction.showToast({
-            message: this.isRunning ? '🛫 航班起飞，进入巡航专注！' : '🛬 专注结束，回到停机坪！',
-            duration: 1500
-          });
         }
       })
 
-      // 4. 次级轻量化航线指示器 (低调半透明温润胶囊，不与主按钮争夺焦点)
+      // 2. 次级轻量化航线指示器 (低调半透明温润胶囊，不与主按钮争夺焦点)
       Row({ space: 6 }) {
         Text('成都')
           .fontSize(13)
@@ -158,7 +154,7 @@ export struct HomeFocusPanel {
         this.destinationDialogController.open();
       })
 
-      // 5. 底部三图标导航栏
+      // 3. 底部三图标导航栏
       Row() {
         // Tab 0: 首页 (Home)
         Column({ space: 4 }) {
@@ -209,14 +205,13 @@ export struct HomeFocusPanel {
       .padding({ left: 32, right: 32 })
     }
     .width('100%')
-    .padding({ top: 45, bottom: 20 })
+    .padding({ top: 20, bottom: 20 })
     .linearGradient({
       angle: 180,
       colors: [
         ['rgba(232, 225, 218, 0.0)', 0.0],
-        ['rgba(232, 225, 218, 0.0)', 0.18], // 顶部透明区域向下延伸至刻度尺下方
-        ['rgba(232, 225, 218, 0.65)', 0.38], // 柔和自然地向下过渡
-        ['rgba(232, 225, 218, 0.95)', 0.58], // 按钮区域开始提供清晰的温和背景
+        ['rgba(232, 225, 218, 0.75)', 0.25],
+        ['rgba(232, 225, 218, 1.0)', 0.6],
         ['rgba(232, 225, 218, 1.0)', 1.0]
       ]
     })

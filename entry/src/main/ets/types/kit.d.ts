@@ -121,6 +121,10 @@ declare module '@kit.MapKit' {
       scrollGesturesEnabled?: boolean;
       tiltGesturesEnabled?: boolean;
     }
+    export interface CustomMapStyleOptions {
+      styleId?: string;
+      styleContent?: string;
+    }
   }
 
   export namespace map {
@@ -161,6 +165,8 @@ declare module '@kit.MapKit' {
       getProjection(): any;
       setMapType(type: mapCommon.MapType): void;
       setDayNightMode(mode: mapCommon.DayNightMode): void;
+      setBuildingEnabled(enabled: boolean): void;
+      setCustomMapStyle(options: mapCommon.CustomMapStyleOptions): void;
       on(type: string, callback: (data: Object) => void): void;
     }
     export interface DynamicMapController {
@@ -173,6 +179,8 @@ declare module '@kit.MapKit' {
       getCameraPosition(): mapCommon.CameraPosition;
       setMapType(type: mapCommon.MapType): void;
       setDayNightMode(mode: mapCommon.DayNightMode): void;
+      setBuildingEnabled(enabled: boolean): void;
+      setCustomMapStyle(options: mapCommon.CustomMapStyleOptions): void;
       on(type: string, callback: (data: Object) => void): void;
     }
   }
