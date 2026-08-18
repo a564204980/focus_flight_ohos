@@ -41,17 +41,17 @@ export class FlightRouteEngine {
 
       let weight = 1.0;
       if (ratio <= 0.04) {
-        weight = 3.2;
+        weight = 3.5;
       } else if (ratio < 0.08) {
         const t = (ratio - 0.04) / 0.04;
-        weight = 3.2 - (3.2 - 1.0) * (0.5 - 0.5 * Math.cos(Math.PI * t));
+        weight = 3.5 - (3.5 - 1.0) * (0.5 - 0.5 * Math.cos(Math.PI * t));
       } else if (ratio <= 0.92) {
         weight = 1.0;
       } else if (ratio < 0.96) {
         const t = (ratio - 0.92) / 0.04;
-        weight = 1.0 + (3.2 - 1.0) * (0.5 - 0.5 * Math.cos(Math.PI * t));
+        weight = 1.0 + (3.5 - 1.0) * (0.5 - 0.5 * Math.cos(Math.PI * t));
       } else {
-        weight = 3.2;
+        weight = 5.0; // 跑道滑跑减速阶段赋予充分时间，呈现完整的接地滑行至80%处停稳过程
       }
 
       totalRouteDistance += (segPhysDist * weight);

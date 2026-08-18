@@ -69,14 +69,24 @@ export struct FlightMapSelectOverlay {
   @State scanBeamOpacity: number = 1.0;
   @State activePingWaves: RadarPingWave[] = [];
 
-  // ── 终点激活态覆盖层 ──────────────────────────
+  // ── 终点激活态覆盖层与平滑渐变 ────────────────
   @State destScreenX: number = 0;
   @State destScreenY: number = 0;
   @State destActiveOverlayVisible: boolean = false;
-  @State destActiveOpacity: number = 0.0;
+  @State destActiveOpacity: number = 1.0;
+  @State destActiveScale: number = 1.0;
   @State activeDestCode: string = '';
   @State activeDestName: string = '';
   @State activeDestDist: number = 0;
+  
+  // 🎨 动态颜色渐变状态 (从候选蓝灰平滑渐变到激活珊瑚红)
+  @State destCapsuleBg: string = '#0B1726';
+  @State destCapsuleBorder: string = '#317393';
+  @State destCapsuleShadow: string = 'rgba(11, 23, 38, 0.5)';
+  @State destCodeColor: string = '#FFFFFF';
+  @State destTagColor: string = 'rgba(255, 255, 255, 0.72)';
+  @State destPlaneFill: string = '#FFFFFF';
+  @State destTagText: string = '候选航线';
 
   // ── 领航小飞机 ────────────────────────────────
   @State flightPlaneX: number = 0;
@@ -85,6 +95,10 @@ export struct FlightMapSelectOverlay {
   @State isFlightPlaneVisible: boolean = false;
   @State flightPlaneScale: number = 1.0;
   @State flightPlaneOpacity: number = 1.0;
+
+  // ── 主动退场动画控制 (杜绝系统 Dialog 默认中心缩放) ──────
+  @State overlayOffsetY: number = 0;
+  private isClosing: boolean = false;
 
   // ── 私有字段 ──────────────────────────────────
   private huaweiMapController?: map.MapComponentController;
@@ -402,18 +416,38 @@ export struct FlightMapSelectOverlay {
   }
 
   // ─────────────────────────────────────────────
-  // 候选机场管理
+  // 候选机场管理与取消选中
   // ─────────────────────────────────────────────
+
+  /** 清除当前选中的目的机场、航线与顶层悬浮高亮 */
+  private clearSelection() {
+    this.currentSelectedCode = '';
+    this.routeDistanceKm = 0;
+    this.activeDestCode = '';
+    this.activeDestName = '';
+    this.activeDestDist = 0;
+    this.destActiveOverlayVisible = false;
+    this.destActiveOpacity = 0.0;
+
+    // 清除 Polyline 航线
+    if (this.currentPolyline) {
+      try {
+        const p = this.currentPolyline as object as Record<string, () => void>;
+        if (typeof p['remove'] === 'function') p['remove']();
+      } catch (e) {}
+      this.currentPolyline = undefined;
+    }
+
+    // 恢复所有 Marker 为可见普通态
+    if (this.airportMarkers) {
+      this.airportMarkers.forEach(entry => {
+        try { entry.marker.setAlpha(1.0); } catch (e) {}
+      });
+    }
+  }
 
   private updateCandidateAirports(minutes: number) {
     this.candidateAirports = filterAndSampleCandidateAirports(minutes, getBearingDeg);
-    if (this.currentSelectedCode) {
-      const exists = this.candidateAirports.some(apt => apt.code === this.currentSelectedCode);
-      if (!exists) {
-        this.currentSelectedCode = '';
-        this.routeDistanceKm = 0;
-      }
-    }
     this.prewarmMarkerCache(this.candidateAirports);
   }
 
@@ -434,11 +468,14 @@ export struct FlightMapSelectOverlay {
   // ─────────────────────────────────────────────
 
   private selectMinutes(minutes: number, index?: number) {
+    if (minutes !== this.currentMinutes) {
+      this.clearSelection();
+    }
     this.currentMinutes = minutes;
     this.lastSnappedMinutes = minutes;
     this.triggerTickHaptic(true);
     this.updateCandidateAirports(minutes);
-    this.drawRoute(this.currentSelectedCode, true);
+    this.drawRoute('', true);
     this.updateCameraZoomSmoothly(minutes);
     this.refreshCtuScreenPosition();
     if (index !== undefined) {
@@ -452,6 +489,15 @@ export struct FlightMapSelectOverlay {
 
   private selectCity(code: string) {
     this.triggerTickHaptic(true);
+    // 立即重置上一个机场的悬浮层，杜绝旧文字残留到新机场上
+    this.destActiveOverlayVisible = false;
+    this.destActiveOpacity = 0.0;
+    if (this.airportMarkers) {
+      this.airportMarkers.forEach(entry => {
+        try { entry.marker.setAlpha(1.0); } catch (e) {}
+      });
+    }
+
     this.currentSelectedCode = code;
     this.updateRouteDistance(code);
     this.drawRoute(code);
@@ -520,6 +566,23 @@ export struct FlightMapSelectOverlay {
     }
   }
 
+  /** 优雅向下滑出并安全关闭 Dialog (消除系统缩放干扰) */
+  private handleClose() {
+    if (this.isClosing) return;
+    this.isClosing = true;
+    this.getUIContext()?.animateTo({
+      duration: 320,
+      curve: Curve.FastOutSlowIn,
+      onFinish: () => {
+        if (this.controller) {
+          this.controller.close();
+        }
+      }
+    }, () => {
+      this.overlayOffsetY = 1000;
+    });
+  }
+
   private confirmSelection() {
     if (!this.currentSelectedCode) {
       try { promptAction.showToast({ message: '请先选择目的地机场 🛫', duration: 2000 }); } catch (e) {}
@@ -527,7 +590,7 @@ export struct FlightMapSelectOverlay {
     }
     const selected = findAirportByCode(this.currentSelectedCode);
     if (selected && this.onDestinationSelected) this.onDestinationSelected(selected, this.currentMinutes);
-    if (this.controller) this.controller.close();
+    this.handleClose();
   }
 
   // ─────────────────────────────────────────────
@@ -556,34 +619,27 @@ export struct FlightMapSelectOverlay {
     }
   }
 
+  /** 刷新选中的目的地机场在屏幕上的物理 vp 坐标 */
+  private refreshDestScreenPosition() {
+    if (this.currentSelectedCode && this.destActiveOverlayVisible && this.activeDestCode === this.currentSelectedCode) {
+      const dest = findAirportByCode(this.currentSelectedCode);
+      if (dest && dest.lat !== undefined && dest.lon !== undefined) {
+        const pt = this.latLngToScreenVp(Number(dest.lat), Number(dest.lon));
+        if (pt && !isNaN(pt.x) && !isNaN(pt.y)) {
+          this.destScreenX = pt.x;
+          this.destScreenY = pt.y;
+        }
+      }
+    }
+  }
+
   // ─────────────────────────────────────────────
-  // 终点地标激活动效
+  // 终点地标激活动效 (弹性浮跃 + 脉冲扩散 + 触感反馈)
   // ─────────────────────────────────────────────
 
   private async activateDestMarker(destCode: string) {
-    if (!destCode || !this.huaweiMapController || !this.airportMarkers || this.airportMarkers.length === 0) return;
+    if (!destCode || !this.huaweiMapController) return;
     const origin = findAirportByCode('CTU');
-
-    // 遍历所有当前存在的 airportMarkers，确保只有当前 destCode 是红色激活态，其余全部恢复为普通候选态
-    for (const entry of this.airportMarkers) {
-      const isTarget = entry.code === destCode;
-      const apt = findAirportByCode(entry.code);
-      if (!apt || apt.lat === undefined || apt.lon === undefined) continue;
-
-      const dist = (origin && origin.lat !== undefined && origin.lon !== undefined)
-        ? getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon)) : 0;
-
-      try {
-        const pix = await this.generateMarkerPixelMap(entry.code, apt.city || apt.name, dist, isTarget, false);
-        if (entry.marker && pix) {
-          const dm = entry.marker as object as Record<string, (icon: image.PixelMap) => void>;
-          if (typeof dm['setIcon'] === 'function') dm['setIcon'](pix);
-          const dmZ = entry.marker as object as Record<string, (z: number) => void>;
-          if (typeof dmZ['setZIndex'] === 'function') dmZ['setZIndex'](isTarget ? 35 : 5);
-        }
-      } catch (e) {}
-    }
-
     const targetApt = findAirportByCode(destCode);
     if (!targetApt || targetApt.lat === undefined || targetApt.lon === undefined) return;
 
@@ -592,7 +648,88 @@ export struct FlightMapSelectOverlay {
     const targetDist = (origin && origin.lat !== undefined && origin.lon !== undefined)
       ? getDistanceKm(Number(origin.lat), Number(origin.lon), Number(targetApt.lat), Number(targetApt.lon)) : 0;
     this.activeDestDist = targetDist;
+
+    // 1. 计算屏幕投影坐标并启动无缝接管与平滑色彩渐变动效
+    const screenPt = this.latLngToScreenVp(Number(targetApt.lat), Number(targetApt.lon));
+    if (screenPt && !isNaN(screenPt.x) && !isNaN(screenPt.y)) {
+      this.destScreenX = screenPt.x;
+      this.destScreenY = screenPt.y;
+
+      // 阶段一：初始以 100% 候选蓝灰原色无缝覆盖底层 Marker
+      this.destCapsuleBg = '#0B1726';
+      this.destCapsuleBorder = '#317393';
+      this.destCapsuleShadow = 'rgba(11, 23, 38, 0.5)';
+      this.destCodeColor = '#FFFFFF';
+      this.destTagColor = 'rgba(255, 255, 255, 0.72)';
+      this.destPlaneFill = '#FFFFFF';
+      this.destTagText = '候选航线';
+      this.destActiveScale = 1.0;
+      this.destActiveOpacity = 1.0;
+      this.destActiveOverlayVisible = true;
+
+      // 瞬间隐藏底层目标 Marker，由悬浮层无缝接管
+      if (this.airportMarkers) {
+        const currentEntry = this.airportMarkers.find(e => e.code === destCode);
+        if (currentEntry) {
+          try { currentEntry.marker.setAlpha(0.0); } catch (e) {}
+        }
+      }
+
+      // 阶段二：启动 320ms 平滑色彩渗透与微弹性跃升 (蓝灰 -> 珊瑚红)
+      this.getUIContext()?.animateTo({
+        duration: 320,
+        curve: Curve.FastOutSlowIn
+      }, () => {
+        this.destCapsuleBg = '#451717';
+        this.destCapsuleBorder = '#E05A47';
+        this.destCapsuleShadow = 'rgba(224, 90, 71, 0.6)';
+        this.destCodeColor = '#F06553';
+        this.destTagColor = '#FFB4A9';
+        this.destPlaneFill = '#FFB4A9';
+        this.destTagText = '目的地';
+        this.destActiveScale = 1.12;
+      });
+
+      // 阶段三：微弹跳回弹收敛至 1.0
+      setTimeout(() => {
+        this.getUIContext()?.animateTo({
+          duration: 180,
+          curve: Curve.EaseOut
+        }, () => {
+          this.destActiveScale = 1.0;
+        });
+      }, 320);
+    }
+
+    // 3. 伴随触感振动反馈
     this.triggerTickHaptic(true, false);
+
+    // 4. 同步恢复其他非目标 Marker 的普通候选态
+    if (this.airportMarkers && this.airportMarkers.length > 0) {
+      for (const entry of this.airportMarkers) {
+        const isTarget = entry.code === destCode;
+        const apt = findAirportByCode(entry.code);
+        if (!apt || apt.lat === undefined || apt.lon === undefined) continue;
+
+        if (!isTarget) {
+          const dist = (origin && origin.lat !== undefined && origin.lon !== undefined)
+            ? getDistanceKm(Number(origin.lat), Number(origin.lon), Number(apt.lat), Number(apt.lon)) : 0;
+
+          try {
+            const pix = await this.generateMarkerPixelMap(entry.code, apt.city || apt.name, dist, false, false);
+            if (entry.marker) {
+              if (pix) {
+                const dm = entry.marker as object as Record<string, (icon: image.PixelMap) => void>;
+                if (typeof dm['setIcon'] === 'function') dm['setIcon'](pix);
+              }
+              const dmZ = entry.marker as object as Record<string, (z: number) => void>;
+              if (typeof dmZ['setZIndex'] === 'function') dmZ['setZIndex'](5);
+              entry.marker.setAlpha(1.0);
+            }
+          } catch (e) {}
+        }
+      }
+    }
   }
 
   // ─────────────────────────────────────────────
@@ -883,9 +1020,11 @@ export struct FlightMapSelectOverlay {
       // 📍 映射控制器就绪瞬间同步计算 CTU 精确屏幕 VP 坐标，消除定位错位与二次平移动画
       this.refreshCtuScreenPosition();
 
-      // ⚡⚡⚡ 同步挂载 UI 组件并标记地图就绪
-      this.mapOpacity = 1.0;
-      this.isMapReady = true;
+      // ⚡⚡⚡ 地图就绪后延迟淡入，等待界面进场动画先行完成
+      setTimeout(() => {
+        this.mapOpacity = 1.0;
+        this.isMapReady = true;
+      }, 200);
 
       // 🎯 绘制航线与底册 Marker，Marker 批量就绪后精准同步启动雷达扫频
       await this.drawRoute(this.currentSelectedCode);
@@ -942,12 +1081,16 @@ export struct FlightMapSelectOverlay {
               }
             }
             this.refreshCtuScreenPosition();
+            this.refreshDestScreenPosition();
           } catch (_e) {}
         });
         const ctrlAny = controller as object as Record<string, Function>;
         if (typeof ctrlAny.on === 'function') {
           ctrlAny.on('cameraMove', (_data: Object) => {
-            try { this.refreshCtuScreenPosition(); } catch (_e) {}
+            try { 
+              this.refreshCtuScreenPosition(); 
+              this.refreshDestScreenPosition();
+            } catch (_e) {}
           });
         }
       } catch (e) {}
@@ -964,8 +1107,9 @@ export struct FlightMapSelectOverlay {
       MapComponent({ mapOptions: this.huaweiMapOptions, mapCallback: this.huaweiMapCallback })
         .width('100%')
         .height('100%')
+        .borderRadius({ topLeft: 24, topRight: 24 })
         .opacity(this.mapOpacity)
-        .animation({ duration: 450, curve: Curve.EaseInOut })
+        .animation({ duration: 350, curve: Curve.EaseOut })
 
       // 2. 专注航程测距指示圈（地图就绪后平滑淡入，包含 360° 单圈扫频与平滑淡出）
       if (this.isMapReady) {
@@ -982,7 +1126,7 @@ export struct FlightMapSelectOverlay {
           .hitTestBehavior(HitTestMode.None)
       }
 
-      // 3. 终点机场到达平滑渐变层（纯透明度交叉淡入，零回弹零脉冲）
+      // 3. 终点机场到达平滑渐变与弹性浮跃层
       if (this.destActiveOverlayVisible) {
         Row({ space: 5 }) {
           Row().width(105)
@@ -1003,23 +1147,30 @@ export struct FlightMapSelectOverlay {
             Image($r('app.media.ic_plane_topview'))
               .width(13).height(13)
               .objectFit(ImageFit.Contain)
-              .fillColor('#FFFFFF')
+              .fillColor(this.destPlaneFill)
+              .animation({ duration: 320, curve: Curve.FastOutSlowIn })
           }
           .width(18).height(42)
-          .backgroundColor('#451717').borderRadius(9)
-          .border({ width: 1.5, color: '#E05A47' })
-          .shadow({ radius: 8, color: 'rgba(224, 90, 71, 0.5)', offsetY: 1 })
+          .backgroundColor(this.destCapsuleBg)
+          .borderRadius(9)
+          .border({ width: 1.5, color: this.destCapsuleBorder })
+          .shadow({ radius: 10, color: this.destCapsuleShadow, offsetY: 1 })
+          .animation({ duration: 320, curve: Curve.FastOutSlowIn })
 
           Column({ space: 0.5 }) {
             Text(this.activeDestCode)
-              .fontSize(14).fontWeight(FontWeight.Bolder).fontColor('#F06553')
+              .fontSize(14).fontWeight(FontWeight.Bolder).fontColor(this.destCodeColor)
               .textShadow({ radius: 3, color: '#000000', offsetX: 1, offsetY: 1 })
+              .animation({ duration: 320, curve: Curve.FastOutSlowIn })
+
             Text(this.activeDestName.endsWith('机场') ? this.activeDestName : `${this.activeDestName}机场`)
               .fontSize(11.5).fontWeight(FontWeight.Bold).fontColor('#FFFFFF')
               .textShadow({ radius: 3, color: '#000000', offsetX: 1, offsetY: 1 })
-            Text(this.activeDestDist > 0 ? `目的地 · ${Math.round(this.activeDestDist)}km` : '目的地')
-              .fontSize(9.5).fontWeight(FontWeight.Regular).fontColor('#FFB4A9')
+
+            Text(this.activeDestDist > 0 ? `${this.destTagText} · ${Math.round(this.activeDestDist)}km` : this.destTagText)
+              .fontSize(9.5).fontWeight(FontWeight.Regular).fontColor(this.destTagColor)
               .textShadow({ radius: 2, color: '#000000', offsetX: 1, offsetY: 1 })
+              .animation({ duration: 320, curve: Curve.FastOutSlowIn })
           }
           .width(105)
           .alignItems(HorizontalAlign.Start)
@@ -1028,6 +1179,7 @@ export struct FlightMapSelectOverlay {
         .justifyContent(FlexAlign.Center)
         .position({ x: this.destScreenX, y: this.destScreenY })
         .markAnchor({ x: 119, y: 23 })
+        .scale({ x: this.destActiveScale, y: this.destActiveScale })
         .opacity(this.destActiveOpacity)
         .zIndex(27)
         .hitTestBehavior(HitTestMode.None)
@@ -1048,7 +1200,7 @@ export struct FlightMapSelectOverlay {
           .hitTestBehavior(HitTestMode.None)
       }
 
-      // 5. 顶部状态条
+      // 5. 顶部状态条 (含左上角 HUD 水晶返回按钮)
       FlightMapTopBar({
         selectedCode: this.currentSelectedCode,
         currentMinutes: this.currentMinutes,
@@ -1056,17 +1208,10 @@ export struct FlightMapSelectOverlay {
         ctuScreenX: this.ctuScreenX,
         ctuScreenY: this.ctuScreenY,
         currentZoomLevel: this.currentZoomLevel,
-        onClose: () => { if (this.controller) this.controller.close(); }
+        onClose: () => { this.handleClose(); }
       })
-      .position({ x: 0, y: 44 })
+      .position({ x: 0, y: 52 })
 
-      // 6. 右侧缩放控制器
-      FlightMapZoomControls({
-        currentZoomLevel: this.currentZoomLevel,
-        onZoomIn: () => { this.zoomIn(); },
-        onZoomOut: () => { this.zoomOut(); }
-      })
-      .position({ x: '86%', y: 105 })
 
       // 7. 底部控制面板
       FlightMapBottomPanel({
@@ -1079,11 +1224,13 @@ export struct FlightMapSelectOverlay {
         onSelectMinutes: (minutes: number, index: number) => { this.selectMinutes(minutes, index); },
         onScrollMinutesChange: (minutes: number) => {
           if (minutes !== this.currentMinutes) {
+            this.clearSelection();
             this.isRulerDragging = true;
             this.rulerDraggingTimeout = Date.now() + 1500;
             this.currentMinutes = minutes;
             this.radarZoom = getContinuousZoomLevel(minutes); // 与 currentMinutes 同步更新，防止半径计算失真
             this.updateCandidateAirports(minutes);
+            this.drawRoute('', true);
             this.refreshCtuScreenPosition();
           }
         },
@@ -1097,7 +1244,22 @@ export struct FlightMapSelectOverlay {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#1A263B')
+    .borderRadius({ topLeft: 24, topRight: 24 })
+    .linearGradient({
+      angle: 180,
+      colors: [
+        ['#1E293B', 0.0],
+        ['#0F172A', 1.0]
+      ]
+    })
+    .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.45)', offsetY: -6 })
+    .translate({ y: this.overlayOffsetY })
+    // ✈️ Dialog 内容本体的进场空间动画：从屏幕底部平滑推入
+    .transition(
+      TransitionEffect.OPACITY
+        .combine(TransitionEffect.translate({ y: 800 }))
+        .animation({ duration: 360, curve: Curve.FastOutSlowIn })
+    )
     .onAreaChange((_oldArea, newArea) => {
       if (newArea.width && Number(newArea.width) > 0) {
         this.rulerContainerWidth = Number(newArea.width);

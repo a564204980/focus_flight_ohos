@@ -17,6 +17,17 @@ import {
   interpolateLatLng
 } from './GeodesicUtils';
 
+export interface TrailEffectConfig {
+  id: string;
+  name: string;
+  subtitle: string;
+  icon: string;
+  badge: string;
+  colors: number[];
+  widths: number[];
+  previewColors: string[];
+}
+
 function getCtuRunwayStart(): LatLngPoint {
   return ctuAirportConfig.takeoffRunway?.start || { latitude: 30.592085, longitude: 103.958889 };
 }
@@ -362,24 +373,87 @@ export class MapRenderHelper {
     }
   }
 
-  // 🌈 单向 6 色平行彩虹光带颜色 (从左至右: 🟣紫 -> 🔵蓝 -> 🟢绿 -> 🟡黄 -> 🟠橙 -> 🔴红)
+  // 🌈 5款个性化巡航尾迹特效色彩与参数配置
+  public static readonly TRAIL_EFFECTS_CONFIG: Record<string, TrailEffectConfig> = {
+    'rainbow': {
+      id: 'rainbow',
+      name: '缤纷彩虹光带',
+      subtitle: '绚丽治愈 · 6色平行流光光带',
+      icon: '🌈',
+      badge: '缤纷治愈',
+      colors: [0xFFAF52DE, 0xFF0A84FF, 0xFF34C759, 0xFFFFCC00, 0xFFFF9500, 0xFFFF3B30],
+      widths: [12.0, 14.0, 14.0, 14.0, 14.0, 12.0],
+      previewColors: ['#AF52DE', '#0A84FF', '#34C759', '#FFCC00', '#FF9500', '#FF3B30']
+    },
+    'stardust': {
+      id: 'stardust',
+      name: '星光粉尘尾迹',
+      subtitle: '碎金微光 · 银河星辉闪耀',
+      icon: '✨',
+      badge: '夜航专属',
+      colors: [0xDDFFD700, 0xEEFFE066, 0xFFFFFFFF, 0xFFFFF8DB, 0xEEFFCC00, 0xDDFFAA33],
+      widths: [10.0, 13.0, 15.0, 15.0, 13.0, 10.0],
+      previewColors: ['#FFD700', '#FFE066', '#FFFFFF', '#FFF8DB', '#FFCC00', '#FFAA33']
+    },
+    'bubbles': {
+      id: 'bubbles',
+      name: '解压梦幻泡泡',
+      subtitle: '马卡龙柔彩 · 水漾透光气泡',
+      icon: '🫧',
+      badge: '甜美解压',
+      colors: [0xEEF472B6, 0xEE38BDF8, 0xEEA78BFA, 0xEE818CF8, 0xEE34D399, 0xEEFB923C],
+      widths: [11.0, 13.0, 14.0, 14.0, 13.0, 11.0],
+      previewColors: ['#F472B6', '#38BDF8', '#A78BFA', '#818CF8', '#34D399', '#FB923C']
+    },
+    'melody': {
+      id: 'melody',
+      name: '治愈律动音符',
+      subtitle: '心流乐章 · 伴音起舞',
+      icon: '🎵',
+      badge: '专注律动',
+      colors: [0xFFAF52DE, 0xFF0A84FF, 0xFFFFCC00, 0xFFFF2D55, 0xFF34C759, 0xFF5856D6],
+      widths: [10.0, 12.0, 14.0, 14.0, 12.0, 10.0],
+      previewColors: ['#AF52DE', '#0A84FF', '#FFCC00', '#FF2D55', '#34C759', '#5856D6']
+    },
+    'contrail': {
+      id: 'contrail',
+      name: '经典凝结尾迹云',
+      subtitle: '高空真实水汽 · 纯白轻柔云雾',
+      icon: '☁️',
+      badge: '纯净拟真',
+      colors: [0x99FFFFFF, 0xDDFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xDDFFFFFF, 0x99FFFFFF],
+      widths: [10.0, 12.0, 14.0, 14.0, 12.0, 10.0],
+      previewColors: ['rgba(255,255,255,0.6)', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', 'rgba(255,255,255,0.6)']
+    }
+  };
+
+  // 默认单向 6 色平行彩虹光带颜色 (向下兼容)
   public static readonly RAINBOW_PARALLEL_COLORS: number[] = [
-    0xFFAF52DE, // 0 (最左): 🟣 梦幻紫 (Royal Purple)
-    0xFF0A84FF, // 1: 🔵 蔚蓝蓝 (Azure Blue)
-    0xFF34C759, // 2: 🟢 清新绿 (Mint Green)
-    0xFFFFCC00, // 3: 🟡 阳光黄 (Golden Sun)
-    0xFFFF9500, // 4: 🟠 活力橙 (Sunset Orange)
-    0xFFFF3B30  // 5 (最右): 🔴 热情红 (Ruby Red)
+    0xFFAF52DE, // 0: 🟣 梦幻紫
+    0xFF0A84FF, // 1: 🔵 蔚蓝蓝
+    0xFF34C759, // 2: 🟢 清新绿
+    0xFFFFCC00, // 3: 🟡 阳光黄
+    0xFFFF9500, // 4: 🟠 活力橙
+    0xFFFF3B30  // 5: 🔴 热情红
   ];
 
+  public static getTrailConfig(trailId: string): TrailEffectConfig {
+    if (trailId === 'aurora') {
+      return MapRenderHelper.TRAIL_EFFECTS_CONFIG['melody'];
+    }
+    return MapRenderHelper.TRAIL_EFFECTS_CONFIG[trailId] || MapRenderHelper.TRAIL_EFFECTS_CONFIG['rainbow'];
+  }
+
   /**
-   * 🌈 根据航线点集生成宽大厚重（总宽 36px 饱满彩虹）、6 色完全等宽、绝对零黑缝的单向 6 色平行彩虹光带
+   * 🌈 根据航线点集生成具有物理特性的单向平行尾迹流光光带
    * @param basePoints 原始航线已飞过点集合
    * @param zoomLevel 当前相机缩放等级 (默认 17.0)
+   * @param trailId 尾迹特效类型 ('rainbow' | 'stardust' | 'bubbles' | 'aurora' | 'contrail')
    */
   public static generateParallelRainbowStripes(
     basePoints: mapCommon.LatLng[],
-    zoomLevel: number = 17.0
+    zoomLevel: number = 17.0,
+    trailId: string = 'rainbow'
   ): Array<mapCommon.LatLng[]> {
     if (!basePoints || basePoints.length === 0) {
       return [[], [], [], [], [], []];
@@ -406,8 +480,20 @@ export class MapRenderHelper {
     const lat0 = pts[0].latitude;
     const meterPerPixel = 156543.03392 * Math.cos(lat0 * Math.PI / 180) / Math.pow(2, zoomLevel);
 
-    // 6 条色带中心偏移量 (间距 2.285，总跨度 11.42，配合 13~14px 线宽产生 6px 饱满重叠，绝对零间隙且总宽严格为飞机宽度一半)
-    const offsetsPx: number[] = [-5.71, -3.43, -1.14, 1.14, 3.43, 5.71];
+    // 🌟 根据尾迹类型计算专属物理偏移分布：
+    // - ☁️ contrail (凝结尾迹云): 左右发动机双发独立对称喷流，中间空出机身间距
+    // - 🌌 aurora (极光): 宽大波浪形飘逸羽流
+    // - 🌈 rainbow / bubbles / stardust: 饱满同心单向光带
+    let offsetsPx: number[];
+    if (trailId === 'contrail') {
+      offsetsPx = [-7.2, -5.6, -4.0, 4.0, 5.6, 7.2]; // 左右双发对称高空尾迹云
+    } else if (trailId === 'aurora') {
+      offsetsPx = [-8.0, -4.8, -1.6, 1.6, 4.8, 8.0]; // 宽幅极夜极光
+    } else if (trailId === 'stardust') {
+      offsetsPx = [-6.2, -3.8, -1.3, 1.3, 3.8, 6.2]; // 碎金微光
+    } else {
+      offsetsPx = [-5.71, -3.43, -1.14, 1.14, 3.43, 5.71]; // 经典同心
+    }
     const result: Array<mapCommon.LatLng[]> = [[], [], [], [], [], []];
 
     // 2. 预计算每个航线点的切线朝向 (Heading)
@@ -579,15 +665,16 @@ export class MapRenderHelper {
     const landingStartPoint = interpolateLatLng(ctuVertex, destVertex, 0.96);
     const cruiseSegment: mapCommon.LatLng[] = generateGreatCirclePoints(cruiseStartPoint, landingStartPoint, 200);
 
-    // 4. 进近降落平滑切线弧线
+    // 4. 进近降落平滑切线弧线 (对齐跑道中线并在跑道 20% 接地带平滑触地)
+    const touchdownPoint = interpolateLatLng(destVertex, destEnd, 0.20);
     const a0 = interpolateLatLng(landingStartPoint, destVertex, 0.5);
     const a1 = interpolateLatLng(destVertex, destEnd, -0.6);
-    const landingEndPoint = interpolateLatLng(destVertex, destEnd, 0.5);
 
-    const arrivalArc: mapCommon.LatLng[] = generateCubicBezierPoints(landingStartPoint, a0, a1, landingEndPoint, 250);
+    const arrivalArc: mapCommon.LatLng[] = generateCubicBezierPoints(landingStartPoint, a0, a1, touchdownPoint, 250);
 
-    // 5. 跑道着陆滑行段
-    const landingSegment: mapCommon.LatLng[] = generateGreatCirclePoints(landingEndPoint, destEnd, 20);
+    // 5. 跑道着陆滑行减速段 (沿跑道中线滑行，在跑道长度的 80% 处彻底停稳)
+    const runwayStopPoint = interpolateLatLng(destVertex, destEnd, 0.80);
+    const landingSegment: mapCommon.LatLng[] = generateGreatCirclePoints(touchdownPoint, runwayStopPoint, 60);
 
     const rawPoints = taxiSegment
       .concat(departureArc.slice(1))

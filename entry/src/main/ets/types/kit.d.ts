@@ -53,6 +53,14 @@ declare module '@kit.MapKit' {
       latitude: number;
       longitude: number;
     }
+    export interface MapPoint {
+      positionX: number;
+      positionY: number;
+    }
+    export interface Projection {
+      toScreenLocation(latLng: LatLng): MapPoint;
+      fromScreenLocation(point: MapPoint): LatLng;
+    }
     export enum MapType {
       STANDARD = 0,
       SATELLITE = 1,
@@ -162,7 +170,7 @@ declare module '@kit.MapKit' {
       moveCamera(update: mapCommon.CameraPosition): void;
       animateCamera(update: mapCommon.CameraPosition, duration?: number): void;
       getCameraPosition(): mapCommon.CameraPosition;
-      getProjection(): any;
+      getProjection(): mapCommon.Projection;
       setMapType(type: mapCommon.MapType): void;
       setDayNightMode(mode: mapCommon.DayNightMode): void;
       setBuildingEnabled(enabled: boolean): void;

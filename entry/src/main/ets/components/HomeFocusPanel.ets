@@ -34,8 +34,19 @@ export struct HomeFocusPanel {
       }
     }),
     alignment: DialogAlignment.Bottom,
-    maskColor: 'rgba(26, 38, 59, 0.90)',
-    customStyle: true
+    maskColor: 'rgba(0, 0, 0, 0)',
+    customStyle: true,
+    // ✈️ 从停机坪进入地图：底部向上平滑滑入 + 柔和通透遮罩过渡
+    openAnimation: {
+      duration: 360,
+      curve: Curve.FastOutSlowIn,
+      onFinish: () => {}
+    },
+    closeAnimation: {
+      duration: 320,
+      curve: Curve.FastOutSlowIn,
+      onFinish: () => {}
+    }
   });
 
   aboutToAppear() {
