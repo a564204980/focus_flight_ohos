@@ -131,17 +131,7 @@ struct SeatSelectionPage {
         }
       }
 
-      // 2. 绘制 CTU 精修滑行道网络
-      const customTaxiways = getCustomTaxiwaysForAirport('CTU');
-      if (customTaxiways) {
-        for (const taxiway of customTaxiways) {
-          await controller.addPolyline({
-            points: taxiway,
-            color: 0xCC38BDF8,
-            width: 3
-          });
-        }
-      }
+      // 2. 隐藏 CTU 精修滑行道网络 (已按需求隐藏)
 
       // 3. 将滑行道的两个点使用标准 Cyber 航线样式在地图最顶层连结呈现！
       const taxiwayRoutePoints = generateGreatCirclePoints(CTU_RUNWAY_START, CTU_RUNWAY_END, 120);

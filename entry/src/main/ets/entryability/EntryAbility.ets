@@ -26,10 +26,14 @@ export default class EntryAbility extends UIAbility {
 
 
     try {
+      // 🌟 视觉个性化设置持久化：首次默认采用「经典航线」+「纯净无尾」，用户后续选择将自动持久化保存
+      PersistentStorage.persistProp('selectedRouteStyle', 'classic');
+      PersistentStorage.persistProp('selectedTrailEffect', 'none');
+
       this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
       AppStorage.setOrCreate('abilityContext', this.context);
     } catch (err) {
-      hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
+      hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode or persistProp. Cause: %{public}s', JSON.stringify(err));
     }
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
   }

@@ -23,10 +23,13 @@ export struct FlightMapHudOverlay {
   @Prop currentMapType: number = mapCommon.MapType.SATELLITE;
   @Prop currentFocusTagTitle: string = '深度学习';
   @Prop remainingTimeString: string = '45:00';
+  @Prop isTurbulenceAlertVisible: boolean = false;
+  @Prop turbulenceMessageText: string = '遭遇巡航微气流，航向平稳修正中';
 
   @State private isMapControlsVisible: boolean = false;
 
   public onOpenSettings: () => void = () => {};
+  public onToggleWindowView: () => void = () => {};
   public onToggleMapType: () => void = () => {};
   public onToggleCameraFollow: () => void = () => {};
   public onExitFlight: () => void = () => {};
@@ -72,10 +75,10 @@ export struct FlightMapHudOverlay {
           .width(40)
           .height(40)
           .borderRadius(20)
-          .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(15, 23, 42, 0.50)')
+          .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(0, 0, 0, 0.50)')
           .backdropBlur(25)
-          .border({ width: 1, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)', radius: 20 })
-          .shadow({ radius: 12, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)', offsetY: 3 })
+          .border({ width: 0.8, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)', radius: 20 })
+          .shadow({ radius: 10, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)', offsetY: 2 })
           .animation({ duration: 300, curve: Curve.EaseInOut })
           .hitTestBehavior(HitTestMode.Block)
           .onClick(() => {
@@ -84,9 +87,9 @@ export struct FlightMapHudOverlay {
 
           Blank()
 
-          // 1.2 右侧：地图模式专属控制组 (垂直竖排：设置 -> 层级 -> 定位，优雅微动效淡入)
-          Column({ space: 12 }) {
-            // 1. 设置按钮 (柔白晶莹/暗夜水晶圆钮 + 细线齿轮设置图标)
+          // 1.2 右侧：地图专属高级毛玻璃胶囊控制坞 (垂直聚合：外观定制 -> 舷窗视角 -> 图层切换 -> 视角回正)
+          Column() {
+            // 1. 设置按钮 (飞行外观定制)
             Stack({ alignContent: Alignment.Center }) {
               Image(this.isTerrainMode() ? $r('app.media.ic_settings_dark') : $r('app.media.ic_settings_white'))
                 .width(18)
@@ -95,18 +98,36 @@ export struct FlightMapHudOverlay {
             }
             .width(40)
             .height(40)
-            .borderRadius(20)
-            .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(15, 23, 42, 0.50)')
-            .backdropBlur(25)
-            .border({ width: 1, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)', radius: 20 })
-            .shadow({ radius: 12, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)', offsetY: 3 })
-            .animation({ duration: 300, curve: Curve.EaseInOut })
             .hitTestBehavior(HitTestMode.Block)
             .onClick(() => {
               this.onOpenSettings();
             })
 
-            // 2. 地图图层/层级切换 (柔白晶莹/暗夜水晶圆钮 + 极简细线图层图标)
+            // 极细微透分割线 1
+            Divider()
+              .width(22)
+              .strokeWidth(0.5)
+              .color(this.isTerrainMode() ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)')
+
+            // 2. 🪟 机舱舷窗沉浸专注视角切换
+            Stack({ alignContent: Alignment.Center }) {
+              Text('🪟')
+                .fontSize(16)
+            }
+            .width(40)
+            .height(40)
+            .hitTestBehavior(HitTestMode.Block)
+            .onClick(() => {
+              this.onToggleWindowView();
+            })
+
+            // 极细微透分割线 2
+            Divider()
+              .width(22)
+              .strokeWidth(0.5)
+              .color(this.isTerrainMode() ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)')
+
+            // 3. 地图图层/层级切换 (标准矢量 / 卫星遥感)
             Stack({ alignContent: Alignment.Center }) {
               Image(this.isTerrainMode() ? $r('app.media.ic_map_layers') : $r('app.media.ic_map_layers_white'))
                 .width(18)
@@ -115,18 +136,18 @@ export struct FlightMapHudOverlay {
             }
             .width(40)
             .height(40)
-            .borderRadius(20)
-            .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(15, 23, 42, 0.50)')
-            .backdropBlur(25)
-            .border({ width: 1, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)', radius: 20 })
-            .shadow({ radius: 12, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)', offsetY: 3 })
-            .animation({ duration: 300, curve: Curve.EaseInOut })
             .hitTestBehavior(HitTestMode.Block)
             .onClick(() => {
               this.onToggleMapType();
             })
 
-            // 3. 视角跟随/定位锁定切换 (柔白晶莹/暗夜水晶圆钮 + 纯白/青蓝/深色航空罗盘指针)
+            // 极细微透分割线 3
+            Divider()
+              .width(22)
+              .strokeWidth(0.5)
+              .color(this.isTerrainMode() ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)')
+
+            // 4. 视角跟随/定位锁定切换 (Heading-Up 航向朝上)
             Stack({ alignContent: Alignment.Center }) {
               Image(this.isCameraFollowLocked ? $r('app.media.ic_location_cyan') : (this.isTerrainMode() ? $r('app.media.ic_location_dark') : $r('app.media.ic_location_white')))
                 .width(16)
@@ -135,17 +156,25 @@ export struct FlightMapHudOverlay {
             }
             .width(40)
             .height(40)
-            .borderRadius(20)
-            .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(15, 23, 42, 0.50)')
-            .backdropBlur(25)
-            .border({ width: 1, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)', radius: 20 })
-            .shadow({ radius: 12, color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)', offsetY: 3 })
-            .animation({ duration: 300, curve: Curve.EaseInOut })
             .hitTestBehavior(HitTestMode.Block)
             .onClick(() => {
               this.onToggleCameraFollow();
             })
           }
+          .width(40)
+          .borderRadius(20)
+          .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(0, 0, 0, 0.50)')
+          .backdropBlur(25)
+          .border({
+            width: 0.8,
+            color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
+            radius: 20
+          })
+          .shadow({
+            radius: 10,
+            color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)',
+            offsetY: 2
+          })
           .opacity(this.isMapControlsVisible ? 1.0 : 0.0)
           .translate({ y: this.isMapControlsVisible ? 0 : -14 })
           .animation({ duration: 600, curve: Curve.EaseOut })
@@ -175,13 +204,40 @@ export struct FlightMapHudOverlay {
         .hitTestBehavior(HitTestMode.None)
         .zIndex(150)
 
-      // 3. 飞行地图界面底部：优雅升起淡入的专注类型与时间倒计时
+      // 3. 飞行地图界面底部：气流扰动纯文字广播 (独立浮现于「专注任务名称」正上方，常规字重，绝不引起下方组件跳动)
+      if (this.isTurbulenceAlertVisible) {
+        Text(this.turbulenceMessageText)
+          .fontSize(12)
+          .fontWeight(FontWeight.Normal)
+          .fontColor(this.isTerrainMode() ? '#334155' : 'rgba(255, 255, 255, 0.90)')
+          .textShadow({ radius: 6, color: 'rgba(0, 0, 0, 0.60)', offsetY: 1 })
+          .padding({ left: 22, right: 22 })
+          .margin({ bottom: 88 })
+          .opacity(this.isMapControlsVisible ? 1.0 : 0.0)
+          .hitTestBehavior(HitTestMode.None)
+          .zIndex(165)
+          .transition(
+            TransitionEffect.asymmetric(
+              // 入场：由下方 +8vp 处轻柔滑入并淡入
+              TransitionEffect.OPACITY
+                .combine(TransitionEffect.translate({ y: 8 }))
+                .animation({ duration: 380, curve: Curve.EaseOut }),
+              // 出场：向空中向上轻盈消散淡出，极为自然从容
+              TransitionEffect.OPACITY
+                .combine(TransitionEffect.translate({ y: -6 }))
+                .animation({ duration: 420, curve: Curve.EaseIn })
+            )
+          )
+      }
+
+      // 4. 飞行地图界面底部：专注类型与时间倒计时 (底座稳固，绝对零抖动)
       Row() {
         // 左下角：当前专注类型 (纯粹通透大字标签，行高精确统一)
         Text(this.currentFocusTagTitle)
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
           .fontColor('#FFFFFF')
+          .animation({ duration: 400, curve: Curve.EaseInOut })
           .fontFamily('sans-serif')
           .lineHeight(38)
           .height(38)
@@ -193,6 +249,7 @@ export struct FlightMapHudOverlay {
           .fontSize(30)
           .fontWeight(FontWeight.Bold)
           .fontColor('#FFFFFF')
+          .animation({ duration: 400, curve: Curve.EaseInOut })
           .fontFamily('monospace')
           .lineHeight(38)
           .height(38)

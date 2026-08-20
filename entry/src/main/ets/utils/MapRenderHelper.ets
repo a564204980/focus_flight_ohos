@@ -17,15 +17,27 @@ import {
   interpolateLatLng
 } from './GeodesicUtils';
 
+export interface RouteStyleConfig {
+  id: string;
+  name: string;
+  subtitle: string;
+  badge: string;
+  themeColor: string;
+  colors: number[];
+  widths: number[];
+  previewColors: string[];
+}
+
 export interface TrailEffectConfig {
   id: string;
   name: string;
   subtitle: string;
-  icon: string;
   badge: string;
-  colors: number[];
-  widths: number[];
-  previewColors: string[];
+  themeColor: string;
+  icon: string;
+  colors?: number[];
+  widths?: number[];
+  previewColors?: string[];
 }
 
 function getCtuRunwayStart(): LatLngPoint {
@@ -69,27 +81,14 @@ export interface RainbowTailColorBand {
 
 export class MapRenderHelper {
   /**
-   * ✈️ 绘制机场滑行道网络 (ICAO 翡翠绿发光夜航引导灯线)
+   * ✈️ 绘制机场滑行道网络 (已按需求隐藏)
    */
   public static async drawTaxiways(
     controller: map.MapComponentController,
     taxiwayPoints: Array<mapCommon.LatLng>
   ): Promise<void> {
-    if (!taxiwayPoints || taxiwayPoints.length < 2) return;
-
-    // 1. 翡翠绿发光外光晕
-    await controller.addPolyline({
-      points: taxiwayPoints,
-      width: 7,
-      color: 0x4410B981
-    });
-
-    // 2. 翡翠绿高亮内芯导引线
-    await controller.addPolyline({
-      points: taxiwayPoints,
-      width: 3,
-      color: 0xEE34D399
-    });
+    // 隐藏滑行道线
+    return;
   }
 
   /**
@@ -373,57 +372,101 @@ export class MapRenderHelper {
     }
   }
 
-  // 🌈 5款个性化巡航尾迹特效色彩与参数配置
-  public static readonly TRAIL_EFFECTS_CONFIG: Record<string, TrailEffectConfig> = {
+  // ✈️ 5 款个性化航线光带/航线风格配置
+  public static readonly ROUTE_STYLES_CONFIG: Record<string, RouteStyleConfig> = {
     'rainbow': {
       id: 'rainbow',
-      name: '缤纷彩虹光带',
-      subtitle: '绚丽治愈 · 6色平行流光光带',
-      icon: '🌈',
-      badge: '缤纷治愈',
+      name: '彩虹光谱',
+      subtitle: '6色平行流光',
+      badge: '治愈流光',
+      themeColor: '#AF52DE',
       colors: [0xFFAF52DE, 0xFF0A84FF, 0xFF34C759, 0xFFFFCC00, 0xFFFF9500, 0xFFFF3B30],
       widths: [12.0, 14.0, 14.0, 14.0, 14.0, 12.0],
       previewColors: ['#AF52DE', '#0A84FF', '#34C759', '#FFCC00', '#FF9500', '#FF3B30']
     },
-    'stardust': {
-      id: 'stardust',
-      name: '星光粉尘尾迹',
-      subtitle: '碎金微光 · 银河星辉闪耀',
-      icon: '✨',
-      badge: '夜航专属',
-      colors: [0xDDFFD700, 0xEEFFE066, 0xFFFFFFFF, 0xFFFFF8DB, 0xEEFFCC00, 0xDDFFAA33],
-      widths: [10.0, 13.0, 15.0, 15.0, 13.0, 10.0],
-      previewColors: ['#FFD700', '#FFE066', '#FFFFFF', '#FFF8DB', '#FFCC00', '#FFAA33']
+    'aurora': {
+      id: 'aurora',
+      name: '极光天际',
+      subtitle: '青翠紫蓝流光',
+      badge: '梦幻极光',
+      themeColor: '#00FF88',
+      colors: [0xDD00FF88, 0xEE00F5D4, 0xEE00BBF9, 0xDD7209B7, 0x00000000, 0x00000000],
+      widths: [14.0, 16.0, 16.0, 14.0, 0, 0],
+      previewColors: ['#00FF88', '#00F5D4', '#00BBF9', '#7209B7']
     },
+    'ocean': {
+      id: 'ocean',
+      name: '蔚蓝天路',
+      subtitle: '深海透光流线',
+      badge: '清爽海风',
+      themeColor: '#0284C7',
+      colors: [0x8838BDF8, 0xEE0284C7, 0x880369A1, 0x00000000, 0x00000000, 0x00000000],
+      widths: [10.0, 16.0, 10.0, 0, 0, 0],
+      previewColors: ['#38BDF8', '#0284C7', '#0369A1']
+    },
+    'blaze': {
+      id: 'blaze',
+      name: '炽热航路',
+      subtitle: '日落暖阳流光',
+      badge: '极速破晓',
+      themeColor: '#F97316',
+      colors: [0x88FB923C, 0xEEF97316, 0x88EA580C, 0x00000000, 0x00000000, 0x00000000],
+      widths: [10.0, 16.0, 10.0, 0, 0, 0],
+      previewColors: ['#FB923C', '#F97316', '#EA580C']
+    },
+    'classic': {
+      id: 'classic',
+      name: '经典航线',
+      subtitle: '纯正民航导航',
+      badge: '极简航空',
+      themeColor: '#64748B',
+      colors: [0x99CBD5E1, 0xFFFFFFFF, 0x99CBD5E1, 0x00000000, 0x00000000, 0x00000000],
+      widths: [6.0, 12.0, 6.0, 0, 0, 0],
+      previewColors: ['#CBD5E1', '#FFFFFF', '#CBD5E1']
+    }
+  };
+
+  // 💫 5 款专属机尾物理喷气粒子/尾迹特效配置
+  public static readonly TRAIL_EFFECTS_CONFIG: Record<string, TrailEffectConfig> = {
     'bubbles': {
       id: 'bubbles',
-      name: '解压梦幻泡泡',
-      subtitle: '马卡龙柔彩 · 水漾透光气泡',
-      icon: '🫧',
-      badge: '甜美解压',
-      colors: [0xEEF472B6, 0xEE38BDF8, 0xEEA78BFA, 0xEE818CF8, 0xEE34D399, 0xEEFB923C],
-      widths: [11.0, 13.0, 14.0, 14.0, 13.0, 11.0],
-      previewColors: ['#F472B6', '#38BDF8', '#A78BFA', '#818CF8', '#34D399', '#FB923C']
+      name: '梦幻气泡',
+      subtitle: '马卡龙水漾透光',
+      icon: '',
+      badge: '解压水漾',
+      themeColor: '#EC4899'
+    },
+    'stardust': {
+      id: 'stardust',
+      name: '星光粉尘',
+      subtitle: '碎金星辉微光',
+      icon: '',
+      badge: '闪耀星屑',
+      themeColor: '#F59E0B'
     },
     'melody': {
       id: 'melody',
-      name: '治愈律动音符',
-      subtitle: '心流乐章 · 伴音起舞',
-      icon: '🎵',
-      badge: '专注律动',
-      colors: [0xFFAF52DE, 0xFF0A84FF, 0xFFFFCC00, 0xFFFF2D55, 0xFF34C759, 0xFF5856D6],
-      widths: [10.0, 12.0, 14.0, 14.0, 12.0, 10.0],
-      previewColors: ['#AF52DE', '#0A84FF', '#FFCC00', '#FF2D55', '#34C759', '#5856D6']
+      name: '律动音符',
+      subtitle: '心流旋律波形',
+      icon: '',
+      badge: '心流音律',
+      themeColor: '#6366F1'
     },
     'contrail': {
       id: 'contrail',
-      name: '经典凝结尾迹云',
-      subtitle: '高空真实水汽 · 纯白轻柔云雾',
-      icon: '☁️',
-      badge: '纯净拟真',
-      colors: [0x99FFFFFF, 0xDDFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xDDFFFFFF, 0x99FFFFFF],
-      widths: [10.0, 12.0, 14.0, 14.0, 12.0, 10.0],
-      previewColors: ['rgba(255,255,255,0.6)', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', 'rgba(255,255,255,0.6)']
+      name: '凝结尾迹',
+      subtitle: '高空双发真实水汽',
+      icon: '',
+      badge: '纯净双流',
+      themeColor: '#0EA5E9'
+    },
+    'none': {
+      id: 'none',
+      name: '纯净无尾',
+      subtitle: '无额外机尾粒子',
+      icon: '',
+      badge: '清爽通透',
+      themeColor: '#94A3B8'
     }
   };
 
@@ -437,23 +480,24 @@ export class MapRenderHelper {
     0xFFFF3B30  // 5: 🔴 热情红
   ];
 
+  public static getRouteConfig(routeId: string): RouteStyleConfig {
+    return MapRenderHelper.ROUTE_STYLES_CONFIG[routeId] || MapRenderHelper.ROUTE_STYLES_CONFIG['rainbow'];
+  }
+
   public static getTrailConfig(trailId: string): TrailEffectConfig {
-    if (trailId === 'aurora') {
-      return MapRenderHelper.TRAIL_EFFECTS_CONFIG['melody'];
-    }
-    return MapRenderHelper.TRAIL_EFFECTS_CONFIG[trailId] || MapRenderHelper.TRAIL_EFFECTS_CONFIG['rainbow'];
+    return MapRenderHelper.TRAIL_EFFECTS_CONFIG[trailId] || MapRenderHelper.TRAIL_EFFECTS_CONFIG['bubbles'];
   }
 
   /**
-   * 🌈 根据航线点集生成具有物理特性的单向平行尾迹流光光带
+   * 🌈 根据航线点集生成具有物理特性的单向平行航线光带
    * @param basePoints 原始航线已飞过点集合
    * @param zoomLevel 当前相机缩放等级 (默认 17.0)
-   * @param trailId 尾迹特效类型 ('rainbow' | 'stardust' | 'bubbles' | 'aurora' | 'contrail')
+   * @param routeId 航线风格类型 ('rainbow' | 'aurora' | 'ocean' | 'blaze' | 'classic')
    */
   public static generateParallelRainbowStripes(
     basePoints: mapCommon.LatLng[],
     zoomLevel: number = 17.0,
-    trailId: string = 'rainbow'
+    routeId: string = 'rainbow'
   ): Array<mapCommon.LatLng[]> {
     if (!basePoints || basePoints.length === 0) {
       return [[], [], [], [], [], []];
@@ -480,19 +524,15 @@ export class MapRenderHelper {
     const lat0 = pts[0].latitude;
     const meterPerPixel = 156543.03392 * Math.cos(lat0 * Math.PI / 180) / Math.pow(2, zoomLevel);
 
-    // 🌟 根据尾迹类型计算专属物理偏移分布：
-    // - ☁️ contrail (凝结尾迹云): 左右发动机双发独立对称喷流，中间空出机身间距
-    // - 🌌 aurora (极光): 宽大波浪形飘逸羽流
-    // - 🌈 rainbow / bubbles / stardust: 饱满同心单向光带
+    // 🌟 根据航线风格计算专属物理偏移分布：
     let offsetsPx: number[];
-    if (trailId === 'contrail') {
-      offsetsPx = [-7.2, -5.6, -4.0, 4.0, 5.6, 7.2]; // 左右双发对称高空尾迹云
-    } else if (trailId === 'aurora') {
-      offsetsPx = [-8.0, -4.8, -1.6, 1.6, 4.8, 8.0]; // 宽幅极夜极光
-    } else if (trailId === 'stardust') {
-      offsetsPx = [-6.2, -3.8, -1.3, 1.3, 3.8, 6.2]; // 碎金微光
+    if (routeId === 'aurora') {
+      offsetsPx = [-7.5, -2.5, 2.5, 7.5, 0, 0];
+    } else if (routeId === 'ocean' || routeId === 'blaze' || routeId === 'classic') {
+      offsetsPx = [-4.5, 0, 4.5, 0, 0, 0];
     } else {
-      offsetsPx = [-5.71, -3.43, -1.14, 1.14, 3.43, 5.71]; // 经典同心
+      // 经典 6 色彩虹
+      offsetsPx = [-5.71, -3.43, -1.14, 1.14, 3.43, 5.71];
     }
     const result: Array<mapCommon.LatLng[]> = [[], [], [], [], [], []];
 
