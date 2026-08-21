@@ -15,9 +15,12 @@
 
 /**
  * 纯代码程序化渲染客机舷窗框架组件 (CabinWindowProceduralFrame)
- * 完美还原图 1 顶级视觉质感 + 120fps 满帧性能：
- * 1. 100% 原生多层精密渐变、物理高光倒角、顶部遮阳槽与玻璃内阴影 (仅初始化渲染 1 次)；
- * 2. 遮阳板拉下时的光晕消退采用 GPU 硬件 Opacity 遮罩层，零 CPU 重绘，零卡顿。
+ * 100% 还原图 1 原生顶级光影质感（3D 体积光晕、天光漫反射、双层航空亚克力玻璃反光、精密导角与遮阳板联动）：
+ * 1. 外壁环境光衰减（Concave Ambient Falloff）；
+ * 2. 中层斜切导角立体光影（Beveled Mid Shroud）；
+ * 3. 内圈跑道形天光受光倒角（Volumetric Rim Sky Glow - 顶部暗部下沉、底部天光辉映）；
+ * 4. 双层航空舷窗有机玻璃高光反光带（Dual-Pane Acrylic Glare Streak）；
+ * 5. 120fps 满帧性能，遮阳板消光 GPU Opacity 原生硬件加速。
  */
 @Component
 export struct CabinWindowProceduralFrame {
@@ -66,29 +69,33 @@ export struct CabinWindowProceduralFrame {
       const t = i / 18.0;
 
       const gray = Math.floor(18 * (1.0 - t));
-      ctx.fillStyle = `rgb(${gray}, ${gray + 1}, ${gray + 3})`;
+      ctx.fillStyle = `rgb(${gray}, ${gray + 1}, ${gray + 4})`;
       this.drawRoundedRectPath(ctx, cx - bw / 2, cy - bh / 2, bw, bh, br);
       ctx.fill();
     }
 
-    // 3. 主框立体斜面外轮廓线
+    // 3. 主框立体斜面外轮廓线 (带微弱环境光侧向反光)
     const mw = fw - 16;
     const mh = fh - 16;
     const mr = fr - 8;
-    ctx.strokeStyle = 'rgba(55, 60, 75, 0.45)';
+    const outerStrokeGrad = ctx.createLinearGradient(cx - mw / 2, cy - mh / 2, cx + mw / 2, cy + mh / 2);
+    outerStrokeGrad.addColorStop(0.0, 'rgba(80, 90, 115, 0.40)');
+    outerStrokeGrad.addColorStop(0.5, 'rgba(45, 50, 65, 0.25)');
+    outerStrokeGrad.addColorStop(1.0, 'rgba(100, 115, 145, 0.50)');
+    ctx.strokeStyle = outerStrokeGrad;
     ctx.lineWidth = 1.5;
     this.drawRoundedRectPath(ctx, cx - mw / 2, cy - mh / 2, mw, mh, mr);
     ctx.stroke();
 
-    // 4. 中层导角斜切过渡层 (Mid-Frame Bevel Shroud)
-    for (let i = 12; i >= 0; i--) {
-      const t = i / 12.0;
+    // 4. 中层导角斜切过渡层 (Mid-Frame Bevel Shroud - 细腻航空哑光立体光影)
+    for (let i = 14; i >= 0; i--) {
+      const t = i / 14.0;
       const curW = gw + 36 + (mw - (gw + 36)) * t;
       const curH = gh + 36 + (mh - (gh + 36)) * t;
       const curR = gr + 18 + (mr - (gr + 18)) * t;
 
-      const baseVal = Math.floor(22 + 16 * (1.0 - t));
-      ctx.fillStyle = `rgb(${baseVal}, ${baseVal + 2}, ${baseVal + 5})`;
+      const baseVal = Math.floor(22 + 20 * (1.0 - t));
+      ctx.fillStyle = `rgb(${baseVal}, ${baseVal + 3}, ${baseVal + 8})`;
       this.drawRoundedRectPath(ctx, cx - curW / 2, cy - curH / 2, curW, curH, curR);
       ctx.fill();
     }
@@ -98,49 +105,54 @@ export struct CabinWindowProceduralFrame {
     const slotW = gw * 0.72;
     const slotH = 34;
 
-    ctx.fillStyle = '#0E1015';
+    ctx.fillStyle = '#0C0E14';
     ctx.beginPath();
     ctx.ellipse(cx, slotY, slotW / 2, slotH / 2, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(60, 66, 80, 0.50)';
+    ctx.strokeStyle = 'rgba(70, 78, 98, 0.45)';
     ctx.lineWidth = 1.0;
     ctx.stroke();
 
     // 提手凹槽
-    ctx.fillStyle = '#08090C';
+    ctx.fillStyle = '#06080B';
     ctx.beginPath();
     ctx.ellipse(cx, slotY - 4, 28, 7, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(80, 88, 105, 0.60)';
+    ctx.strokeStyle = 'rgba(95, 105, 128, 0.55)';
     ctx.lineWidth = 0.8;
     ctx.stroke();
 
     // 6. 内圈滑轨与双层精密台阶 (Inner Frame Track Ring)
-    const trW = gw + 16;
-    const trH = gh + 16;
-    const trR = gr + 8;
-    ctx.fillStyle = '#181A20';
+    const trW = gw + 18;
+    const trH = gh + 18;
+    const trR = gr + 9;
+    ctx.fillStyle = '#161820';
     this.drawRoundedRectPath(ctx, cx - trW / 2, cy - trH / 2, trW, trH, trR);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(40, 44, 55, 0.85)';
+    ctx.strokeStyle = 'rgba(50, 56, 72, 0.80)';
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    // 7. 内圈受光高光轮廓 (Specular Rim Highlight & Ambient Edge Glow) —— 图 1 原生顶级光影
-    for (let i = 10; i >= 1; i--) {
-      const rimW = gw + i * 1.6;
-      const rimH = gh + i * 1.6;
-      const rimR = gr + i * 0.8;
-      const alpha = Math.pow((11 - i) / 10.0, 1.3) * 0.85;
+    // 7. 【图 1 原生顶级立体天光倒角光晕】(Volumetric Sky Lighting Rim Glow)
+    // 采用平滑物理漫反射积分过渡，拥有饱满通透的天光光影，且与机舱内圈无缝渐变
+    for (let i = 12; i >= 1; i--) {
+      const rimW = gw + i * 1.5;
+      const rimH = gh + i * 1.5;
+      const rimR = gr + i * 0.75;
+      const weight = (13 - i) / 12.0;
 
       const rimGrad = ctx.createLinearGradient(cx, cy - gh / 2, cx, cy + gh / 2);
-      rimGrad.addColorStop(0.0, `rgba(40, 44, 55, ${alpha * 0.3})`);
-      rimGrad.addColorStop(0.25, `rgba(220, 230, 245, ${alpha * 0.80})`);
-      rimGrad.addColorStop(0.70, `rgba(245, 250, 255, ${alpha * 0.95})`);
-      rimGrad.addColorStop(1.0, `rgba(230, 240, 255, ${alpha * 0.85})`);
+      // 顶部暗部下沉 (遮阳槽投射的环境微阴影)
+      rimGrad.addColorStop(0.0, `rgba(30, 35, 45, ${0.4 * weight})`);
+      // 中部柔和天空天光过渡
+      rimGrad.addColorStop(0.35, `rgba(110, 130, 165, ${0.45 * weight})`);
+      // 下半部机舱窗台受光高光 (真实万米高空天光漫反射)
+      rimGrad.addColorStop(0.75, `rgba(175, 205, 240, ${0.70 * weight})`);
+      // 最底部柔和天光沉底
+      rimGrad.addColorStop(1.0, `rgba(150, 180, 220, ${0.55 * weight})`);
 
       ctx.strokeStyle = rimGrad;
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.4;
       this.drawRoundedRectPath(ctx, cx - rimW / 2, cy - rimH / 2, rimW, rimH, rimR);
       ctx.stroke();
     }
@@ -151,12 +163,34 @@ export struct CabinWindowProceduralFrame {
     this.drawRoundedRectPath(ctx, cx - gw / 2, cy - gh / 2, gw, gh, gr);
     ctx.fill();
 
-    // 9. 恢复正常混合模式并绘制玻璃边缘微弱环境内阴影 (Subtle Inner Glass AO)
+    // 9. 恢复正常混合模式并绘制极细内圈精密玻璃压条暗部阴影 (Subtle Inner Bezel Shadow)
     ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.40)';
-    ctx.lineWidth = 1.0;
+    const innerShadowGrad = ctx.createLinearGradient(cx, cy - gh / 2, cx, cy + gh / 2);
+    innerShadowGrad.addColorStop(0.0, 'rgba(0, 0, 0, 0.75)');
+    innerShadowGrad.addColorStop(0.4, 'rgba(0, 0, 0, 0.35)');
+    innerShadowGrad.addColorStop(1.0, 'rgba(0, 0, 0, 0.15)');
+    ctx.strokeStyle = innerShadowGrad;
+    ctx.lineWidth = 1.2;
     this.drawRoundedRectPath(ctx, cx - gw / 2 + 0.5, cy - gh / 2 + 0.5, gw - 1, gh - 1, gr - 0.5);
     ctx.stroke();
+
+    // 10. 【双层航空有机玻璃斜向柔和高光反光带】(Dual-Pane Acrylic Glare Streak)
+    ctx.save();
+    this.drawRoundedRectPath(ctx, cx - gw / 2, cy - gh / 2, gw, gh, gr);
+    ctx.clip(); // 仅在舷窗玻璃区域内部渲染
+
+    const glareGrad = ctx.createLinearGradient(cx - gw * 0.4, cy - gh * 0.6, cx + gw * 0.5, cy + gh * 0.6);
+    glareGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.0)');
+    glareGrad.addColorStop(0.32, 'rgba(255, 255, 255, 0.0)');
+    glareGrad.addColorStop(0.38, 'rgba(255, 255, 255, 0.05)');
+    glareGrad.addColorStop(0.44, 'rgba(255, 255, 255, 0.09)');
+    glareGrad.addColorStop(0.50, 'rgba(255, 255, 255, 0.04)');
+    glareGrad.addColorStop(0.56, 'rgba(255, 255, 255, 0.0)');
+    glareGrad.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+
+    ctx.fillStyle = glareGrad;
+    ctx.fillRect(cx - gw / 2, cy - gh / 2, gw, gh);
+    ctx.restore();
 
     ctx.restore();
   }
@@ -185,7 +219,7 @@ export struct CabinWindowProceduralFrame {
 
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      // 1. 图 1 原生极致质感 Canvas (仅挂载初始化绘制一次，零 CPU 拖拽重绘开销)
+      // 1. 图 1 原生极致光影质感 Canvas (仅挂载初始化绘制一次，零 CPU 拖拽重绘开销)
       Canvas(this.context)
         .width(this.frameWidth)
         .height(this.frameHeight)
@@ -194,7 +228,7 @@ export struct CabinWindowProceduralFrame {
           this.drawPhotorealisticFrame();
         })
 
-      // 2. 遮阳板拉下时的极暗消光遮罩层 (GPU 原生硬件合成，拉下时遮盖内圈高光，满帧丝滑)
+      // 2. 遮阳板拉下时的极暗消光遮罩层 (GPU 原生硬件合成，拉下时遮盖内圈光晕，满帧丝滑)
       Stack()
         .width(this.frameWidth * 0.68 + 18)
         .height(this.frameHeight * 0.70 + 18)

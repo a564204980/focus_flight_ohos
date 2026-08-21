@@ -20,7 +20,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #030712;
+      background-color: transparent;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       -webkit-touch-callout: none !important;
       -webkit-user-select: none !important;
@@ -73,27 +73,66 @@
     let scene, camera, renderer, earthMesh, cloudMesh, glowMesh, stars, borderMesh, skyMesh;
     let dayTex, nightTex, cloudTex, earthMat;
     let isRotating = true, isDragging = false;
+    let autoRotateResumeTimer = null;
+
+    function stopAutoRotate() {
+      isRotating = false;
+      if (autoRotateResumeTimer) {
+        clearTimeout(autoRotateResumeTimer);
+        autoRotateResumeTimer = null;
+      }
+    }
+
+    function scheduleAutoRotate() {
+      if (autoRotateResumeTimer) {
+        clearTimeout(autoRotateResumeTimer);
+      }
+      autoRotateResumeTimer = setTimeout(() => {
+        isRotating = true;
+      }, 10000); // 10秒后重新启动缓慢自转
+    }
+    let accumRot = 0;
     let beaconSprites = []; // 追踪所有城市标签 Sprite 与其球面法线，用于每帧可见度渐隐
     let isPositionDragging = false, longPressTimer = null, touchStartPos = { x: 0, y: 0 };
     let prevTouch = { x: 0, y: 0 }, pinchStart = 0;
 
-    const NIGHT_SUN_DIR = new THREE.Vector3(-1.0, 0.45, -0.6).normalize();
-    const DAY_SUN_DIR = new THREE.Vector3(0.72, 0.35, 0.38).normalize();
-    const SUN_DIR = NIGHT_SUN_DIR.clone();
-    let currentDayNightMode = 'night';
+        const RIGHT_SUN_DIR = new THREE.Vector3(0.96, 0.18, -0.22).normalize();
+    const SUN_DIR = RIGHT_SUN_DIR.clone();
+    let currentDayNightMode = 'right_sun';
+
+    function updateRealtimeSunDir() {
+      // 保持右上前方经典光源方向，令右侧与正面拥有清透柔和的日照，左侧自然进入夜航灯火
+      if (!earthMesh || !scene) return;
+      const worldSun = RIGHT_SUN_DIR.clone().normalize();
+      SUN_DIR.copy(worldSun);
+
+      if (typeof earthMat !== 'undefined' && earthMat && earthMat.uniforms && earthMat.uniforms.sunDir) {
+        earthMat.uniforms.sunDir.value.copy(worldSun);
+      }
+      if (typeof cloudMesh !== 'undefined' && cloudMesh && cloudMesh.material && cloudMesh.material.uniforms && cloudMesh.material.uniforms.sunDir) {
+        cloudMesh.material.uniforms.sunDir.value.copy(worldSun);
+      }
+      if (typeof glowMesh !== 'undefined' && glowMesh && glowMesh.material && glowMesh.material.uniforms && glowMesh.material.uniforms.sunDir) {
+        glowMesh.material.uniforms.sunDir.value.copy(worldSun);
+      }
+    }
 
     window.setDayNightMode = function(mode) {
       currentDayNightMode = mode;
+      if (mode === 'realtime') {
+        updateRealtimeSunDir();
+        return;
+      }
       const targetDir = (mode === 'day') ? DAY_SUN_DIR : NIGHT_SUN_DIR;
       SUN_DIR.copy(targetDir);
       if (typeof earthMat !== 'undefined' && earthMat && earthMat.uniforms && earthMat.uniforms.sunDir) {
         earthMat.uniforms.sunDir.value.copy(targetDir);
       }
-      if (typeof cloudMat !== 'undefined' && cloudMat && cloudMat.uniforms && cloudMat.uniforms.sunDir) {
-        cloudMat.uniforms.sunDir.value.copy(targetDir);
+      if (typeof cloudMesh !== 'undefined' && cloudMesh && cloudMesh.material && cloudMesh.material.uniforms && cloudMesh.material.uniforms.sunDir) {
+        cloudMesh.material.uniforms.sunDir.value.copy(targetDir);
       }
-      if (typeof atmosphereMat !== 'undefined' && atmosphereMat && atmosphereMat.uniforms && atmosphereMat.uniforms.sunDir) {
-        atmosphereMat.uniforms.sunDir.value.copy(targetDir);
+      if (typeof glowMesh !== 'undefined' && glowMesh && glowMesh.material && glowMesh.material.uniforms && glowMesh.material.uniforms.sunDir) {
+        glowMesh.material.uniforms.sunDir.value.copy(targetDir);
       }
     };
 
@@ -119,64 +158,48 @@
         varying vec2 vUv;
         varying vec3 vNormal;
 
-        // 16K 级四重倍频分形微观细节引擎 (16K Cinema-Grade 4-Octave Micro-Fractal Engine)
-        float get16KMicroDetail(vec2 uv) {
-          float o1 = sin(uv.x * 1600.0) * cos(uv.y * 1600.0);
-          float o2 = sin(uv.x * 4096.0 + o1 * 2.5) * cos(uv.y * 4096.0);
-          float o3 = sin(uv.x * 8192.0 + o2 * 1.8) * cos(uv.y * 8192.0);
-          float o4 = sin(uv.x * 16384.0) * cos(uv.y * 16384.0);
-          return (o1 * 0.40 + o2 * 0.30 + o3 * 0.20 + o4 * 0.10);
-        }
-
         void main() {
-          vec3 dayColor = texture2D(dayTex, vUv).rgb;
-          vec3 nightColor = texture2D(nightTex, vUv).rgb;
+          vec3 dayRaw = texture2D(dayTex, vUv).rgb;
+          vec3 nightRaw = texture2D(nightTex, vUv).rgb;
 
-          // 16K 级微观细节
-          float detail16k = get16KMicroDetail(vUv);
+          // 真实日光色彩校准（增强明亮度和地貌对比度）
+          vec3 dayGraded = pow(dayRaw, vec3(1.15)) * vec3(1.08, 1.10, 1.18);
           
-          // 45% 细节对比度与边缘锐化
-          vec3 dayColorSharp = pow(dayColor, vec3(1.08));
-          float gray = dot(dayColorSharp, vec3(0.299, 0.587, 0.114));
-          dayColorSharp += (dayColorSharp - vec3(gray)) * 0.45;
-          dayColorSharp *= (1.0 + detail16k * 0.065);
-
           float sunDot = dot(vNormal, sunDir);
 
-          // 1. 白天侧 16K 航拍画质
-          float dayLight = max(0.0, sunDot) * 0.90 + 0.30;
-          vec3 dayResult = dayColorSharp * dayLight * 1.18;
+          // 1. 太阳光照（直射高光与明亮散射）
+          float dayLight = pow(max(0.0, sunDot), 0.85) * 1.50 + 0.06;
+          vec3 dayResult = dayGraded * dayLight;
 
-          // 2. 黑夜侧: 璀璨星罗城市流光 (暖琥珀橙黄色 - 真实城市灯光色温)
-          vec3 cityLights = pow(nightColor, vec3(2.05)) * (6.8 + detail16k * 0.8);
-          // 真实城市灯光色温调制：偏暖橙黄色 (1.0, 0.82, 0.48) - 路灯/钠灯暖色
-          vec3 warmTint = vec3(1.0, 0.80, 0.42);
-          cityLights *= warmTint;
-          vec3 nightAmbient = dayColorSharp * vec3(0.18, 0.14, 0.12);
+          // 2. 夜间灯火 (细腻暖光)
+          vec3 cityLights = pow(nightRaw, vec3(1.45)) * vec3(1.0, 0.86, 0.48) * 4.8;
+          vec3 nightAmbient = dayGraded * 0.04;
           vec3 nightResult = cityLights + nightAmbient;
 
-          // 3. 昼夜平滑自然过渡
-          float factor = smoothstep(-0.12, 0.12, sunDot);
-          vec3 finalColor = mix(nightResult, dayResult, factor);
+          // 3. 晨昏线平滑过渡
+          float factor = smoothstep(0.02, 0.25, sunDot);
+          vec3 blended = mix(nightResult, dayResult, factor);
 
-          // 4. 精确对标【图 2】: 极高奢、深邃、无凸出硬环的地平线太空蓝紫霞光 (Horizon Rim Atmosphere)
+          // 4. 大气边缘光环 (湛蓝散射)
           float viewDot = dot(vNormal, vec3(0.0, 0.0, 1.0));
-          float rim = pow(1.0 - max(0.0, viewDot), 3.2); // 紧贴地平线边缘
-          
-          // 阳光侧水湛蓝，阴面深邃蓝紫
-          float sunFactor = smoothstep(-0.35, 0.35, sunDot);
-          vec3 dayRimColor   = vec3(0.15, 0.48, 0.92); // 太阳受光侧天蓝色
-          vec3 nightRimColor = vec3(0.04, 0.12, 0.38); // 阴面幽靛蓝色
-          vec3 atmosphereRim = mix(nightRimColor, dayRimColor, sunFactor) * rim * 1.25;
+          float rim = pow(1.0 - max(0.0, viewDot), 3.0);
+          float sunFactor = smoothstep(-0.2, 0.3, sunDot);
+          vec3 dayRimColor = vec3(0.20, 0.60, 1.0);
+          vec3 nightRimColor = vec3(0.01, 0.04, 0.16);
+          vec3 atmosphereRim = mix(nightRimColor, dayRimColor, sunFactor) * rim * 0.50;
 
-          finalColor += atmosphereRim;
+          vec3 finalColor = blended + atmosphereRim;
+
+          // 5. 电影级色调映射
+          finalColor = finalColor / (finalColor + vec3(0.40));
+          finalColor = pow(finalColor, vec3(1.02));
 
           gl_FragColor = vec4(finalColor, 1.0);
         }
       `
     };
 
-    const cloudShader = {
+            const cloudShader = {
       uniforms: {
         cloudTex: { value: null },
         sunDir:   { value: SUN_DIR }
@@ -200,15 +223,15 @@
           vec4 c = texture2D(cloudTex, vUv);
           float sunDot = dot(vNormal, sunDir);
           
-          float dayFactor = smoothstep(-0.20, 0.20, sunDot);
+          float dayFactor = smoothstep(-0.15, 0.25, sunDot);
           
-          // 白天受光云层 vs 夜间淡暗蓝灰微光云彩
-          vec3 dayCloudColor = vec3(0.96, 0.98, 1.0) * (0.30 + 0.70 * max(0.0, sunDot));
-          vec3 nightCloudColor = vec3(0.22, 0.26, 0.35);
+          // 日间明亮白云 vs 夜间极浅微云
+          vec3 dayCloudColor = vec3(1.15, 1.18, 1.25) * (0.45 + 0.85 * max(0.0, sunDot));
+          vec3 nightCloudColor = vec3(0.20, 0.25, 0.35);
           vec3 cloudColor = mix(nightCloudColor, dayCloudColor, dayFactor);
           
-          float alphaFactor = mix(0.38, 0.70, dayFactor);
-          float alpha = c.a * smoothstep(0.03, 0.5, c.a) * alphaFactor;
+          float alphaFactor = mix(0.08, 0.85, dayFactor);
+          float alpha = c.a * smoothstep(0.02, 0.45, c.a) * alphaFactor;
           
           gl_FragColor = vec4(cloudColor, alpha);
         }
@@ -242,8 +265,8 @@
           float intensity = pow(smoothstep(0.0, 0.50, viewDot), 3.0);
 
           // 不管正面背面、向阳背阳，颜色与透明度完全统一为太阳直射面效果
-          vec3 color = vec3(0.12, 0.42, 0.88);
-          float alpha = intensity * 0.32;
+          vec3 color = vec3(0.08, 0.30, 0.70);
+          float alpha = intensity * 0.14;
 
           gl_FragColor = vec4(color, alpha);
         }
@@ -278,9 +301,9 @@
 
     function init() {
       scene = new THREE.Scene();
-      scene.position.y = 0.85; // 将 3D 地球在屏幕视角中整体垂直向上平移，留出底部卡片空间
+      scene.position.y = 0; // 将 3D 地球在屏幕视角中整体垂直向上平移，留出底部卡片空间
       camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 1000);
-      camera.position.z = 5.2;
+      camera.position.z = 3.0;
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(innerWidth, innerHeight);
@@ -304,7 +327,7 @@
       const radius = 1.35;
       const geo = new THREE.SphereGeometry(radius, 64, 64);
       earthMesh = new THREE.Mesh(geo, earthMat);
-      earthMesh.rotation.x = 0.2;
+      earthMesh.rotation.x = -0.05; // 稍微往上转一点儿，展示更多南边/赤道，或者把中国往上移
       earthMesh.rotation.y = -1.2;
       scene.add(earthMesh);
 
@@ -317,7 +340,7 @@
         depthWrite: false
       });
       cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.018, 64, 64), cloudMat);
-      cloudMesh.rotation.x = 0.2;
+      cloudMesh.rotation.x = -0.05;
       cloudMesh.rotation.y = -1.2;
       scene.add(cloudMesh);
 
@@ -435,6 +458,8 @@
       const el = renderer.domElement;
 
       function onPointerStart(clientX, clientY) {
+        stopAutoRotate();
+        isFlying = false;
         touchStartPos = { x: clientX, y: clientY };
         prevTouch = { x: clientX, y: clientY };
         isPositionDragging = false;
@@ -458,7 +483,7 @@
         }
 
         if (isPositionDragging) {
-          const factor = 0.0035 * (camera.position.z / 5.2);
+          const factor = 0.008 * (camera.position.z / 5.2);
           const dx = (clientX - prevTouch.x) * factor;
           const dy = (clientY - prevTouch.y) * factor;
 
@@ -480,6 +505,7 @@
           isPositionDragging = false;
         }
         isDragging = false;
+        scheduleAutoRotate();
       }
 
       // 全局禁止右键上下文菜单与文本选中框弹出
@@ -489,8 +515,10 @@
       document.addEventListener('selectstart', e => { e.preventDefault(); return false; });
 
       el.addEventListener('wheel', e => {
+        stopAutoRotate();
         const factor = e.deltaY > 0 ? 1.08 : 0.92;
         camera.position.z = Math.max(1.8, Math.min(16.0, camera.position.z * factor));
+        scheduleAutoRotate();
       }, { passive: true });
 
       // Touch 事件
@@ -512,7 +540,7 @@
           if (handled) return;
 
           if (isDragging) {
-            const factor = 0.0016 * (camera.position.z / 5.2);
+            const factor = 0.006 * (camera.position.z / 5.2);
             const dx = (e.touches[0].clientX - prevTouch.x) * factor;
             const dy = (e.touches[0].clientY - prevTouch.y) * factor;
             
@@ -521,6 +549,7 @@
 
             earthMesh.rotation.x += dy;
             cloudMesh.rotation.x += dy;
+          
             
             prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
           }
@@ -548,7 +577,7 @@
         if (handled) return;
 
         if (isDragging) {
-          const factor = 0.0016 * (camera.position.z / 5.2);
+          const factor = 0.006 * (camera.position.z / 5.2);
           const dx = (e.clientX - prevTouch.x) * factor;
           const dy = (e.clientY - prevTouch.y) * factor;
           
@@ -557,6 +586,7 @@
 
           earthMesh.rotation.x += dy;
           cloudMesh.rotation.x += dy;
+          
           
           prevTouch = { x: e.clientX, y: e.clientY };
         }
@@ -574,12 +604,6 @@
       });
 
       animate();
-
-      setTimeout(() => {
-        if (!originMarkerMesh && window.flyToLocation) {
-          window.flyToLocation(39.9042, 116.4074, '北京', 'PEK');
-        }
-      }, 400);
     }
 
     function toggleBorders() {
@@ -594,7 +618,7 @@
     }
 
     let targetRotX = 0, targetRotY = 0, isFlying = false;
-    let targetCamZ = 5.2;
+    let targetCamZ = 3.0;
     let originMarkerMesh = null;
 
     function latLonToVector3(lat, lon, radius) {
@@ -671,7 +695,7 @@
       beaconGroup.add(innerCoreMesh);
 
       // 3. 中心纯白光点
-      const centerDotGeo = new THREE.CircleGeometry(0.0035, 16);
+      const centerDotGeo = new THREE.CircleGeometry(0.008, 16);
       const centerDotMat = new THREE.MeshBasicMaterial({ color: 0xFFF7ED, side: THREE.DoubleSide });
       const centerDotMesh = new THREE.Mesh(centerDotGeo, centerDotMat);
       centerDotMesh.rotation.x = Math.PI / 2;
@@ -698,7 +722,7 @@
       // 精确视点旋转对齐：将目标经纬度旋转至镜头正中央
       targetRotX = (lat * Math.PI / 180);
       targetRotY = -(lon * Math.PI / 180) - Math.PI / 2;
-      targetCamZ = 5.2; // 单点重置为标准近视距
+      targetCamZ = 3.0; // 单点重置为标准近视距
       isFlying = true;
       isRotating = false; // 定位之后，地球彻底停止自转！稳稳悬停
 
@@ -773,7 +797,7 @@
       targetRotY = -(midLon * Math.PI / 180) - Math.PI / 2;
 
       // 动态计算适宜视距：跨度越大(dist越长)，镜头越往后退(targetCamZ 变大)，确保起终点两城市及整条弧线均落入屏幕可视区中
-      targetCamZ = Math.min(8.0, 5.2 + Math.max(0, (dist - 0.4) * 1.65));
+      targetCamZ = Math.min(8.0, 3.0 + Math.max(0, (dist - 0.4) * 1.65));
 
       isFlying = true;
       isRotating = false;
@@ -802,10 +826,11 @@
             Math.abs(targetRotY - earthMesh.rotation.y) < 0.002 &&
             Math.abs(targetCamZ - camera.position.z) < 0.005) {
           isFlying = false;
+          isRotating = true; // 飞行对准后继续自转
         }
       } else if (isRotating && !isDragging) {
-        earthMesh.rotation.y += 0.0004;
-        cloudMesh.rotation.y += 0.00052;
+        earthMesh.rotation.y += 0.0006;
+        cloudMesh.rotation.y += 0.00075;
       }
 
       // 3D 虚线航线顺滑光速流动与视角自适应密度控制 (Dynamic Dash Density Attenuation)

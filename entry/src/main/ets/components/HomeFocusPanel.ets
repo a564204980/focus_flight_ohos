@@ -5,16 +5,26 @@
 
 import { router, promptAction } from '@kit.ArkUI';
 import { Airport, findAirportByCode, getDistanceKm } from '../models/AirportModel';
+import { PassportStatsView } from './PassportStatsView'
+import { FlightPassportFullReport } from './FlightPassportFullReport';
 import { DestinationSelectDialog } from './DestinationSelectDialog';
 import { FlightMapSelectOverlay } from './FlightMapSelectOverlay';
 
 @Component
 export struct HomeFocusPanel {
   @State selectedTab: number = 0;
-  @State timerMinutes: number = 15;
+  @State timerMinutes: number = 45;
+  @Watch('onStatsSheetChange') @StorageLink('isStatsSheetVisible') isStatsSheetVisible: boolean = false;
+  @StorageLink('isFullReportVisible') isFullReportVisible: boolean = false;
   @Prop isFlightInProgress: boolean = false;
   @Watch('onDestinationChange') @StorageLink('selectedDestinationAirport') selectedDestination?: Airport = undefined;
   @State routeDistanceKm: number = 0;
+  
+  onStatsSheetChange(): void {
+    if (!this.isStatsSheetVisible && this.selectedTab === 1) {
+      this.selectedTab = 0;
+    }
+  }
   
   onStartFlight?: (minutes?: number, dest?: Airport) => void;
   onShowTopToast?: (msg: string) => void;
@@ -169,9 +179,9 @@ export struct HomeFocusPanel {
       Row() {
         // Tab 0: 首页 (Home)
         Column({ space: 4 }) {
-          Image($r('app.media.ic_airport'))
-            .width(22)
-            .height(22)
+          Image($r('app.media.ic_nav_flight'))
+            .width(24)
+            .height(24)
             .fillColor(this.selectedTab === 0 ? '#1E293B' : '#94A3B8')
           
           Circle({ width: 5, height: 5 })
@@ -182,11 +192,11 @@ export struct HomeFocusPanel {
         .alignItems(HorizontalAlign.Center)
         .onClick(() => { this.selectedTab = 0; })
 
-        // Tab 1: 历史 / 日志 (Clock)
+        // Tab 1: 历史 / 统计 (Stats)
         Column({ space: 4 }) {
-          Image($r('app.media.ic_logbook'))
-            .width(22)
-            .height(22)
+          Image($r('app.media.ic_nav_stats'))
+            .width(24)
+            .height(24)
             .fillColor(this.selectedTab === 1 ? '#1E293B' : '#94A3B8')
 
           Circle({ width: 5, height: 5 })
@@ -195,13 +205,16 @@ export struct HomeFocusPanel {
         }
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Center)
-        .onClick(() => { this.selectedTab = 1; })
+        .onClick(() => { 
+          this.selectedTab = 1;
+          this.isStatsSheetVisible = true;
+        })
 
-        // Tab 2: 个人 / 机库 (Profile)
+        // Tab 2: 个人 / 我的 (Mine)
         Column({ space: 4 }) {
-          Image($r('app.media.ic_hangar'))
-            .width(22)
-            .height(22)
+          Image($r('app.media.ic_nav_mine'))
+            .width(24)
+            .height(24)
             .fillColor(this.selectedTab === 2 ? '#1E293B' : '#94A3B8')
 
           Circle({ width: 5, height: 5 })

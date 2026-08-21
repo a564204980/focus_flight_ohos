@@ -15,9 +15,19 @@
 
 import { vibrator } from '@kit.SensorServiceKit';
 import { Airport } from '../models/AirportModel';
+import { CabinWindowProceduralClouds } from './CabinWindowProceduralClouds';
 import { CabinWindowProceduralFrame } from './CabinWindowProceduralFrame';
 import { CabinWindowShadePanel } from './CabinWindowShadePanel';
 
+/**
+ * 电影级渐进式机舱舷窗沉浸视界 (CabinWindowViewOverlay)
+ * 🎬 电影级三幕式启闭流程：
+ * 1. 幕一：界面渐渐变黑 (450ms 纯黑淡入覆盖大地图)；
+ * 2. 幕二：暗场中舷窗柔和浮现 (初始遮阳帘完全关闭 shadeProgress = 1.0)；
+ * 3. 幕三：遮阳帘自动缓缓向上拉开 (1100ms 物理阻尼)，万米平流层/星河迎光绽现！
+ * 4. 退出：舷窗柔和消散，黑色暗场渐渐褪去，优雅重现大地图。
+ * （注：顶栏操作按钮与共享舷窗滑移按钮由顶层 FlightMapHudOverlay 统一呈现，零冗余重叠）
+ */
 @Component
 export struct CabinWindowViewOverlay {
   @Prop remainingTimeString: string = '45:00';
@@ -26,13 +36,38 @@ export struct CabinWindowViewOverlay {
   @Prop destinationAirport: Airport | null = null;
   @Prop isFlightPaused: boolean = false;
   @Prop isTurbulenceActive: boolean = false;
+  @Prop turbulenceMessageText: string = '遭遇巡航微气流，航向平稳修正中';
 
-  // 遮阳板闭合进度：0.0 (全开) ~ 1.0 (全关)
-  @State shadeProgress: number = 0.0;
+  // 1. 全屏纯黑暗场透明度 (0.0 -> 1.0)
+  @State bgDimOpacity: number = 0.0;
+  // 2. 舷窗主体与UI透明度 (0.0 -> 1.0)
+  @State windowUnitOpacity: number = 0.0;
+  @State windowUnitScale: number = 0.92;
+  // 3. 遮阳板闭合进度：默认全关 (1.0)，进场后自动优雅向上滑开 (1.0 -> 0.0)
+  @State shadeProgress: number = 1.0;
 
-  public onToggleWindowView: () => void = () => {};
-  public onPauseResumeFlight: () => void = () => {};
-  public onExitFlight: () => void = () => {};
+  aboutToAppear(): void {
+    // 🎬 幕一：大地图渐渐变黑 (0ms -> 450ms)
+    animateTo({ duration: 450, curve: Curve.EaseInOut }, () => {
+      this.bgDimOpacity = 1.0;
+    });
+
+    // 🎬 幕二：纯黑暗场中舷窗柔和浮现 (300ms 启动，遮阳帘此时全关)
+    setTimeout(() => {
+      animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
+        this.windowUnitOpacity = 1.0;
+        this.windowUnitScale = 1.0;
+      });
+    }, 280);
+
+    // 🎬 幕三：遮阳板自动向上缓缓拉开 (750ms 启动，1.0 -> 0.0)
+    setTimeout(() => {
+      animateTo({ duration: 1100, curve: Curve.FastOutSlowIn }, () => {
+        this.shadeProgress = 0.0;
+      });
+      this.triggerHapticFeedback();
+    }, 720);
+  }
 
   private triggerHapticFeedback(): void {
     try {
@@ -48,30 +83,23 @@ export struct CabinWindowViewOverlay {
 
   build() {
     Stack({ alignContent: Alignment.BottomStart }) {
-      // 1. 周围全黑 OLED 纯黑背景 (Pure Pitch Black Screen)
+      // 1. 周围渐渐变黑的 OLED 纯黑背景遮罩 (Pure Pitch Black Screen Fade)
       Column()
         .width('100%')
         .height('100%')
         .backgroundColor('#000000')
+        .opacity(this.bgDimOpacity)
+        .hitTestBehavior(HitTestMode.None)
 
-      // 2. 居中纯代码程序化客机舷窗总成 (包含动态风景 + 可交互手势遮阳板 + 动态光影程序化窗框)
+      // 2. 居中纯代码程序化客机舷窗总成 (暗场中柔和浮现)
       Stack({ alignContent: Alignment.Center }) {
-        // 2.1 底层：动态风景与可交互遮阳板容器 (精准贴合舷窗跑道形开孔)
+        // 2.1 底层：纯代码真实平流层流云海与可交互遮阳板容器 (精准贴合舷窗跑道形开孔)
         Stack({ alignContent: Alignment.Center }) {
-          // 2.1.1 基础动态天空/风景层
-          Column()
-            .width('100%')
-            .height('100%')
-            .linearGradient({
-              angle: 180,
-              colors: [
-                ['#1E549F', 0.0],
-                ['#4D8BD1', 0.35],
-                ['#8BBCEB', 0.60],
-                ['#C2DFF8', 0.82],
-                ['#EAF4FD', 1.0]
-              ]
-            })
+          // 2.1.1 纯代码真实平流层分形流云海 (多阶水汽羽化、双层视差流动、24 小时无缝无限连续流淌)
+          CabinWindowProceduralClouds({
+            containerWidth: 185,
+            containerHeight: 310
+          })
 
           // 2.1.2 可手势拖拽交互客机遮光板 (双向绑定 shadeProgress)
           CabinWindowShadePanel({
@@ -85,7 +113,7 @@ export struct CabinWindowViewOverlay {
         .borderRadius(70)
         .clip(true)
 
-        // 2.2 前景：100% 纯代码 Canvas 程序化渲染客机舷窗框架 (受光高光随 shadeProgress 实时消退)
+        // 2.2 前景：100% 纯代码 Canvas 程序化渲染客机舷窗框架 (图 1 原生极致质感，受光高光随 shadeProgress 实时消退)
         CabinWindowProceduralFrame({
           frameWidth: 272,
           frameHeight: 442,
@@ -95,123 +123,13 @@ export struct CabinWindowViewOverlay {
       }
       .position({ x: '50%', y: '50%' })
       .markAnchor({ x: '50%', y: '50%' })
+      .opacity(this.windowUnitOpacity)
+      .scale({ x: this.windowUnitScale, y: this.windowUnitScale })
 
-      // 3. 顶部控制栏 (带平滑过渡动画，与精修机场地图界面 1:1 对齐)
-      Row() {
-        // 3.1 左侧：返回退出飞行按钮
-        Stack({ alignContent: Alignment.Center }) {
-          Image($r('app.media.ic_hw_back_white'))
-            .width(20)
-            .height(20)
-            .objectFit(ImageFit.Contain)
-            .opacity(0.85)
-            .animation({ duration: 400, curve: Curve.EaseInOut })
-        }
-        .width(40)
-        .height(40)
-        .borderRadius(20)
-        .backgroundColor('rgba(0, 0, 0, 0.50)')
-        .backdropBlur(25)
-        .border({ width: 0.8, color: 'rgba(255, 255, 255, 0.16)', radius: 20 })
-        .shadow({ radius: 10, color: 'rgba(0, 0, 0, 0.25)', offsetY: 2 })
-        .animation({ duration: 400, curve: Curve.EaseInOut })
-        .hitTestBehavior(HitTestMode.Block)
-        .onClick(() => {
-          this.triggerHapticFeedback();
-          this.onExitFlight();
-        })
-
-        Blank()
-
-        // 3.2 顶部中央：巡航航线信息胶囊
-        Row() {
-          Text(`${this.originAirport ? this.originAirport.code : 'CTU'} ✈ ${this.destinationAirport ? this.destinationAirport.code : 'PEK'}`)
-            .fontSize(13)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#8E8E93')
-            .margin({ right: 6 })
-            .animation({ duration: 400, curve: Curve.EaseInOut })
-
-          Text('· 巡航 10,800M')
-            .fontSize(11)
-            .fontWeight(FontWeight.Medium)
-            .fontColor('#6E6E73')
-            .animation({ duration: 400, curve: Curve.EaseInOut })
-        }
-        .padding({ left: 14, right: 14, top: 8, bottom: 8 })
-        .borderRadius(20)
-        .backgroundColor('rgba(0, 0, 0, 0.50)')
-        .backdropBlur(25)
-        .border({ width: 0.8, color: 'rgba(255, 255, 255, 0.16)', radius: 20 })
-        .shadow({ radius: 10, color: 'rgba(0, 0, 0, 0.25)', offsetY: 2 })
-        .animation({ duration: 400, curve: Curve.EaseInOut })
-
-        Blank()
-
-        // 3.3 右侧：切回大地图视角按钮
-        Stack({ alignContent: Alignment.Center }) {
-          Image($r('app.media.ic_map_layers_white'))
-            .width(18)
-            .height(18)
-            .objectFit(ImageFit.Contain)
-            .opacity(0.85)
-            .animation({ duration: 400, curve: Curve.EaseInOut })
-        }
-        .width(40)
-        .height(40)
-        .borderRadius(20)
-        .backgroundColor('rgba(0, 0, 0, 0.50)')
-        .backdropBlur(25)
-        .border({ width: 0.8, color: 'rgba(255, 255, 255, 0.16)', radius: 20 })
-        .shadow({ radius: 10, color: 'rgba(0, 0, 0, 0.25)', offsetY: 2 })
-        .animation({ duration: 400, curve: Curve.EaseInOut })
-        .hitTestBehavior(HitTestMode.Block)
-        .onClick(() => {
-          this.triggerHapticFeedback();
-          this.onToggleWindowView();
-        })
-      }
-      .width('100%')
-      .padding({ left: 20, right: 20, top: 52 })
-      .alignItems(VerticalAlign.Top)
-      .position({ x: 0, y: 0 })
-      .hitTestBehavior(HitTestMode.Transparent)
-      .zIndex(200)
-
-      // 4. 底部专注任务名称 (左下角) 与 倒计时数字 (右下角) —— 包含平滑颜色过渡动画
-      Row() {
-        // 左下角：当前专注任务名称
-        Text(this.currentFocusTagTitle)
-          .fontSize(24)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#8E8E93')
-          .fontFamily('sans-serif')
-          .lineHeight(38)
-          .height(38)
-          .animation({ duration: 400, curve: Curve.EaseInOut })
-
-        Blank()
-
-        // 右下角：纯数字大号倒计时
-        Text(this.remainingTimeString)
-          .fontSize(30)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#8E8E93')
-          .fontFamily('monospace')
-          .lineHeight(38)
-          .height(38)
-          .animation({ duration: 400, curve: Curve.EaseInOut })
-      }
-      .width('100%')
-      .height(38)
-      .padding({ left: 22, right: 22 })
-      .margin({ bottom: 44 })
-      .alignItems(VerticalAlign.Center)
-      .hitTestBehavior(HitTestMode.None)
-      .zIndex(160)
+      // 3. 气流扰动纯文字广播 (独立浮现于「专注任务名称」正上方，与地图页位置、样式、入场/出场动效 1:1 严格对齐)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#000000')
+    .hitTestBehavior(HitTestMode.Transparent)
   }
 }

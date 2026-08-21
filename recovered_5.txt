@@ -1,0 +1,49 @@
+Created At: 2026-08-21T20:04:36+08:00
+Completed At: 2026-08-21T20:04:36+08:00
+File Path: `file:///d:/project/focus_flight_ohos/entry/src/main/ets/components/FlightPassportFullReport.ets`
+Total Lines: 352
+Total Bytes: 15083
+Showing lines 125 to 165
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+125:             }.width("100%").height(280)
+126: 
+127:             // 国旗排
+128:             Row({ space: 4 }) {
+129:               Text("🇺🇸🇿🇦🇦🇺🇯🇵🇰🇷🇨🇳🇦🇪🇳🇿🇨🇦🇧🇷🇬🇧🇫🇷🇳🇴🇭🇰").fontSize(18)
+130:             }.width("100%").justifyContent(FlexAlign.Center).margin({ bottom: 20 })
+131: 
+132:             Divider().color("rgba(255,255,255,0.05)")
+133: 
+134:             // 护照标题区
+135:             Row() {
+136:               Column({ space: 4 }) {
+137:                 Text("个人专属飞行护照").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#FFFFFF").letterSpacing(1)
+138:                 Row({ space: 4 }) {
+139:                   Text("🛂").fontSize(10)
+140:                   Text("官方认证 • 终身专注记录 • 授权机长").fontSize(10).fontColor("rgba(255,255,255,0.5)").fontWeight(FontWeight.Medium)
+141:                 }
+142:               }.alignItems(HorizontalAlign.Start)
+143:               
+144:               Blank()
+145:               
+146:               // 全息防伪标 (Hologram)
+147:               Stack({ alignContent: Alignment.Center }) {
+148:                 Row().width(32).height(32).borderRadius(6).linearGradient({ angle: 135, colors: [["#A78BFA", 0], ["#60A5FA", 0.5], ["#FBCFE8", 1]] })
+149:                 Text("✈").fontSize(16).fontColor("#FFFFFF")
+150:               }
+151:             }.width("100%").padding({ left: 24, right: 24, top: 24, bottom: 24 }).alignItems(VerticalAlign.Top)
+152: 
+153:             // 数据网格
+154:             Grid() {
+155:               GridItem() { this.DarkGridItem("执飞航班 (次)", "27") }
+156:               GridItem() { this.DarkGridItem("累计里程 (km)", "128,714") }
+157:               GridItem() { this.DarkGridItem("总计飞行时长", "7d 1h") }
+158:               GridItem() { this.DarkGridItem("探索目的地 (个)", "21") }
+159:               GridItem() { this.DarkGridItem("合作航司 (家)", "14") }
+160:             }
+161:             .columnsTemplate("1fr 1fr")
+162:             .rowsGap(24)
+163:             .columnsGap(16)
+164:             .padding({ left: 24, right: 24 })
+165:             
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

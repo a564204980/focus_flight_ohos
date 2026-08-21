@@ -1,0 +1,34 @@
+Created At: 2026-08-21T18:05:57+08:00
+Completed At: 2026-08-21T18:05:57+08:00
+File Path: `file:///d:/project/focus_flight_ohos/entry/src/main/ets/components/FlightPassportFullReport.ets`
+Total Lines: 352
+Total Bytes: 15083
+Showing lines 115 to 140
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+115:             .borderRadius({ topLeft: 24, topRight: 24 })
+116:             .clip(true)
+117:             .justifyContent(FlexAlign.Start)
+118: 
+119:             // 3D 地图 (原生 WebGL 嵌入)
+120:             Stack({ alignContent: Alignment.Center }) {
+121:               Web({ src: $rawfile("earth.html"), controller: this.controller })
+122:                 .width("100%")
+123:                 .height(280)
+124:                 .backgroundColor(Color.Transparent) // 尝试让 Web 透明，或者它自带的 #030712 也可以完美融入夜空
+125:             }.width("100%").height(280)
+126: 
+127:             // 国旗排
+128:             Row({ space: 4 }) {
+129:               Text("🇺🇸🇿🇦🇦🇺🇯🇵🇰🇷🇨🇳🇦🇪🇳🇿🇨🇦🇧🇷🇬🇧🇫🇷🇳🇴🇭🇰").fontSize(18)
+130:             }.width("100%").justifyContent(FlexAlign.Center).margin({ bottom: 20 })
+131: 
+132:             Divider().color("rgba(255,255,255,0.05)")
+133: 
+134:             // 护照标题区
+135:             Row() {
+136:               Column({ space: 4 }) {
+137:                 Text("个人专属飞行护照").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#FFFFFF").letterSpacing(1)
+138:                 Row({ space: 4 }) {
+139:                   Text("🛂").fontSize(10)
+140:                   Text("官方认证 • 终身专注记录 • 授权机长").fontSize(10).fontColor("rgba(255,255,255,0.5)").fontWeight(FontWeight.Medium)
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

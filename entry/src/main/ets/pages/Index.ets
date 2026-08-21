@@ -12,12 +12,16 @@ import { CyberThemeSelector } from '../components/CyberThemeSelector';
 import { PlaneCabinShellOverlay } from '../components/PlaneCabinShellOverlay';
 import { FlightMapHudOverlay } from '../components/FlightMapHudOverlay';
 import { CabinWindowViewOverlay } from '../components/CabinWindowViewOverlay';
+import { ArrivalBoardingPassCard } from '../components/ArrivalBoardingPassCard';
 import { FlightAbortConfirmDialog } from '../components/FlightAbortConfirmDialog';
 import { FlightTrailSettingsOverlay } from '../components/FlightTrailSettingsOverlay';
 import { FlightTrailParticleOverlay } from '../components/FlightTrailParticleOverlay';
 import { MapRenderHelper } from '../utils/MapRenderHelper';
+import { SoundEffectHelper } from '../utils/SoundEffectHelper';
 import { FlightRouteEngine, RouteDistanceProfile } from '../utils/FlightRouteEngine';
 import { FlightSessionStore, FlightSessionData } from '../services/FlightSessionStore';
+import { PassportStatsView } from '../components/PassportStatsView';
+import { FlightPassportFullReport } from '../components/FlightPassportFullReport';
 import {
   LatLngPoint,
   interpolateLatLng
@@ -53,6 +57,8 @@ function getPekRunwayEnd(): LatLngPoint {
 @Entry
 @Component
 struct Index {
+  @StorageLink('isFullReportVisible') isFullReportVisible: boolean = false;
+  @StorageLink('isStatsSheetVisible') isStatsSheetVisible: boolean = false;
   // === 沉浸式物理刹停与停靠动画状态 ===
   @State planeY: number = -45;                   // 飞机及阴影纵向位置（固定原位）
   @State planeX: number = 0;                     // 飞机及阴影横向对齐偏移（地图模式对齐跑道红点）
@@ -138,6 +144,7 @@ struct Index {
   private flightTickFrameCount: number = 0;       // 飞行帧计数器
   @State isTurbulenceAlertVisible: boolean = false; // 气流扰动左下角提示显隐
   @State isWindowViewMode: boolean = false;         // 🪟 机舱舷窗沉浸专注视角
+  @State isArrivalBoardingPassVisible: boolean = false; // 🎫 专属落地通关登机牌
   @State turbulenceMessageText: string = '遭遇巡航微气流，航向平稳修正中';
   private readonly turbulenceQuotes: string[] = [
     '遭遇巡航微气流，航向平稳修正中',
@@ -780,14 +787,23 @@ struct Index {
           this.isHudVisible = true;
 
           // 恢复断点续飞
+          if (session.isWindowViewMode) {
+            this.isWindowViewMode = true;
+          }
           this.startFlightAnimationDirectly(elapsedMs);
           return;
         } else {
           // 专注时长已在后台自然完成
+          this.isWindowViewMode = false;
           await FlightSessionStore.clearSession();
+          SoundEffectHelper.playCabinArrivalChime();
+          this.triggerHapticFeedback();
           this.honkToastText = '🛬 专注已在后台完成！成功降落目的地';
           this.isHonkToastVisible = true;
           setTimeout(() => { this.isHonkToastVisible = false; }, 3000);
+          setTimeout(() => {
+            this.isArrivalBoardingPassVisible = true;
+          }, 800);
         }
       }
 
@@ -929,6 +945,11 @@ struct Index {
    */
   private async startFlightAnimationDirectly(resumeElapsedMs: number = 0): Promise<void> {
     this.setKeepScreenOn(true); // 🚀 开启专注飞行：阻止手机自动休眠熄屏，保持桌面仪表盘常亮
+    if (resumeElapsedMs === 0) {
+      // 🔔 动力全推起飞：播放经典民航客舱“叮咚～”提示音与触感反馈
+      SoundEffectHelper.playCabinArrivalChime();
+      this.triggerHapticFeedback();
+    }
     this.turbulenceCooldownFrames = 1500; // 起飞后前 25 秒保持绝对平静稳定巡航
     this.targetTurbulenceYaw = 0;
     this.curTurbulenceYaw = 0;
@@ -1079,7 +1100,12 @@ struct Index {
       if (overallProgress >= 1.0) {
         if (this.flightDisplaySync) { this.flightDisplaySync.stop(); this.flightDisplaySync = undefined; }
         this.isFlightInProgress = false;
+        this.isWindowViewMode = false;
         FlightSessionStore.clearSession();
+
+        // 🔔 播放经典民航客舱“叮咚～”落地提示音与触感反馈
+        SoundEffectHelper.playCabinArrivalChime();
+        this.triggerHapticFeedback();
 
         // 🎯 保证飞机 100% 绝对死锁在跑道 80% 最终停止点
         const finalPos = points[points.length - 1];
@@ -1123,6 +1149,9 @@ struct Index {
         const destCode = destApt ? destApt.code : 'PEK';
         this.honkToastText = `🛬 专注 ${durationMinutes} 分钟完成！成功降落抵达 ${destCity} · ${destName} (${destCode})`;
         this.isHonkToastVisible = true;
+        setTimeout(() => {
+          this.isArrivalBoardingPassVisible = true;
+        }, 800);
         return;
       }
 
@@ -2035,6 +2064,7 @@ struct Index {
         FlightMapHudOverlay({
           isMapBackgroundVisible: this.isMapBackgroundVisible,
           isCabinExposed: this.isCabinExposed,
+          isWindowViewMode: this.isWindowViewMode,
           isCameraFollowLocked: this.isCameraFollowLocked,
           currentMapType: this.currentMapType,
           currentFocusTagTitle: this.currentFocusTagTitle,
@@ -2047,9 +2077,12 @@ struct Index {
           },
           onToggleWindowView: () => {
             this.triggerHapticFeedback();
-            animateTo({ duration: 400, curve: Curve.EaseInOut }, () => {
-              this.isWindowViewMode = !this.isWindowViewMode;
-            });
+            this.isWindowViewMode = !this.isWindowViewMode;
+            FlightSessionStore.updateWindowViewMode(this.isWindowViewMode);
+          },
+          onTestArrivalBoardingPass: () => {
+            this.triggerHapticFeedback();
+            this.isArrivalBoardingPassVisible = true;
           },
           onToggleMapType: () => this.toggleMapTypeMode(),
           onToggleCameraFollow: () => this.toggleCameraFollowMode(),
@@ -2065,7 +2098,7 @@ struct Index {
           }
         })
           .hitTestBehavior(HitTestMode.Transparent)
-          .zIndex(250)
+          .zIndex(260)
       }
 
       // 6.5 🪟 机舱舷窗沉浸专注视角 (StandBy 桌面时钟模式)
@@ -2077,37 +2110,44 @@ struct Index {
           destinationAirport: this.currentDestinationAirport || findAirportByCode('PEK'),
           isFlightPaused: this.isFlightPaused,
           isTurbulenceActive: this.isTurbulenceAlertVisible,
-          onToggleWindowView: () => {
-            this.triggerHapticFeedback();
-            animateTo({ duration: 400, curve: Curve.EaseInOut }, () => {
-              this.isWindowViewMode = false;
-            });
-          },
-          onPauseResumeFlight: () => {
-            this.triggerHapticFeedback();
-            this.isFlightPaused = !this.isFlightPaused;
-          },
-          onExitFlight: () => {
-            this.triggerHapticFeedback();
-            this.isAbortDialogVisible = true;
-          }
+          turbulenceMessageText: this.turbulenceMessageText
         })
-          .zIndex(260)
-          .transition(TransitionEffect.OPACITY.animation({ duration: 400, curve: Curve.FastOutSlowIn }))
+          .zIndex(250)
       }
 
       // 7. 专注飞行终止备降二次确认弹窗 (优雅航空沉浸式提示)
-      FlightAbortConfirmDialog({
-        isVisible: this.isAbortDialogVisible,
-        onCancel: () => {
-          this.triggerHapticFeedback();
-          this.isAbortDialogVisible = false;
-        },
-        onConfirmAbort: () => {
-          this.triggerHapticFeedback();
-          this.abortFlightAndReturnToHangar();
-        }
-      })
+      if (this.isAbortDialogVisible) {
+        FlightAbortConfirmDialog({
+          isVisible: this.isAbortDialogVisible,
+          onCancel: () => {
+            this.triggerHapticFeedback();
+            this.isAbortDialogVisible = false;
+          },
+          onConfirmAbort: () => {
+            this.triggerHapticFeedback();
+            this.abortFlightAndReturnToHangar();
+          }
+        })
+          .zIndex(290)
+      }
+
+      // 7.5 🎫 专属【落地通关登机牌】华丽结算卡片 (Dribbble 顶级质感)
+      if (this.isArrivalBoardingPassVisible) {
+        ArrivalBoardingPassCard({
+          isVisible: this.isArrivalBoardingPassVisible,
+          durationMinutes: this.selectedFocusDurationMinutes > 0 ? this.selectedFocusDurationMinutes : 45,
+          flightDistanceKm: Math.round((this.selectedFocusDurationMinutes > 0 ? this.selectedFocusDurationMinutes : 45) * 20.4),
+          focusTagTitle: this.currentFocusTagTitle,
+          originAirport: findAirportByCode('CTU'),
+          destinationAirport: this.currentDestinationAirport || findAirportByCode('PEK'),
+          seatId: '01A',
+          onCompleteAndExit: () => {
+            this.isArrivalBoardingPassVisible = false;
+            this.returnFromMapToHangar(false);
+          }
+        })
+          .zIndex(300)
+      }
 
       // 8. 飞行视觉个性化设置抽屉 (航线效果 + 巡航尾迹双 Tab 切换)
       if (this.isTrailSettingsVisible) {
@@ -2131,6 +2171,77 @@ struct Index {
           .position({ x: 0, y: 0 })
           .zIndex(300)
       }
+
+      // 9. 飞行护照底部抽屉面板 (Passport Stats Drawer, zIndex 500)
+      Stack({ alignContent: Alignment.Bottom }) {
+        // 半透明黑色背景遮罩
+        Rect()
+          .width('100%')
+          .height('100%')
+          .fill('rgba(0, 0, 0, 0.45)')
+          .opacity(this.isStatsSheetVisible ? 1 : 0)
+          .hitTestBehavior(this.isStatsSheetVisible ? HitTestMode.Default : HitTestMode.None)
+          .animation({ duration: 300 })
+          .onClick(() => {
+            if (this.isStatsSheetVisible) {
+              this.isStatsSheetVisible = false;
+            }
+          })
+
+        // 抽屉卡片主体
+        Column() {
+          // 顶部小横条指示器
+          Row() {
+            Row()
+              .width(36)
+              .height(4)
+              .backgroundColor('#D1D5DB')
+              .borderRadius(2)
+          }
+          .width('100%')
+          .height(20)
+          .justifyContent(FlexAlign.Center)
+
+          PassportStatsView({
+            onClose: () => {
+              this.isStatsSheetVisible = false;
+            },
+            onOpenFullReport: () => {
+              this.isFullReportVisible = true;
+              // 关键：isStatsSheetVisible 保持为 true！下层护照抽屉不动、不收起！
+            }
+          })
+          .layoutWeight(1)
+        }
+        .width('100%')
+        .height('88%')
+        .backgroundColor('#fff7f4')
+        .borderRadius({ topLeft: 24, topRight: 24 })
+        .shadow({ radius: 25, color: 'rgba(0,0,0,0.25)', offsetY: -6 })
+        .position({ x: 0, y: this.isStatsSheetVisible ? '12%' : '120%' })
+        .animation({ duration: 350, curve: Curve.FastOutSlowIn })
+      }
+      .width('100%')
+      .height('100%')
+      .position({ x: 0, y: 0 })
+      .hitTestBehavior(this.isStatsSheetVisible ? HitTestMode.Default : HitTestMode.None)
+      .zIndex(500)
+
+      // 10. 专注飞行日志全屏页面（提前常驻挂载 WebGL 3D 地球，0ms秒开无白屏，zIndex 900）
+      FlightPassportFullReport({
+        onClose: () => {
+          this.isFullReportVisible = false;
+          // 关键：关闭全屏日志时，由于 isStatsSheetVisible 仍为 true，直接露出下方的护照抽屉！
+        }
+      })
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#110928')
+        .opacity(this.isFullReportVisible ? 1 : 0)
+        .position({ x: 0, y: this.isFullReportVisible ? 0 : '120%' })
+        .hitTestBehavior(this.isFullReportVisible ? HitTestMode.Default : HitTestMode.None)
+        .animation({ duration: 380, curve: Curve.FastOutSlowIn })
+        .zIndex(900)
     }
     .width('100%')
     .height('100%')
@@ -2362,6 +2473,8 @@ struct Index {
     // 2. 重置飞行状态标记与目的地
     this.isFlightInProgress = false;
     this.isFlightPaused = false;
+    this.isWindowViewMode = false;
+    this.isArrivalBoardingPassVisible = false;
     this.isPlaneMarkerActive = false;
     AppStorage.setOrCreate('selectedDestinationAirport', undefined);
     AppStorage.setOrCreate('selectedDestinationCode', '');
@@ -2397,6 +2510,12 @@ struct Index {
       this.getUIContext()?.animateTo({ duration: 1000, curve: Curve.EaseOut }, () => {
         this.isVehiclesDocked = true;
       });
+
+      // 航班返航结束，再次呼叫加油车驶入保障机位
+      this.isFuelTruckDeparting = false;
+      this.isFuelTruckParked = false;
+      this.runRealTruckPhysicsAnimation();
+
     }, 250);
 
     // 6. 顶部通知胶囊

@@ -19,6 +19,7 @@ import { mapCommon } from '@kit.MapKit';
 export struct FlightMapHudOverlay {
   @Watch('onVisibilityStateChange') @Prop isMapBackgroundVisible: boolean = false;
   @Watch('onVisibilityStateChange') @Prop isCabinExposed: boolean = false;
+  @Watch('onVisibilityStateChange') @Prop isWindowViewMode: boolean = false;
   @Prop isCameraFollowLocked: boolean = true;
   @Prop currentMapType: number = mapCommon.MapType.SATELLITE;
   @Prop currentFocusTagTitle: string = '深度学习';
@@ -30,6 +31,7 @@ export struct FlightMapHudOverlay {
 
   public onOpenSettings: () => void = () => {};
   public onToggleWindowView: () => void = () => {};
+  public onTestArrivalBoardingPass: () => void = () => {};
   public onToggleMapType: () => void = () => {};
   public onToggleCameraFollow: () => void = () => {};
   public onExitFlight: () => void = () => {};
@@ -50,8 +52,8 @@ export struct FlightMapHudOverlay {
     const shouldShow = this.isMapBackgroundVisible && !this.isCabinExposed;
     if (animate) {
       this.getUIContext()?.animateTo({
-        duration: 700,
-        curve: Curve.EaseOut
+        duration: 350,
+        curve: Curve.EaseInOut
       }, () => {
         this.isMapControlsVisible = shouldShow;
       });
@@ -71,6 +73,8 @@ export struct FlightMapHudOverlay {
               .width(20)
               .height(20)
               .objectFit(ImageFit.Contain)
+              .opacity(this.isWindowViewMode ? 0.55 : 1.0)
+              .animation({ duration: 420, curve: Curve.FastOutSlowIn })
           }
           .width(40)
           .height(40)
@@ -87,94 +91,141 @@ export struct FlightMapHudOverlay {
 
           Blank()
 
-          // 1.2 右侧：地图专属高级毛玻璃胶囊控制坞 (垂直聚合：外观定制 -> 舷窗视角 -> 图层切换 -> 视角回正)
-          Column() {
-            // 1. 设置按钮 (飞行外观定制)
+            // 1.2 右侧功能控制区 (标准线性流布局，保证所有图标点击绝对灵敏)
+          Column({ space: 12 }) {
+            // 1.2.1 上方：地图专属高级毛玻璃三联胶囊 (外观定制 -> 图层切换 -> 视角回正)
+            Column() {
+              // 1. 设置按钮 (飞行外观定制)
+              Stack({ alignContent: Alignment.Center }) {
+                Image(this.isTerrainMode() ? $r('app.media.ic_settings_dark') : $r('app.media.ic_settings_white'))
+                  .width(18)
+                  .height(18)
+                  .objectFit(ImageFit.Contain)
+              }
+              .width(40)
+              .height(40)
+              .hitTestBehavior(HitTestMode.Default)
+              .onClick(() => {
+                this.onOpenSettings();
+              })
+
+              // 极细微透分割线 1
+              Divider()
+                .width(22)
+                .strokeWidth(0.5)
+                .color(this.isTerrainMode() ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)')
+
+              // 2. 地图图层/层级切换 (标准矢量 / 卫星遥感)
+              Stack({ alignContent: Alignment.Center }) {
+                Image(this.isTerrainMode() ? $r('app.media.ic_map_layers') : $r('app.media.ic_map_layers_white'))
+                  .width(18)
+                  .height(18)
+                  .objectFit(ImageFit.Contain)
+              }
+              .width(40)
+              .height(40)
+              .hitTestBehavior(HitTestMode.Default)
+              .onClick(() => {
+                this.onToggleMapType();
+              })
+
+              // 极细微透分割线 2
+              Divider()
+                .width(22)
+                .strokeWidth(0.5)
+                .color(this.isTerrainMode() ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)')
+
+              // 3. 视角跟随/定位锁定切换 (Heading-Up 航向朝上)
+              Stack({ alignContent: Alignment.Center }) {
+                Image(this.isCameraFollowLocked ? $r('app.media.ic_location_cyan') : (this.isTerrainMode() ? $r('app.media.ic_location_dark') : $r('app.media.ic_location_white')))
+                  .width(16)
+                  .height(16)
+                  .objectFit(ImageFit.Contain)
+              }
+              .width(40)
+              .height(40)
+              .hitTestBehavior(HitTestMode.Default)
+              .onClick(() => {
+                this.onToggleCameraFollow();
+              })
+            }
+            .width(40)
+            .borderRadius(20)
+            .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(0, 0, 0, 0.50)')
+            .backdropBlur(25)
+            .border({
+              width: 0.8,
+              color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
+              radius: 20
+            })
+            .shadow({
+              radius: 10,
+              color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)',
+              offsetY: 2
+            })
+            .opacity(this.isWindowViewMode ? 0.0 : 1.0)
+            .animation({ duration: 320, curve: Curve.EaseInOut })
+            .hitTestBehavior(this.isWindowViewMode ? HitTestMode.None : HitTestMode.Default)
+
+            // 1.2.2 唯一物理舷窗按钮 (进入舷窗时平滑上滑 -132vp 至顶栏，退出时平滑下滑回弹至 0)
             Stack({ alignContent: Alignment.Center }) {
-              Image(this.isTerrainMode() ? $r('app.media.ic_settings_dark') : $r('app.media.ic_settings_white'))
+              Image(this.isTerrainMode() ? $r('app.media.ic_cabin_window') : $r('app.media.ic_cabin_window_white'))
                 .width(18)
                 .height(18)
                 .objectFit(ImageFit.Contain)
+                .opacity(this.isWindowViewMode ? 0.55 : 1.0)
+                .animation({ duration: 420, curve: Curve.FastOutSlowIn })
             }
             .width(40)
             .height(40)
-            .hitTestBehavior(HitTestMode.Block)
-            .onClick(() => {
-              this.onOpenSettings();
+            .borderRadius(20)
+            .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(0, 0, 0, 0.50)')
+            .backdropBlur(25)
+            .border({
+              width: 0.8,
+              color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
+              radius: 20
             })
-
-            // 极细微透分割线 1
-            Divider()
-              .width(22)
-              .strokeWidth(0.5)
-              .color(this.isTerrainMode() ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)')
-
-            // 2. 🪟 机舱舷窗沉浸专注视角切换
-            Stack({ alignContent: Alignment.Center }) {
-              Text('🪟')
-                .fontSize(16)
-            }
-            .width(40)
-            .height(40)
-            .hitTestBehavior(HitTestMode.Block)
+            .shadow({
+              radius: 10,
+              color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)',
+              offsetY: 2
+            })
+            .translate({ y: this.isWindowViewMode ? -132 : 0 })
+            .animation({ duration: 420, curve: Curve.FastOutSlowIn })
+            .hitTestBehavior(HitTestMode.Default)
             .onClick(() => {
               this.onToggleWindowView();
             })
 
-            // 极细微透分割线 2
-            Divider()
-              .width(22)
-              .strokeWidth(0.5)
-              .color(this.isTerrainMode() ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)')
-
-            // 3. 地图图层/层级切换 (标准矢量 / 卫星遥感)
+            // 1.2.3 🎫 专属【落地通关登机牌】测试按钮
             Stack({ alignContent: Alignment.Center }) {
-              Image(this.isTerrainMode() ? $r('app.media.ic_map_layers') : $r('app.media.ic_map_layers_white'))
-                .width(18)
-                .height(18)
-                .objectFit(ImageFit.Contain)
+              Text('🎫')
+                .fontSize(16)
             }
             .width(40)
             .height(40)
-            .hitTestBehavior(HitTestMode.Block)
-            .onClick(() => {
-              this.onToggleMapType();
+            .borderRadius(20)
+            .backgroundColor((this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(255, 255, 255, 0.90)' : 'rgba(0, 0, 0, 0.50)')
+            .backdropBlur(25)
+            .border({
+              width: 0.8,
+              color: (this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
+              radius: 20
             })
-
-            // 极细微透分割线 3
-            Divider()
-              .width(22)
-              .strokeWidth(0.5)
-              .color(this.isTerrainMode() ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.10)')
-
-            // 4. 视角跟随/定位锁定切换 (Heading-Up 航向朝上)
-            Stack({ alignContent: Alignment.Center }) {
-              Image(this.isCameraFollowLocked ? $r('app.media.ic_location_cyan') : (this.isTerrainMode() ? $r('app.media.ic_location_dark') : $r('app.media.ic_location_white')))
-                .width(16)
-                .height(16)
-                .objectFit(ImageFit.Contain)
-            }
-            .width(40)
-            .height(40)
-            .hitTestBehavior(HitTestMode.Block)
+            .shadow({
+              radius: 10,
+              color: (this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)',
+              offsetY: 2
+            })
+            .opacity(this.isWindowViewMode ? 0.0 : 1.0)
+            .animation({ duration: 320, curve: Curve.EaseInOut })
+            .hitTestBehavior(this.isWindowViewMode ? HitTestMode.None : HitTestMode.Default)
             .onClick(() => {
-              this.onToggleCameraFollow();
+              this.onTestArrivalBoardingPass();
             })
           }
           .width(40)
-          .borderRadius(20)
-          .backgroundColor(this.isTerrainMode() ? 'rgba(255, 255, 255, 0.90)' : 'rgba(0, 0, 0, 0.50)')
-          .backdropBlur(25)
-          .border({
-            width: 0.8,
-            color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
-            radius: 20
-          })
-          .shadow({
-            radius: 10,
-            color: this.isTerrainMode() ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)',
-            offsetY: 2
-          })
           .opacity(this.isMapControlsVisible ? 1.0 : 0.0)
           .translate({ y: this.isMapControlsVisible ? 0 : -14 })
           .animation({ duration: 600, curve: Curve.EaseOut })
@@ -209,7 +260,7 @@ export struct FlightMapHudOverlay {
         Text(this.turbulenceMessageText)
           .fontSize(12)
           .fontWeight(FontWeight.Normal)
-          .fontColor(this.isTerrainMode() ? '#334155' : 'rgba(255, 255, 255, 0.90)')
+          .fontColor(this.isWindowViewMode ? 'rgba(204, 204, 204, 0.85)' : (this.isTerrainMode() ? '#334155' : 'rgba(255, 255, 255, 0.90)'))
           .textShadow({ radius: 6, color: 'rgba(0, 0, 0, 0.60)', offsetY: 1 })
           .padding({ left: 22, right: 22 })
           .margin({ bottom: 88 })
@@ -236,7 +287,7 @@ export struct FlightMapHudOverlay {
         Text(this.currentFocusTagTitle)
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#FFFFFF')
+          .fontColor(this.isWindowViewMode ? '#8E8E93' : '#FFFFFF')
           .animation({ duration: 400, curve: Curve.EaseInOut })
           .fontFamily('sans-serif')
           .lineHeight(38)
@@ -248,7 +299,7 @@ export struct FlightMapHudOverlay {
         Text(this.remainingTimeString)
           .fontSize(30)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#FFFFFF')
+          .fontColor(this.isWindowViewMode ? '#8E8E93' : '#FFFFFF')
           .animation({ duration: 400, curve: Curve.EaseInOut })
           .fontFamily('monospace')
           .lineHeight(38)

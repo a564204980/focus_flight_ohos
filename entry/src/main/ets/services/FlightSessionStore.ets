@@ -21,6 +21,7 @@ export interface FlightSessionData {
   originCode: string;
   destCode: string;
   startTimeMs: number;
+  isWindowViewMode?: boolean; // 🪟 记录用户是否处于舷窗视角模式
 }
 
 export class FlightSessionStore {
@@ -40,6 +41,21 @@ export class FlightSessionStore {
       hilog.error(DOMAIN, 'FlightSessionStore', 'Failed to getPreferences: %{public}s', JSON.stringify(err));
     }
     return null;
+  }
+
+  /**
+   * 更新当前飞行会话的舷窗视图模式状态
+   */
+  static async updateWindowViewMode(isWindowViewMode: boolean, context?: common.Context): Promise<void> {
+    try {
+      const session = await FlightSessionStore.getSession(context);
+      if (session && session.isFlightActive) {
+        session.isWindowViewMode = isWindowViewMode;
+        await FlightSessionStore.saveSession(session, context);
+      }
+    } catch (err) {
+      hilog.error(DOMAIN, 'FlightSessionStore', 'Failed to updateWindowViewMode: %{public}s', JSON.stringify(err));
+    }
   }
 
   /**
