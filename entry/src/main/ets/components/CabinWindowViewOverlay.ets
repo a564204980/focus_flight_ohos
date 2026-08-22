@@ -37,6 +37,7 @@ export struct CabinWindowViewOverlay {
   @Prop isFlightPaused: boolean = false;
   @Prop isTurbulenceActive: boolean = false;
   @Prop turbulenceMessageText: string = '遭遇巡航微气流，航向平稳修正中';
+  onOpenLiveLog?: () => void;
 
   // 1. 全屏纯黑暗场透明度 (0.0 -> 1.0)
   @State bgDimOpacity: number = 0.0;

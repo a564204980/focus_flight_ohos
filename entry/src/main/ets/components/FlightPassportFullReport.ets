@@ -1,4 +1,5 @@
 import { webview } from '@kit.ArkWeb';
+import { CloseButton } from './CloseButton';
 
 @Observed
 export class ChartItem {
@@ -32,21 +33,13 @@ export struct FlightPassportFullReport {
       Column() {
         Row() {
           // 自定义几何绘制关闭按钮 (遵循 UI Skill)
-          Stack({ alignContent: Alignment.Center }) {
-            Row()
-              .width(32).height(32)
-              .backgroundColor("rgba(255,255,255,0.1)") // 暗色背景下的半透明底盘
-              .borderRadius(16)
-            
-            Stack({ alignContent: Alignment.Center }) {
-              Rect().width(14).height(2.5).radius(1).fill("#FFFFFF").rotate({ angle: 45 })
-              Rect().width(14).height(2.5).radius(1).fill("#FFFFFF").rotate({ angle: -45 })
-            }
-          }
-          .width(32).height(32)
-          .onClick(() => {
-            if (this.onClose) {
-              this.onClose();
+          CloseButton({
+            circleColor: "rgba(255,255,255,0.1)",
+            iconColor: "#FFFFFF",
+            onClickAction: () => {
+              if (this.onClose) {
+                this.onClose();
+              }
             }
           })
           
@@ -130,18 +123,25 @@ export struct FlightPassportFullReport {
               }, (item: string, index: number) => index.toString())
             }
             .width("100%")
-            .margin({ top: 6, bottom: 6 })
+            .height(38)
+            .backgroundColor("rgba(30, 16, 69, 0.6)") // 仅半透明，无毛玻璃
+            .borderRadius({ topLeft: 24, topRight: 24 })
+            .clip(true) // 裁剪掉超出圆角的小飞机
             .justifyContent(FlexAlign.Center)
             .alignItems(VerticalAlign.Center)
-            .zIndex(1)
+            .zIndex(2)
 
             // 3D 地图 (原生 WebGL 嵌入)
             Stack({ alignContent: Alignment.Center }) {
               Web({ src: $rawfile("earth.html"), controller: this.controller })
                 .width("100%")
-                .height(280)
+                .height(340)
                 .backgroundColor(Color.Transparent)
-            }.width("100%").height(280)
+            }
+            .width("100%")
+            .height(340)
+            .margin({ top: -60, bottom: 10 }) // 让地球大幅上移，同时给底部国旗留出呼吸空间
+            .zIndex(1)
 
             // 国旗排
             Row({ space: 4 }) {
@@ -153,29 +153,20 @@ export struct FlightPassportFullReport {
             // 护照标题区
             Row() {
               Column({ space: 4 }) {
-                Text("个人专属飞行护照").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#FFFFFF").letterSpacing(1)
-                Row({ space: 4 }) {
-                  Text("🛂").fontSize(10) // Small icon
-                  Text("官方认证 · 终身专注记录 · 授权机长").fontSize(10).fontColor("rgba(255,255,255,0.5)").fontWeight(FontWeight.Medium)
-                }
+                Text("我的专注航行记录").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#FFFFFF").letterSpacing(1)
+                Text("Focus Flight · 终身专注里程碑").fontSize(10).fontColor("rgba(255,255,255,0.5)").fontWeight(FontWeight.Medium)
               }.alignItems(HorizontalAlign.Start)
               
               Blank()
-              
-              // Flight Icon Button
-              Stack({ alignContent: Alignment.Center }) {
-                 Row().width(32).height(32).borderRadius(6).linearGradient({ angle: 135, colors: [["#A78BFA", 0], ["#60A5FA", 0.5], ["#FBCFE8", 1]] })
-                 Image($r("app.media.ic_nav_flight")).width(16).height(16).fillColor("#FFFFFF").rotate({ angle: 90 })
-              }
             }.width("100%").padding({ left: 24, right: 24, top: 24, bottom: 24 }).alignItems(VerticalAlign.Top)
 
             // 数据网格
             Grid() {
-              GridItem() { this.DarkGridItem("执飞航班 (次)", "27") }
-              GridItem() { this.DarkGridItem("累计里程 (km)", "128,714") }
-              GridItem() { this.DarkGridItem("总计飞行时长", "7d 1h") }
+              GridItem() { this.DarkGridItem("完成专注 (次)", "27") }
+              GridItem() { this.DarkGridItem("累计航程 (km)", "128,714") }
+              GridItem() { this.DarkGridItem("总专注时长", "7d 1h") }
               GridItem() { this.DarkGridItem("探索目的地 (个)", "21") }
-              GridItem() { this.DarkGridItem("合作航司 (家)", "14") }
+              GridItem() { this.DarkGridItem("连续专注 (天)", "14") }
             }
             .columnsTemplate("1fr 1fr")
             .rowsGap(24)
@@ -192,7 +183,7 @@ export struct FlightPassportFullReport {
               .margin({ top: 40, bottom: 40, left: 20, right: 20 })
           }
           .width("100%")
-          .backgroundColor("rgba(30, 16, 69, 0.85)") // 保持护照卡的底色，增加微弱透明度
+          .backgroundColor("#1E1045") // 护照卡的底色
           .borderRadius({ topLeft: 24, topRight: 24 })
           .clip(true)
           .margin({ top: 10 })
@@ -225,68 +216,77 @@ export struct FlightPassportFullReport {
               Row() {
                 Text("专注趋势").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#000000").layoutWeight(1)
                 
-                Row() {
-                  // 按月份 Tab
-                  Text("按月份")
-                    .fontSize(12)
-                    .fontColor(this.currentChartMode === 'month' ? "#000000" : "#94A3B8")
-                    .backgroundColor(this.currentChartMode === 'month' ? "#F1F5F9" : "transparent")
-                    .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+                Stack({ alignContent: Alignment.Start }) {
+                  // 滑动高亮背景
+                  Row()
+                    .width(56)
+                    .height(24)
+                    .backgroundColor("#F1F5F9")
                     .borderRadius(12)
-                    .margin({ left: 16 })
-                    .onClick(() => {
-                      this.getUIContext().animateTo({ duration: 400, curve: Curve.EaseInOut }, () => {
-                        this.currentChartMode = 'month';
-                        let monthData: Array<ChartItem> = [
-                          new ChartItem("1月", 5), new ChartItem("2月", 3), new ChartItem("3月", 8),
-                          new ChartItem("4月", 6), new ChartItem("5月", 7), new ChartItem("6月", 5),
-                          new ChartItem("7月", 8), new ChartItem("8月", 4), new ChartItem("9月", 6),
-                          new ChartItem("10月", 2), new ChartItem("11月", 5), new ChartItem("12月", 7)
-                        ];
-                        for (let i = 0; i < 7; i++) {
-                          this.chartData[i].label = monthData[i].label;
-                          this.chartData[i].value = monthData[i].value;
-                        }
-                        for (let i = 7; i < 12; i++) {
-                          this.chartData.push(new ChartItem(monthData[i].label, monthData[i].value));
-                        }
-                      });
-                    })
+                    .offset({ x: this.currentChartMode === 'month' ? 0 : 56 })
+                    .animation({ duration: 300, curve: Curve.FastOutSlowIn })
 
-                  // 按星期 Tab
-                  Text("按星期")
-                    .fontSize(12)
-                    .fontColor(this.currentChartMode === 'week' ? "#000000" : "#94A3B8")
-                    .backgroundColor(this.currentChartMode === 'week' ? "#F1F5F9" : "transparent")
-                    .padding({ left: 10, right: 10, top: 4, bottom: 4 })
-                    .borderRadius(12)
-                    .margin({ left: 8 })
-                    .onClick(() => {
-                      this.getUIContext().animateTo({ duration: 400, curve: Curve.EaseInOut }, () => {
-                        this.currentChartMode = 'week';
-                        let weekData: Array<ChartItem> = [
-                          new ChartItem("周日", 3), new ChartItem("周一", 7), new ChartItem("周二", 2),
-                          new ChartItem("周三", 4), new ChartItem("周四", 3), new ChartItem("周五", 4),
-                          new ChartItem("周六", 4)
-                        ];
-                        for (let i = 0; i < 7; i++) {
-                          this.chartData[i].label = weekData[i].label;
-                          this.chartData[i].value = weekData[i].value;
-                        }
-                        if (this.chartData.length > 7) {
-                          this.chartData.splice(7, this.chartData.length - 7);
-                        }
-                      });
-                    })
-                }.padding({ left: 20, bottom: 16 })
-              }.width("100%")
+                  Row() {
+                    // 按月份 Tab
+                    Text("按月份")
+                      .fontSize(12)
+                      .fontColor(this.currentChartMode === 'month' ? "#000000" : "#94A3B8")
+                      .textAlign(TextAlign.Center)
+                      .width(56)
+                      .height(24)
+                      .onClick(() => {
+                        this.getUIContext().animateTo({ duration: 400, curve: Curve.EaseInOut }, () => {
+                          this.currentChartMode = 'month';
+                          let monthData: Array<ChartItem> = [
+                            new ChartItem("1月", 5), new ChartItem("2月", 3), new ChartItem("3月", 8),
+                            new ChartItem("4月", 6), new ChartItem("5月", 7), new ChartItem("6月", 5),
+                            new ChartItem("7月", 8), new ChartItem("8月", 4), new ChartItem("9月", 6),
+                            new ChartItem("10月", 2), new ChartItem("11月", 5), new ChartItem("12月", 7)
+                          ];
+                          for (let i = 0; i < 7; i++) {
+                            this.chartData[i].label = monthData[i].label;
+                            this.chartData[i].value = monthData[i].value;
+                          }
+                          for (let i = 7; i < 12; i++) {
+                            this.chartData.push(new ChartItem(monthData[i].label, monthData[i].value));
+                          }
+                        });
+                      })
+
+                    // 按星期 Tab
+                    Text("按星期")
+                      .fontSize(12)
+                      .fontColor(this.currentChartMode === 'week' ? "#000000" : "#94A3B8")
+                      .textAlign(TextAlign.Center)
+                      .width(56)
+                      .height(24)
+                      .onClick(() => {
+                        this.getUIContext().animateTo({ duration: 400, curve: Curve.EaseInOut }, () => {
+                          this.currentChartMode = 'week';
+                          let weekData: Array<ChartItem> = [
+                            new ChartItem("周日", 3), new ChartItem("周一", 7), new ChartItem("周二", 2),
+                            new ChartItem("周三", 4), new ChartItem("周四", 3), new ChartItem("周五", 4),
+                            new ChartItem("周六", 4)
+                          ];
+                          for (let i = 0; i < 7; i++) {
+                            this.chartData[i].label = weekData[i].label;
+                            this.chartData[i].value = weekData[i].value;
+                          }
+                          if (this.chartData.length > 7) {
+                            this.chartData.splice(7, this.chartData.length - 7);
+                          }
+                        });
+                      })
+                  }
+                }
+              }.width("100%").padding({ left: 20, right: 20, bottom: 16 })
 
               Scroll() {
                 Row() {
                   ForEach(this.chartData, (item: ChartItem, index: number) => {
                     DayBarComponent({ item: item })
-                      .transition({ type: TransitionType.Insert, translate: { x: 40 }, opacity: 0 })
-                      .transition({ type: TransitionType.Delete, translate: { x: 40 }, opacity: 0 })
+                      .transition({ type: TransitionType.Insert, translate: { x: 200 }, opacity: 0 })
+                      .transition({ type: TransitionType.Delete, translate: { x: 200 }, opacity: 0 })
                   }, (item: ChartItem, index: number) => index.toString())
                 }
                 .width(this.currentChartMode === 'week' ? "100%" : "140%")
@@ -302,25 +302,25 @@ export struct FlightPassportFullReport {
 
             Divider().color("#F1F5F9").margin({ left: 20, right: 20, bottom: 20 })
 
-            // 3. Flight Distance 里程
+            // 3. 专注总时长 (合并原里程)
             Column({ space: 4 }) {
-              Text("飞行里程").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#000000")
+              Text("专注总时长").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#000000")
               Row() {
-                Text("128,714").fontSize(48).fontWeight(FontWeight.Bold).fontColor("#000000")
-                Text("km").fontSize(24).fontWeight(FontWeight.Medium).fontColor("#94A3B8").margin({ left: 4, bottom: 6 })
+                Text("8,580").fontSize(48).fontWeight(FontWeight.Bold).fontColor("#000000")
+                Text("分钟").fontSize(24).fontWeight(FontWeight.Medium).fontColor("#94A3B8").margin({ left: 4, bottom: 6 })
               }.alignItems(VerticalAlign.Bottom)
-              Text("相当于 8,580 分钟的心流时间\n约合 343 次标准番茄钟").fontSize(14).fontColor("#94A3B8").margin({ top: 4 })
+              Text("约合 143 小时 · 343 次标准番茄钟").fontSize(14).fontColor("#94A3B8").margin({ top: 4 })
             }.width("100%").alignItems(HorizontalAlign.Start).padding({ left: 20, right: 20, bottom: 16 })
 
-            // 里程碑进度条 (绕地球)
+            // 里程碑进度条
             Stack({ alignContent: Alignment.Start }) {
               Row().width("100%").height(32).backgroundColor("#F1F5F9").borderRadius(16)
               Row() {
-                Text("🌍").fontSize(20).margin({ left: 6 })
+                Text("🗺️").fontSize(18).margin({ left: 8 })
                 Blank()
-                Text("3.2x 绕地球一圈").fontSize(12).fontColor("#FFFFFF").fontWeight(FontWeight.Bold).margin({ right: 12 })
+                Text("环球探索：21 / 197 个国家").fontSize(12).fontColor("#FFFFFF").fontWeight(FontWeight.Bold).margin({ right: 12 })
               }
-              .width("90%")
+              .width("75%") // Ensure text fits
               .height(32)
               .linearGradient({ angle: 90, colors: [["#6366F1", 0], ["#4F46E5", 1]] })
               .borderRadius(16)
@@ -329,24 +329,16 @@ export struct FlightPassportFullReport {
             Stack({ alignContent: Alignment.Start }) {
               Row().width("100%").height(32).backgroundColor("#F1F5F9").borderRadius(16)
               Row() {
-                Text("🌕").fontSize(20).margin({ left: 6 })
+                Text("🎓").fontSize(18).margin({ left: 8 })
                 Blank()
-                Text("0.3x 登月进度").fontSize(12).fontColor("#FFFFFF").fontWeight(FontWeight.Bold).margin({ right: 12 })
+                Text("大师之路 (一万小时定律)：1.4%").fontSize(12).fontColor("#FFFFFF").fontWeight(FontWeight.Bold).margin({ right: 12 })
               }
-              .width("30%")
+              .width("85%") // Ensure text fits
               .height(32)
               .linearGradient({ angle: 90, colors: [["#8B5CF6", 0], ["#7C3AED", 1]] })
               .borderRadius(16)
             }.width("100%").padding({ left: 20, right: 20, bottom: 30 })
 
-            Divider().color("#F1F5F9").margin({ left: 20, right: 20, bottom: 20 })
-
-            // 4. Flight Time 时长
-            Column({ space: 4 }) {
-              Text("专注总时长").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#000000")
-              Text("169h 25m").fontSize(40).fontWeight(FontWeight.Bold).fontColor("#000000")
-            }.width("100%").alignItems(HorizontalAlign.Start).padding({ left: 20, right: 20, bottom: 16 })
-            
             // 四宫格换算
             Row() {
               this.TimeGridItem("累计天数", "7.1")

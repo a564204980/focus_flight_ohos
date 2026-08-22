@@ -633,7 +633,13 @@ struct SeatSelectionPage {
             durationMin: this.focusMinutesVal,
             originCode: this.originCode,
             destCode: this.destCode,
-            startTimeMs: startTimeMs
+            startTimeMs: startTimeMs,
+            events: [{
+              id: Date.now().toString(),
+              type: 'gate_departure',
+              timestampMs: Date.now(),
+              note: '设备锁定，航线开始'
+            }]
           };
           FlightSessionStore.saveSession(sessionData);
 

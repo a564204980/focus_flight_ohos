@@ -35,6 +35,7 @@ export struct FlightMapHudOverlay {
   public onToggleMapType: () => void = () => {};
   public onToggleCameraFollow: () => void = () => {};
   public onExitFlight: () => void = () => {};
+  public onOpenLiveLog: () => void = () => {};
 
   aboutToAppear() {
     this.updateControlsVisibility(false);
@@ -196,6 +197,36 @@ export struct FlightMapHudOverlay {
             .hitTestBehavior(HitTestMode.Default)
             .onClick(() => {
               this.onToggleWindowView();
+            })
+
+            // 新增: 📋 实时航行日志
+            Stack({ alignContent: Alignment.Center }) {
+              Image($r('app.media.ic_logbook'))
+                .width(18)
+                .height(18)
+                .objectFit(ImageFit.Contain)
+                .fillColor((this.isTerrainMode() && !this.isWindowViewMode) ? '#333333' : '#FFFFFF')
+            }
+            .width(40)
+            .height(40)
+            .borderRadius(20)
+            .backgroundColor((this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(255, 255, 255, 0.90)' : 'rgba(0, 0, 0, 0.50)')
+            .backdropBlur(25)
+            .border({
+              width: 0.8,
+              color: (this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
+              radius: 20
+            })
+            .shadow({
+              radius: 10,
+              color: (this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)',
+              offsetY: 2
+            })
+            .opacity(this.isWindowViewMode ? 0.0 : 1.0)
+            .animation({ duration: 320, curve: Curve.EaseInOut })
+            .hitTestBehavior(this.isWindowViewMode ? HitTestMode.None : HitTestMode.Default)
+            .onClick(() => {
+              this.onOpenLiveLog();
             })
 
             // 1.2.3 🎫 专属【落地通关登机牌】测试按钮

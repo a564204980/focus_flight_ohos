@@ -12,6 +12,14 @@ const DOMAIN = 0x0000;
 const STORE_NAME = 'focus_flight_session_store';
 const KEY_SESSION = 'active_flight_session';
 
+export interface FlightEvent {
+  id: string;
+  type: 'gate_departure' | 'takeoff' | 'cruise' | 'deviation' | 'recovery' | 'turbulence' | 'descent_prep' | 'landing';
+  timestampMs: number;
+  durationMs?: number;
+  note?: string;
+}
+
 export interface FlightSessionData {
   isFlightActive: boolean;
   flightNo: string;
@@ -22,6 +30,7 @@ export interface FlightSessionData {
   destCode: string;
   startTimeMs: number;
   isWindowViewMode?: boolean; // 🪟 记录用户是否处于舷窗视角模式
+  events?: FlightEvent[];     // 飞行日志事件流
 }
 
 export class FlightSessionStore {
