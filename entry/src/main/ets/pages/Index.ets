@@ -22,6 +22,8 @@ import { PlaneMarkerIconHelper } from '../utils/PlaneMarkerIconHelper';
 import { FlightRouteEngine, RouteDistanceProfile } from '../utils/FlightRouteEngine';
 import { FlightSessionStore, FlightSessionData } from '../services/FlightSessionStore';
 import { PassportStatsView } from '../components/PassportStatsView';
+import { DistractionReportView } from '../components/DistractionReportView';
+import { LiveFlightLogDrawer } from '../components/LiveFlightLogDrawer';
 import { FlightPassportFullReport } from '../components/FlightPassportFullReport';
 import {
   LatLngPoint,
@@ -168,6 +170,8 @@ struct Index {
     $r('app.media.skyframe')
   ];
 
+  @State isDistractionReportVisible: boolean = false; // 新增分心报告页状态
+  @State isLiveLogVisible: boolean = false; // 实时飞行日志抽屉状态
   @State isTopToastVisible: boolean = false;
   @State topToastMessage: string = '';
   private topToastTimer: number = -1;
@@ -528,6 +532,37 @@ struct Index {
     this.checkAndRestoreActiveSession();
   }
 
+  onPageHide() {
+    // 当页面隐藏（例如切出应用到后台）时，记录偏离航线事件
+    if (this.isFlightInProgress && !this.isFlightPaused) {
+      this.backgroundStartTime = Date.now();
+      this.recordFlightEvent('deviation', '系统休眠或切换应用');
+    }
+  }
+
+  /**
+   * 记录事件到飞行日志并持久化
+   */
+  private recordFlightEvent(type: 'gate_departure' | 'takeoff' | 'cruise' | 'deviation' | 'recovery' | 'turbulence' | 'descent_prep' | 'landing', note: string): void {
+    const session = AppStorage.get<FlightSessionData>('activeFlightSession');
+    if (session) {
+      if (!session.events) {
+        session.events = [];
+      }
+      session.events.unshift({
+        id: Date.now().toString(),
+        type: type,
+        timestampMs: Date.now(),
+        note: note
+      });
+      FlightSessionStore.saveSession(session);
+      AppStorage.setOrCreate('lastFlightEventUpdate', Date.now()); // 触发UI实时更新
+    }
+  }
+
+  @State backgroundStartTime: number = 0;
+  @State lastTurbulenceLogTime: number = 0;
+
   /**
    * 💡 动态控制屏幕常亮 (飞行专注中阻止自动熄屏休眠，返回停机坪后恢复系统默认息屏管理)
    */
@@ -560,6 +595,15 @@ struct Index {
     if (!this.isFlightInProgress || this.isFlightPaused) {
       return;
     }
+    
+    // 如果之前有切出后台的记录，则记录一次航线修正
+    if (this.backgroundStartTime > 0) {
+      const durationMs = Date.now() - this.backgroundStartTime;
+      const durationMins = Math.max(1, Math.round(durationMs / 60000));
+      this.recordFlightEvent('recovery', `切出应用 ${durationMins} 分钟`);
+      this.backgroundStartTime = 0;
+    }
+
     if (!this.flightDisplaySync) {
       const now = Date.now();
       const currentElapsed = this.flightPauseElapsedMs + (now - this.flightPauseSegmentStartTime);
@@ -1086,6 +1130,7 @@ struct Index {
             const q = this.turbulenceQuotes[Math.floor(Math.random() * this.turbulenceQuotes.length)];
             this.turbulenceMessageText = q;
             this.isTurbulenceAlertVisible = true;
+            this.recordFlightEvent('turbulence', q);
           } else {
             // 自动驾驶阻尼系统平稳修正回中心基准航线，进入长达 25~50 秒的宁静平稳巡航
             this.targetTurbulenceYaw = 0;
@@ -1934,6 +1979,9 @@ struct Index {
             } else {
               this.returnFromCabinToHangar();
             }
+          },
+          onOpenLiveLog: () => {
+            this.isLiveLogVisible = true;
           }
         })
           .hitTestBehavior(HitTestMode.Transparent)
@@ -2048,6 +2096,9 @@ struct Index {
             onOpenFullReport: () => {
               this.isFullReportVisible = true;
               // 关键：isStatsSheetVisible 保持为 true！下层护照抽屉不动、不收起！
+            },
+            onOpenDistractionReport: () => {
+              this.isDistractionReportVisible = true;
             }
           })
           .layoutWeight(1)
@@ -2081,6 +2132,33 @@ struct Index {
         .hitTestBehavior(this.isFullReportVisible ? HitTestMode.Default : HitTestMode.None)
         .animation({ duration: 380, curve: Curve.FastOutSlowIn })
         .zIndex(900)
+
+      // 11. 专属分心报告 (Distraction Report, zIndex 950)
+      if (this.isDistractionReportVisible) {
+        DistractionReportView({
+          onClose: () => {
+            this.isDistractionReportVisible = false;
+          }
+        })
+          .width('100%')
+          .height('100%')
+          .position({ x: 0, y: 0 })
+          .zIndex(950)
+          .transition(TransitionEffect.move(TransitionEdge.BOTTOM).animation({ duration: 380, curve: Curve.FastOutSlowIn }))
+      }
+
+      // 12. 实时飞行日志（椅背屏幕）抽屉 (zIndex 960)
+      if (this.isLiveLogVisible) {
+        LiveFlightLogDrawer({
+          onClose: () => {
+            this.isLiveLogVisible = false;
+          }
+        })
+          .width('100%')
+          .height('100%')
+          .position({ x: 0, y: 0 })
+          .zIndex(960)
+      }
     }
     .width('100%')
     .height('100%')
