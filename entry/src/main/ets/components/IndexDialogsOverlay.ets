@@ -16,6 +16,7 @@ export struct IndexDialogsOverlay {
   @StorageLink('selectedDestinationAirport') currentDestinationAirport: Airport | undefined = undefined;
   @StorageLink('selectedRouteStyle') selectedRouteStyle: string = 'classic';
   @StorageLink('selectedTrailEffect') selectedTrailEffect: string = 'none';
+  @State selectedDistractionYear: string = 'all';
 
   triggerHapticFeedback: () => void = () => {};
   abortFlightAndReturnToHangar: () => void = () => {};
@@ -24,7 +25,7 @@ export struct IndexDialogsOverlay {
   returnFromMapToHangar: (isAborted?: boolean) => void = () => {};
 
   build() {
-    Column() {
+    Stack({ alignContent: Alignment.Center }) {
 
     // 7. 专注飞行终止备降二次确认弹窗 (优雅航空沉浸式提示)
       if (this.vm.isAbortDialogVisible) {
@@ -121,7 +122,8 @@ export struct IndexDialogsOverlay {
               this.isFullReportVisible = true;
               // 关键：isStatsSheetVisible 保持为 true！下层护照抽屉不动、不收起！
             },
-            onOpenDistractionReport: () => {
+            onOpenDistractionReport: (year: string) => {
+              this.selectedDistractionYear = year || 'all';
               this.vm.isDistractionReportVisible = true;
             }
           })
@@ -143,6 +145,7 @@ export struct IndexDialogsOverlay {
 
       // 10. 专注飞行日志全屏页面（提前常驻挂载 WebGL 3D 地球，0ms秒开无白屏，zIndex 900）
       FlightPassportFullReport({
+        isVisible: this.isFullReportVisible,
         onClose: () => {
           this.isFullReportVisible = false;
           // 关键：关闭全屏日志时，由于 isStatsSheetVisible 仍为 true，直接露出下方的护照抽屉！
@@ -160,6 +163,7 @@ export struct IndexDialogsOverlay {
       // 11. 专属分心报告 (Distraction Report, zIndex 950)
       if (this.vm.isDistractionReportVisible) {
         DistractionReportView({
+          selectedYear: this.selectedDistractionYear,
           onClose: () => {
             this.vm.isDistractionReportVisible = false;
           }
@@ -174,6 +178,7 @@ export struct IndexDialogsOverlay {
       // 12. 实时飞行日志（椅背屏幕）抽屉 (zIndex 960)
       if (this.vm.isLiveLogVisible) {
         LiveFlightLogDrawer({
+          isTurbulent: this.vm.isTurbulenceAlertVisible,
           onClose: () => {
             this.vm.isLiveLogVisible = false;
           }

@@ -20,7 +20,7 @@ export struct IndexHangarHudLayer {
   onFuelTruckClick: () => void = () => {};
 
   build() {
-    Column() {
+    Stack({ alignContent: Alignment.Top }) {
 
     HeaderGreetingBar({
         isHudVisible: this.vm.isHudVisible,
@@ -58,7 +58,7 @@ export struct IndexHangarHudLayer {
         Column() {
           CyberThemeSelector({ currentThemeIndex: this.currentThemeIndex })
         }
-        .position({ x: '100%', y: '67%' })
+        .position({ x: '100%', y: '73%' })
         .markAnchor({ x: '100%', y: '100%' })
         .margin({ right: 24, bottom: 6 })
         .zIndex(200)
@@ -71,7 +71,7 @@ export struct IndexHangarHudLayer {
           .fontSize(12)
           .fontWeight(FontWeight.Bold)
           .fontColor('#64748B')
-          .position({ x: '0%', y: '67%' })
+          .position({ x: '0%', y: '73%' })
           .markAnchor({ x: '0%', y: '100%' })
           .margin({ left: 24, bottom: 6 })
           .zIndex(200)

@@ -18,7 +18,7 @@ export struct IndexFlightOverlays {
   triggerHapticFeedback: () => void = () => {};
 
   build() {
-    Column() {
+    Stack({ alignContent: Alignment.Center }) {
 
     // 6. 飞行地图 HUD 悬浮控制层 (仅在机舱展开或地图飞行模式下挂载渲染，绝不干扰停机坪首页交互)
       if (this.vm.isCabinExposed || (this.vm.isMapBackgroundVisible && !this.vm.isCabinExposed)) {

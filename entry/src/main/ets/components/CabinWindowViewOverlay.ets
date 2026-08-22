@@ -44,8 +44,8 @@ export struct CabinWindowViewOverlay {
   // 2. 舷窗主体与UI透明度 (0.0 -> 1.0)
   @State windowUnitOpacity: number = 0.0;
   @State windowUnitScale: number = 0.92;
-  // 3. 遮阳板闭合进度：默认全关 (1.0)，进场后自动优雅向上滑开 (1.0 -> 0.0)
-  @State shadeProgress: number = 1.0;
+  // 3. 遮阳板闭合进度：默认全开 (0.0)
+  @State shadeProgress: number = 0.0;
 
   aboutToAppear(): void {
     // 🎬 幕一：大地图渐渐变黑 (0ms -> 450ms)
@@ -53,21 +53,13 @@ export struct CabinWindowViewOverlay {
       this.bgDimOpacity = 1.0;
     });
 
-    // 🎬 幕二：纯黑暗场中舷窗柔和浮现 (300ms 启动，遮阳帘此时全关)
+    // 🎬 幕二：纯黑暗场中舷窗柔和浮现
     setTimeout(() => {
       animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
         this.windowUnitOpacity = 1.0;
         this.windowUnitScale = 1.0;
       });
     }, 280);
-
-    // 🎬 幕三：遮阳板自动向上缓缓拉开 (750ms 启动，1.0 -> 0.0)
-    setTimeout(() => {
-      animateTo({ duration: 1100, curve: Curve.FastOutSlowIn }, () => {
-        this.shadeProgress = 0.0;
-      });
-      this.triggerHapticFeedback();
-    }, 720);
   }
 
   private triggerHapticFeedback(): void {
