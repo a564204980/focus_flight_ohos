@@ -18,6 +18,7 @@ import { FlightTrailSettingsOverlay } from '../components/FlightTrailSettingsOve
 import { FlightTrailParticleOverlay } from '../components/FlightTrailParticleOverlay';
 import { MapRenderHelper } from '../utils/MapRenderHelper';
 import { SoundEffectHelper } from '../utils/SoundEffectHelper';
+import { PlaneMarkerIconHelper } from '../utils/PlaneMarkerIconHelper';
 import { FlightRouteEngine, RouteDistanceProfile } from '../utils/FlightRouteEngine';
 import { FlightSessionStore, FlightSessionData } from '../services/FlightSessionStore';
 import { PassportStatsView } from '../components/PassportStatsView';
@@ -503,173 +504,11 @@ struct Index {
   }
 
   /**
-   * ✈️ 使用鸿蒙 PixelMap 原生 API 对飞机高清原图与机身阴影进行代码级高质感融合
-   * 采用对称画布设计，确保 Marker 的中心 (0.5, 0.5) 与飞机机身中轴线 100% 绝对同轴对齐！
-   * @param targetWidthPx 目标屏幕宽度像素 (如 175)
+   * Delegates PixelMap plane marker composition to PlaneMarkerIconHelper.
+   * See utils/PlaneMarkerIconHelper.ets for the full implementation.
    */
   private async getScaledPlaneMarkerIcon(targetWidthPx: number, withStroke: boolean = false): Promise<image.PixelMap | undefined> {
-    try {
-      const resourceMgr = this.getUIContext().getHostContext()?.resourceManager;
-      if (!resourceMgr) {
-        return undefined;
-      }
-
-      const targetHeightPx = Math.round(targetWidthPx * 1.43);
-      // 🌟 显著加大阴影偏移距离（右偏 18px，下偏 32px），让机翼与机尾投射出清晰可见的 3D 立体悬浮阴影
-      const shadowOffsetX = Math.round(18 * (targetWidthPx / 175));
-      const shadowOffsetY = Math.round(32 * (targetWidthPx / 175));
-
-      // 🛡️ 核心对称画布设计：在四周留出完全对称的 padding，
-      // 使得飞机的几何中心就是画布的绝对中心 (canvasW/2, canvasH/2)，
-      // 进而保证 anchorU: 0.5, anchorV: 0.5 在任意旋转角度下，飞机机身中轴线绝对不发生任何偏移！
-      const padX = shadowOffsetX + 12;
-      const padY = shadowOffsetY + 12;
-      const canvasW = targetWidthPx + padX * 2;
-      const canvasH = targetHeightPx + padY * 2;
-      const planeOffsetX = padX;
-      const planeOffsetY = padY;
-      const shadowDstX = padX + shadowOffsetX;
-      const shadowDstY = padY + shadowOffsetY;
-
-      // 1. 加载飞机实体
-      const planeData = await resourceMgr.getMediaContent($r('app.media.b737_800_top_3').id);
-      const planeImgSource = image.createImageSource(planeData.buffer);
-      const planePm = await planeImgSource.createPixelMap({
-        desiredSize: { width: targetWidthPx, height: targetHeightPx }
-      });
-      const planeBuf = new ArrayBuffer(targetWidthPx * targetHeightPx * 4);
-      await planePm.readPixelsToBuffer(planeBuf);
-      const planePixels = new Uint8Array(planeBuf);
-
-      // 2. 加载机身地面柔和阴影
-      const shadowData = await resourceMgr.getMediaContent($r('app.media.b737_800_top_3_shadow').id);
-      const shadowImgSource = image.createImageSource(shadowData.buffer);
-      const shadowPm = await shadowImgSource.createPixelMap({
-        desiredSize: { width: targetWidthPx, height: targetHeightPx }
-      });
-      const shadowBuf = new ArrayBuffer(targetWidthPx * targetHeightPx * 4);
-      await shadowPm.readPixelsToBuffer(shadowBuf);
-      const shadowPixels = new Uint8Array(shadowBuf);
-
-      // 3. 创建对称合成画布
-      const canvasPm = await planeImgSource.createPixelMap({
-        desiredSize: { width: canvasW, height: canvasH }
-      });
-      const canvasBuf = new ArrayBuffer(canvasW * canvasH * 4);
-      const canvasPixels = new Uint8Array(canvasBuf);
-
-      // 4. 将高对比度柔和阴影渲染至偏移位置
-      for (let y = 0; y < targetHeightPx; y++) {
-        for (let x = 0; x < targetWidthPx; x++) {
-          const sIdx = (y * targetWidthPx + x) * 4;
-          const sA = shadowPixels[sIdx + 3];
-          if (sA > 10) {
-            const dstX = x + shadowDstX;
-            const dstY = y + shadowDstY;
-            if (dstX >= 0 && dstX < canvasW && dstY >= 0 && dstY < canvasH) {
-              const dIdx = (dstY * canvasW + dstX) * 4;
-              // 深度纯黑半透明阴影，在浅色地面和深色跑道均有清晰边界
-              canvasPixels[dIdx] = 12;
-              canvasPixels[dIdx + 1] = 16;
-              canvasPixels[dIdx + 2] = 24;
-              canvasPixels[dIdx + 3] = Math.min(220, Math.round(sA * 1.15)); // 增强阴影浓度
-            }
-          }
-        }
-      }
-
-      // 5a. 地形图模式：在绘制机身前先向外扩散像素生成深色描边轮廓
-      if (withStroke) {
-        const strokeWidth = 8;
-        const sR = 18, sG = 22, sB = 42, sA = 220;
-        for (let y = 0; y < targetHeightPx; y++) {
-          for (let x = 0; x < targetWidthPx; x++) {
-            if (planePixels[(y * targetWidthPx + x) * 4 + 3] > 30) {
-              for (let dy = -strokeWidth; dy <= strokeWidth; dy++) {
-                for (let dx = -strokeWidth; dx <= strokeWidth; dx++) {
-                  if (dx * dx + dy * dy > strokeWidth * strokeWidth) { continue; }
-                  const nx = x + planeOffsetX + dx;
-                  const ny = y + planeOffsetY + dy;
-                  if (nx >= 0 && nx < canvasW && ny >= 0 && ny < canvasH) {
-                    const nIdx = (ny * canvasW + nx) * 4;
-                    if (canvasPixels[nIdx + 3] < sA) {
-                      canvasPixels[nIdx] = sR;
-                      canvasPixels[nIdx + 1] = sG;
-                      canvasPixels[nIdx + 2] = sB;
-                      canvasPixels[nIdx + 3] = sA;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // 5. 将飞机实体叠加上层（机身居于画布绝对中心）
-      for (let y = 0; y < targetHeightPx; y++) {
-        for (let x = 0; x < targetWidthPx; x++) {
-          const pIdx = (y * targetWidthPx + x) * 4;
-          const pA = planePixels[pIdx + 3] / 255.0;
-          if (pA > 0) {
-            const dstX = x + planeOffsetX;
-            const dstY = y + planeOffsetY;
-            if (dstX >= 0 && dstX < canvasW && dstY >= 0 && dstY < canvasH) {
-              const dIdx = (dstY * canvasW + dstX) * 4;
-              if (pA >= 0.99) {
-                canvasPixels[dIdx] = planePixels[pIdx];
-                canvasPixels[dIdx + 1] = planePixels[pIdx + 1];
-                canvasPixels[dIdx + 2] = planePixels[pIdx + 2];
-                canvasPixels[dIdx + 3] = planePixels[pIdx + 3];
-              } else {
-                const dstA = canvasPixels[dIdx + 3] / 255.0;
-                const outA = pA + dstA * (1.0 - pA);
-                if (outA > 0.001) {
-                  canvasPixels[dIdx] = Math.round((planePixels[pIdx] * pA + canvasPixels[dIdx] * dstA * (1.0 - pA)) / outA);
-                  canvasPixels[dIdx + 1] = Math.round((planePixels[pIdx + 1] * pA + canvasPixels[dIdx + 1] * dstA * (1.0 - pA)) / outA);
-                  canvasPixels[dIdx + 2] = Math.round((planePixels[pIdx + 2] * pA + canvasPixels[dIdx + 2] * dstA * (1.0 - pA)) / outA);
-                  canvasPixels[dIdx + 3] = Math.round(outA * 255);
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // 6. 🔴 在飞机机头正中写入鲜艳的红色准星圆点
-      const cX = planeOffsetX + Math.floor(targetWidthPx / 2);
-      const cY = planeOffsetY + Math.floor(targetHeightPx * 0.04);
-      const radiusOuter = 10;
-      const radiusInner = 6;
-
-      for (let y = cY - radiusOuter; y <= cY + radiusOuter; y++) {
-        for (let x = cX - radiusOuter; x <= cX + radiusOuter; x++) {
-          if (x >= 0 && x < canvasW && y >= 0 && y < canvasH) {
-            const distSq = (x - cX) * (x - cX) + (y - cY) * (y - cY);
-            if (distSq <= radiusOuter * radiusOuter) {
-              const idx = (y * canvasW + x) * 4;
-              if (distSq <= radiusInner * radiusInner) {
-                canvasPixels[idx] = 255;
-                canvasPixels[idx + 1] = 0;
-                canvasPixels[idx + 2] = 0;
-                canvasPixels[idx + 3] = 255;
-              } else {
-                canvasPixels[idx] = 255;
-                canvasPixels[idx + 1] = 255;
-                canvasPixels[idx + 2] = 255;
-                canvasPixels[idx + 3] = 255;
-              }
-            }
-          }
-        }
-      }
-
-      await canvasPm.writeBufferToPixels(canvasBuf);
-      return canvasPm;
-    } catch (e) {
-      console.error('Failed to create scaled plane PixelMap with shadow:', JSON.stringify(e));
-      return undefined;
-    }
+    return PlaneMarkerIconHelper.create(this.getUIContext(), targetWidthPx, withStroke);
   }
 
   private isInitialAppeared: boolean = false;
