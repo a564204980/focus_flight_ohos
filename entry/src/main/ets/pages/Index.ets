@@ -1657,8 +1657,8 @@ struct Index {
     }, 16);
   }
 
-  build() {
-    Stack({ alignContent: Alignment.Center }) {
+  @Builder
+  buildBaseLayer() {
       // 1. 全屏背景层 (未放大时为停机坪 bg_1，仅在【飞机完全放大完毕】或【点击座椅后】无缝切为华为花瓣地图精修机场)
       Stack({ alignContent: Alignment.Center }) {
         // 底层：停机坪地面 (固定底层)
@@ -1823,7 +1823,11 @@ struct Index {
       })
 
 
-      HeaderGreetingBar({
+    }
+
+  @Builder
+  buildHangarHudLayer() {
+    HeaderGreetingBar({
         isHudVisible: this.isHudVisible,
         isFullFocusMode: this.isFullFocusMode,
         isMapBackgroundVisible: this.isMapBackgroundVisible
@@ -1943,7 +1947,11 @@ struct Index {
         .animation({ duration: 800, curve: Curve.EaseOut })
         .zIndex(100)
 
-      // 6. 飞行地图 HUD 悬浮控制层 (仅在机舱展开或地图飞行模式下挂载渲染，绝不干扰停机坪首页交互)
+    }
+
+  @Builder
+  buildFlightOverlays() {
+    // 6. 飞行地图 HUD 悬浮控制层 (仅在机舱展开或地图飞行模式下挂载渲染，绝不干扰停机坪首页交互)
       if (this.isCabinExposed || (this.isMapBackgroundVisible && !this.isCabinExposed)) {
         FlightMapHudOverlay({
           isMapBackgroundVisible: this.isMapBackgroundVisible,
@@ -2002,7 +2010,11 @@ struct Index {
           .zIndex(250)
       }
 
-      // 7. 专注飞行终止备降二次确认弹窗 (优雅航空沉浸式提示)
+    }
+
+  @Builder
+  buildDialogLayer() {
+    // 7. 专注飞行终止备降二次确认弹窗 (优雅航空沉浸式提示)
       if (this.isAbortDialogVisible) {
         FlightAbortConfirmDialog({
           isVisible: this.isAbortDialogVisible,
@@ -2159,6 +2171,14 @@ struct Index {
           .position({ x: 0, y: 0 })
           .zIndex(960)
       }
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.Center }) {
+      this.buildBaseLayer()
+      this.buildHangarHudLayer()
+      this.buildFlightOverlays()
+      this.buildDialogLayer()
     }
     .width('100%')
     .height('100%')
@@ -2170,7 +2190,6 @@ struct Index {
     })
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
-
   /**
    * 🛡️ 拦截系统返回手势/按键，确保专注飞行体验
    */
