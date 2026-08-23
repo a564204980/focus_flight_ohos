@@ -22,6 +22,7 @@ import {
 import { Airport, findAirportByCode } from '../models/AirportModel';
 import { ctuAirportConfig } from '../models/airports/ctu';
 import { pekAirportConfig } from '../models/airports/pek';
+import { LiveViewManager } from '../services/LiveViewManager';
 
 // ✈️ 动态从 ctuAirportConfig 直接读取起飞跑道起点与终点，100% 实时响应 ctu.ets 的任何修改！
 function getCtuRunwayStart(): LatLngPoint {
@@ -64,6 +65,8 @@ export class IndexController {
   set isFullReportVisible(val: boolean) { AppStorage.setOrCreate('isFullReportVisible', val); }
   get isStatsSheetVisible(): boolean { return AppStorage.get<boolean>('isStatsSheetVisible') || false; }
   set isStatsSheetVisible(val: boolean) { AppStorage.setOrCreate('isStatsSheetVisible', val); }
+  get isSettingsSheetVisible(): boolean { return AppStorage.get<boolean>('isSettingsSheetVisible') || false; }
+  set isSettingsSheetVisible(val: boolean) { AppStorage.setOrCreate('isSettingsSheetVisible', val); }
   // === 沉浸式物理刹停与停靠动画状态 ===
   public currentZoomLevel: number = 17.2;        // 当前地图缩放级别 Zoom
   public currentMapBearing: number = CTU_RUNWAY_BEARING; // 当前地图方位角度 Bearing
@@ -363,9 +366,12 @@ export class IndexController {
   aboutToAppear() {
     this.isInitialAppeared = true;
     this.checkAndRestoreActiveSession();
+    LiveViewManager.requestNotificationPermission();
   }
 
   onPageShow() {
+    AppStorage.setOrCreate('isAppForeground', true);
+    LiveViewManager.setAppForeground(true);
     // 🛡️ 核心修复：如果当前已经在精修地图模式或处于飞行中，坚决不重置页面，保护当前地图界面
     if (this.vm.isMapBackgroundVisible || this.vm.isFlightInProgress) {
       this.handleForegroundResume();
@@ -375,10 +381,22 @@ export class IndexController {
   }
 
   onPageHide() {
-    // 当页面隐藏（例如切出应用到后台）时，记录偏离航线事件
+    AppStorage.setOrCreate('isAppForeground', false);
+    LiveViewManager.setAppForeground(false);
+    // 当离开 App 切到后台时，立即自动暂停飞行倒计时与巡航
     if (this.vm.isFlightInProgress && !this.vm.isFlightPaused) {
-      this.vm.backgroundStartTime = Date.now();
-      this.recordFlightEvent('deviation', '系统休眠或切换应用');
+      this.vm.isFlightPaused = true;
+      const now = Date.now();
+      this.flightPauseElapsedMs += (now - this.flightPauseSegmentStartTime);
+      this.vm.backgroundStartTime = now;
+      this.recordFlightEvent('deviation', '切换出应用，专注飞行自动暂停');
+      
+      // 停止动画帧同步与计时器
+      if (this.flightDisplaySync) {
+        this.flightDisplaySync.stop();
+        this.flightDisplaySync = undefined;
+      }
+      LiveViewManager.pauseLiveView();
     }
   }
 
@@ -416,19 +434,31 @@ export class IndexController {
   }
 
   /**
-   * 前台唤醒时检查并确保飞行引擎保持运行
+   * 前台唤醒时检查并确保飞行引擎自动恢复运行
    */
   public handleForegroundResume(): void {
-    if (!this.vm.isFlightInProgress || this.vm.isFlightPaused) {
+    if (!this.vm.isFlightInProgress) {
       return;
     }
     
-    // 如果之前有切出后台的记录，则记录一次航线修正
-    if (this.vm.backgroundStartTime > 0) {
-      const durationMs = Date.now() - this.vm.backgroundStartTime;
-      const durationMins = Math.max(1, Math.round(durationMs / 60000));
-      this.recordFlightEvent('recovery', `切出应用 ${durationMins} 分钟`);
-      this.vm.backgroundStartTime = 0;
+    // 如果切出后台被自动暂停，返回前台立即自动恢复
+    if (this.vm.isFlightPaused) {
+      this.vm.isFlightPaused = false;
+      this.flightPauseSegmentStartTime = Date.now();
+
+      if (this.vm.backgroundStartTime > 0) {
+        const durationMs = Date.now() - this.vm.backgroundStartTime;
+        const durationSecs = Math.max(1, Math.round(durationMs / 1000));
+        this.recordFlightEvent('recovery', `返回机舱，已恢复专注飞行（期间暂停 ${durationSecs} 秒）`);
+        this.vm.backgroundStartTime = 0;
+      }
+
+      this.startFlightAnimationDirectly(this.flightPauseElapsedMs);
+
+      this.vm.honkToastText = '▶️ 欢迎回到机舱，专注飞行已自动恢复';
+      this.vm.isHonkToastVisible = true;
+      setTimeout(() => { this.vm.isHonkToastVisible = false; }, 2200);
+      return;
     }
 
     if (!this.flightDisplaySync) {
@@ -633,6 +663,19 @@ export class IndexController {
     this.vm.flightCurrentIndex = 0;
     this.vm.isFlightInProgress = true;
 
+    // 🛰️ 启动鸿蒙实况窗（胶囊态 + 锁屏卡片态）
+    const targetDest = this.currentDestinationAirport || findAirportByCode('PEK');
+    const targetDestCode = targetDest ? targetDest.code : 'PEK';
+    const targetDestCity = targetDest ? targetDest.city : '北京';
+    LiveViewManager.startLiveView({
+      flightNo: 'FF-2026',
+      originCode: 'CTU',
+      destCode: targetDestCode,
+      destCity: targetDestCity,
+      taskTitle: this.vm.currentFocusTagTitle || '深度专注',
+      totalDurationMin: durationMinutes
+    });
+
     if (this.flightDisplaySync) { this.flightDisplaySync.stop(); this.flightDisplaySync = undefined; }
 
     this.flightPauseElapsedMs = resumeElapsedMs > 0 ? resumeElapsedMs : 0;
@@ -691,6 +734,8 @@ export class IndexController {
       const newTimeStr = `${mm}:${ss}`;
       if (this.vm.remainingTimeString !== newTimeStr) {
         this.vm.remainingTimeString = newTimeStr;
+        // 🛰️ 同步更新鸿蒙实况窗胶囊与卡片
+        LiveViewManager.updateLiveView(remainingSec, this.vm.remainingDistanceKm, overallProgress);
       }
 
       // 实时计算剩余飞行公里数
@@ -709,6 +754,8 @@ export class IndexController {
         // 🔔 播放经典民航客舱“叮咚～”落地提示音与触感反馈
         SoundEffectHelper.playCabinArrivalChime();
         this.triggerHapticFeedback();
+        // 🛰️ 实况窗结束推流并展示顺利降落结案卡片
+        LiveViewManager.stopLiveView(true, durationMinutes);
 
         // 🎯 保证飞机 100% 绝对死锁在跑道 80% 最终停止点
         const finalPos = points[points.length - 1];
@@ -1113,6 +1160,8 @@ export class IndexController {
       const now = Date.now();
       this.flightPauseElapsedMs += (now - this.flightPauseSegmentStartTime);
       this.vm.honkToastText = '⏸️ 专注飞行已暂停';
+      // 🛰️ 实况窗置为暂停态
+      LiveViewManager.pauseLiveView();
     }
     this.vm.isHonkToastVisible = true;
     setTimeout(() => { this.vm.isHonkToastVisible = false; }, 2000);
@@ -1175,6 +1224,79 @@ export class IndexController {
       }, 3000);
     }, 50);
   }
+
+  /**
+   * ✈️ 停机坪换机/换肤电影级滑行轮转转场动效 (Apron Turnaround & Taxi Animation)
+   * 1. 廊桥与勤务车辆全部向外侧驶离撤退；
+   * 2. 旧飞机平滑加速向前滑行驶出屏幕上方；
+   * 3. 飞机瞬间重置至屏幕底部外侧，并刷新机身涂装为新选皮肤；
+   * 4. 全新涂装飞机自屏幕底部平稳向前滑行并减速刹停在机位原点；
+   * 5. 廊桥与勤务车辆重新靠拢对接，换装圆满完成！
+   */
+  public playPlaneSkinChangeAnimation(skinIndex: number): void {
+    if (this.vm.isFlightInProgress || this.vm.isCabinExposed) {
+      AppStorage.setOrCreate('selectedPlaneSkinIndex', skinIndex);
+      return;
+    }
+
+    this.triggerHapticFeedback();
+
+    // 阶段 1: 廊桥与地面勤务设备向两侧迅速撤退清场 (0ms)
+    this.context?.animateTo({
+      duration: 600,
+      curve: Curve.EaseInOut
+    }, () => {
+      this.vm.isVehiclesDocked = false;
+      this.vm.fuelTruckX = -450;
+      this.vm.fuelTruckRotate = 180;
+    });
+
+    // 阶段 2: 延迟 300ms 后，旧飞机平稳向前加速滑离机位，滑出屏幕上方
+    setTimeout(() => {
+      this.context?.animateTo({
+        duration: 900,
+        curve: Curve.EaseIn
+      }, () => {
+        this.vm.planeY = -750; // 向前滑出屏幕上方
+      });
+    }, 300);
+
+    // 阶段 3: 当旧飞机完全滑出屏幕后 (1250ms)，瞬间无动画将飞机重置到屏幕下方，并换上新皮肤
+    setTimeout(() => {
+      // 无动画瞬间更新皮肤与重置位置到底部
+      AppStorage.setOrCreate('selectedPlaneSkinIndex', skinIndex);
+      this.vm.planeY = 750; // 屏幕下方准备入场
+
+      // 阶段 4: 稍微停顿 50ms 确保 DOM 布局刷新，全新飞机自底部向前滑行并减速平稳刹停在停机位 (-45)
+      setTimeout(() => {
+        this.context?.animateTo({
+          duration: 1100,
+          curve: Curve.FastOutSlowIn
+        }, () => {
+          this.vm.planeY = -45; // 稳稳刹停在停机位机位中心
+        });
+
+        // 阶段 5: 飞机完全停稳后 (1150ms)，廊桥与地面勤务车辆重新靠拢对接就位
+        setTimeout(() => {
+          this.context?.animateTo({
+            duration: 800,
+            curve: Curve.EaseOut
+          }, () => {
+            this.vm.isVehiclesDocked = true;
+            this.vm.fuelTruckX = -350;
+            this.vm.fuelTruckY = 220;
+            this.vm.fuelTruckRotate = 90;
+          });
+
+          this.triggerHapticFeedback();
+          const skinNames = ['萌猫机长', '鲸喜起飞', '极光失控'];
+          const skinName = skinNames[skinIndex] || '全新';
+          this.showTopToast(`✈️「${skinName}」涂装机队已滑入机位完成对接！`, 2500);
+        }, 1150);
+      }, 50);
+    }, 1250);
+  }
+
   public runRealTruckPhysicsAnimation() {
     this.physicsAnimEngine.runRealTruckPhysicsAnimation();
   }

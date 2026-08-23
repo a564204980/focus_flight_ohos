@@ -1,0 +1,25 @@
+{
+  "forms": [
+    {
+      "name": "StandbyFlightCard",
+      "displayName": "$string:standby_flight_card_name",
+      "description": "$string:standby_flight_card_desc",
+      "src": "./ets/widget/pages/StandbyFlightCard.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "dark",
+      "isDefault": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "10:30",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": [
+        "2*2",
+        "2*4"
+      ]
+    }
+  ]
+}

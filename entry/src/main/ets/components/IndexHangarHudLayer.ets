@@ -11,7 +11,7 @@ import { Airport, findAirportByCode } from '../models/AirportModel';
 export struct IndexHangarHudLayer {
   @ObjectLink vm: FlightViewModel;
   @StorageLink('selectedDestinationAirport') currentDestinationAirport: Airport | undefined = undefined;
-  @Link currentThemeIndex: number;
+  @StorageLink('currentThemeIndex') currentThemeIndex: number = 0;
 
   showTopToast: (message: string, duration?: number) => void = () => {};
   onSeatSelectedInIndex: (seatId: string, tagId?: string, durationMinutes?: number) => void = () => {};
@@ -56,7 +56,7 @@ export struct IndexHangarHudLayer {
       // 2.5 停机坪机位地面标牌互动 (刻度尺上方右侧)
       if (this.vm.isHudVisible && !this.vm.isFullFocusMode && !this.vm.isMapBackgroundVisible) {
         Column() {
-          CyberThemeSelector({ currentThemeIndex: this.currentThemeIndex })
+          CyberThemeSelector()
         }
         .position({ x: '100%', y: '73%' })
         .markAnchor({ x: '100%', y: '100%' })

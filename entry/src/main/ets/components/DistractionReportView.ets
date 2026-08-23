@@ -13,6 +13,123 @@ export interface TimeTabItem {
   label: string;
 }
 
+@Observed
+export class PerformanceBarItem {
+  @Track title: string;
+  @Track percent: number;
+  @Track displayPercent: number;
+  @Track ratioPercent: number;
+  @Track color: string;
+
+  constructor(title: string, percent: number, color: string, ratioPercent: number = 0, displayPercent: number = 0) {
+    this.title = title;
+    this.percent = percent;
+    this.displayPercent = displayPercent > 0 ? displayPercent : percent;
+    this.ratioPercent = ratioPercent > 0 ? ratioPercent : percent;
+    this.color = color;
+  }
+}
+
+@Observed
+export class BlacklistChartItem {
+  @Track tag: string;
+  @Track failRate: number;
+  @Track displayPercent: number;
+  @Track ratioPercent: number;
+  @Track failTextSuffix: string;
+
+  constructor(tag: string, failRate: number, failTextSuffix: string = '失败', ratioPercent: number = 0, displayPercent: number = 0) {
+    this.tag = tag;
+    this.failRate = failRate;
+    this.displayPercent = displayPercent > 0 ? displayPercent : Math.round(failRate * 100);
+    this.ratioPercent = ratioPercent > 0 ? ratioPercent : Math.round(failRate * 100);
+    this.failTextSuffix = failTextSuffix;
+  }
+}
+
+@Component
+export struct DistractionPerformanceBarComponent {
+  @ObjectLink item: PerformanceBarItem;
+
+  build() {
+    Row() {
+      Text(this.item.title)
+        .fontSize(14)
+        .fontColor("#FFFFFF")
+        .fontWeight(FontWeight.Medium)
+        .width(80)
+
+      Stack({ alignContent: Alignment.Start }) {
+        Row()
+          .width('100%')
+          .height(16)
+          .backgroundColor("rgba(0,0,0,0.3)")
+          .borderRadius(4)
+
+        Row()
+          .height(16)
+          .width(`${Math.min(100, Math.max(6, this.item.ratioPercent))}%`)
+          .backgroundColor(this.item.color)
+          .borderRadius(4)
+          .animation({ duration: 450, curve: Curve.FastOutSlowIn })
+      }
+      .layoutWeight(1)
+      .margin({ left: 12, right: 12 })
+
+      Text(`${this.item.displayPercent}%`)
+        .fontSize(14)
+        .fontColor("rgba(255,255,255,0.6)")
+        .width(40)
+        .textAlign(TextAlign.End)
+    }
+    .width('100%')
+    .alignItems(VerticalAlign.Center)
+  }
+}
+
+@Component
+export struct DistractionBlacklistComponent {
+  @ObjectLink item: BlacklistChartItem;
+
+  build() {
+    Column({ space: 8 }) {
+      Row() {
+        Text(this.item.tag)
+          .fontSize(15)
+          .fontColor("#FFFFFF")
+          .fontWeight(FontWeight.Medium)
+          .layoutWeight(1)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+        Text(`${this.item.displayPercent}% ${this.item.failTextSuffix}`)
+          .fontSize(14)
+          .fontColor("#FFFFFF")
+          .fontWeight(FontWeight.Bold)
+          .margin({ left: 8 })
+      }
+      .width('100%')
+
+      Stack({ alignContent: Alignment.Start }) {
+        Row()
+          .width('100%')
+          .height(12)
+          .backgroundColor("rgba(0,0,0,0.3)")
+          .borderRadius(4)
+
+        Row()
+          .height(12)
+          .width(`${Math.min(100, Math.max(6, this.item.ratioPercent))}%`)
+          .backgroundColor("#EF4444")
+          .borderRadius(4)
+          .animation({ duration: 450, curve: Curve.FastOutSlowIn })
+      }
+      .width('100%')
+    }
+    .width('100%')
+  }
+}
+
 @Component
 export struct DistractionReportView {
   onClose?: () => void;
@@ -29,32 +146,45 @@ export struct DistractionReportView {
   @State animTotalLostMinutes: number = 0;
   @State animAvgLostMinutes: number = 0;
   @State animWorstDurationMin: number = 0;
-  @State animFlowRatio: number = 0;
-  @State animFocusedRatio: number = 0;
-  @State animSlightRatio: number = 0;
-  @State animModerateRatio: number = 0;
-  @State animAbandonRatio: number = 0;
   private animTimer: number = -1;
 
+  @State performanceBarItems: Array<PerformanceBarItem> = [
+    new PerformanceBarItem("完美心流", 58, "#4ADE80", 58, 58),
+    new PerformanceBarItem("极度投入", 20, "#86EFAC", 20, 20),
+    new PerformanceBarItem("轻度走神", 11, "#FBBF24", 11, 11),
+    new PerformanceBarItem("中度摸鱼", 6, "#F97316", 6, 6),
+    new PerformanceBarItem("中途放弃", 5, "#EF4444", 5, 5)
+  ];
+
+  @State blacklistItems: Array<BlacklistChartItem> = [
+    new BlacklistChartItem("深度学习 (切出后台)", 1.0, "失败", 100, 100),
+    new BlacklistChartItem("需求梳理 (紧急会议中断)", 0.8, "失败", 80, 80),
+    new BlacklistChartItem("交互体验与设计打磨", 0.35, "走神", 35, 35)
+  ];
+
   @State reportData: DistractionReportSummary = {
-    totalCount: 0,
-    interruptedCount: 0,
-    interruptedPercent: 0,
-    totalLostMinutes: 0,
-    avgLostMinutes: 0,
+    totalCount: 37,
+    interruptedCount: 2,
+    interruptedPercent: 5,
+    totalLostMinutes: 12,
+    avgLostMinutes: 6,
     worstRecord: {
-      durationMin: 25,
-      taskTitle: '需求梳理',
+      durationMin: 45,
+      taskTitle: '深度学习 (切出后台)',
       reason: '切出后台'
     },
     performanceList: [
-      { title: "完美心流", percentText: "0%", color: "#4ADE80", progress: 0 },
-      { title: "极度投入", percentText: "0%", color: "#86EFAC", progress: 0 },
-      { title: "轻度走神", percentText: "0%", color: "#FBBF24", progress: 0 },
-      { title: "中度摸鱼", percentText: "0%", color: "#F97316", progress: 0 },
-      { title: "中途放弃", percentText: "0%", color: "#EF4444", progress: 0 }
+      { title: "完美心流", percentText: "58%", color: "#4ADE80", progress: 0.58 },
+      { title: "极度投入", percentText: "20%", color: "#86EFAC", progress: 0.20 },
+      { title: "轻度走神", percentText: "11%", color: "#FBBF24", progress: 0.11 },
+      { title: "中度摸鱼", percentText: "6%", color: "#F97316", progress: 0.06 },
+      { title: "中途放弃", percentText: "5%", color: "#EF4444", progress: 0.05 }
     ],
-    blacklist: []
+    blacklist: [
+      { tag: "深度学习 (切出后台)", failText: "100% 失败", failRate: 1.0 },
+      { tag: "交互体验与设计打磨", failText: "15% 走神", failRate: 0.15 },
+      { tag: "系统架构演进", failText: "10% 摸鱼", failRate: 0.1 }
+    ]
   };
 
   aboutToAppear(): void {
@@ -115,12 +245,6 @@ export struct DistractionReportView {
     const startLostMin = this.animTotalLostMinutes;
     const startAvgLost = this.animAvgLostMinutes;
     const startWorstMin = this.animWorstDurationMin;
-    
-    const startFlow = this.animFlowRatio;
-    const startFocused = this.animFocusedRatio;
-    const startSlight = this.animSlightRatio;
-    const startModerate = this.animModerateRatio;
-    const startAbandon = this.animAbandonRatio;
 
     const targetPercent = targetSummary.interruptedPercent;
     const targetTotal = targetSummary.totalCount;
@@ -129,11 +253,53 @@ export struct DistractionReportView {
     const targetAvgLost = targetSummary.avgLostMinutes;
     const targetWorstMin = targetSummary.worstRecord.durationMin;
 
-    const targetFlow = targetSummary.performanceList[0]?.progress || 0;
-    const targetFocused = targetSummary.performanceList[1]?.progress || 0;
-    const targetSlight = targetSummary.performanceList[2]?.progress || 0;
-    const targetModerate = targetSummary.performanceList[3]?.progress || 0;
-    const targetAbandon = targetSummary.performanceList[4]?.progress || 0;
+    const targetPercents: Array<number> = [
+      Math.round((targetSummary.performanceList[0]?.progress || 0) * 100),
+      Math.round((targetSummary.performanceList[1]?.progress || 0) * 100),
+      Math.round((targetSummary.performanceList[2]?.progress || 0) * 100),
+      Math.round((targetSummary.performanceList[3]?.progress || 0) * 100),
+      Math.round((targetSummary.performanceList[4]?.progress || 0) * 100)
+    ];
+
+    const startPercents: Array<number> = this.performanceBarItems.map(item => item.displayPercent);
+
+    // 触发进度条硬件加速动画
+    for (let i = 0; i < this.performanceBarItems.length && i < targetPercents.length; i++) {
+      this.performanceBarItems[i].percent = targetPercents[i];
+      this.performanceBarItems[i].ratioPercent = targetPercents[i];
+    }
+
+    // 黑榜数据同步与动画初始化（原地复用对象，确保 ArkTS 不会重建组件，从而完美触发属性插值与宽度变形动画）
+    const defaultBlacklist: Array<DistractionBlacklistItem> = [
+      { tag: "深度学习 (切出后台)", failText: "100% 失败", failRate: 1.0 },
+      { tag: "需求梳理 (紧急会议中断)", failText: "65% 打断", failRate: 0.65 },
+      { tag: "交互体验与设计打磨", failText: "30% 走神", failRate: 0.30 }
+    ];
+    const newBlacklist: Array<DistractionBlacklistItem> = (targetSummary.blacklist && targetSummary.blacklist.length > 0)
+      ? targetSummary.blacklist
+      : defaultBlacklist;
+
+    const startBlacklistPercents: Array<number> = this.blacklistItems.map(it => it.displayPercent);
+    const targetBlacklistPercents: Array<number> = newBlacklist.map(it => Math.round((it.failRate !== undefined ? it.failRate : 0.5) * 100));
+
+    for (let i = 0; i < newBlacklist.length; i++) {
+      const b = newBlacklist[i];
+      const targetRate = b.failRate !== undefined ? b.failRate : 0.5;
+      const targetP = Math.round(targetRate * 100);
+      const suffix = b.failText ? b.failText.replace(/^[0-9]+%\s*/, '') || '失败' : '失败';
+
+      if (i < this.blacklistItems.length) {
+        this.blacklistItems[i].tag = b.tag;
+        this.blacklistItems[i].failRate = targetRate;
+        this.blacklistItems[i].failTextSuffix = suffix;
+        this.blacklistItems[i].ratioPercent = targetP; // 立即触发硬件加速形变动画
+      } else {
+        this.blacklistItems.push(new BlacklistChartItem(b.tag, targetRate, suffix, targetP, targetP));
+      }
+    }
+    if (this.blacklistItems.length > newBlacklist.length) {
+      this.blacklistItems = this.blacklistItems.slice(0, newBlacklist.length);
+    }
 
     const duration = 500; // 500ms
     const fps = 60;
@@ -152,11 +318,17 @@ export struct DistractionReportView {
       this.animAvgLostMinutes = Math.round(startAvgLost + (targetAvgLost - startAvgLost) * ease);
       this.animWorstDurationMin = Math.round(startWorstMin + (targetWorstMin - startWorstMin) * ease);
 
-      this.animFlowRatio = startFlow + (targetFlow - startFlow) * ease;
-      this.animFocusedRatio = startFocused + (targetFocused - startFocused) * ease;
-      this.animSlightRatio = startSlight + (targetSlight - startSlight) * ease;
-      this.animModerateRatio = startModerate + (targetModerate - startModerate) * ease;
-      this.animAbandonRatio = startAbandon + (targetAbandon - startAbandon) * ease;
+      for (let i = 0; i < this.performanceBarItems.length && i < targetPercents.length; i++) {
+        const sP = startPercents[i];
+        const tP = targetPercents[i];
+        this.performanceBarItems[i].displayPercent = Math.round(sP + (tP - sP) * ease);
+      }
+
+      for (let i = 0; i < this.blacklistItems.length && i < targetBlacklistPercents.length; i++) {
+        const sP = startBlacklistPercents[i] !== undefined ? startBlacklistPercents[i] : 0;
+        const tP = targetBlacklistPercents[i] !== undefined ? targetBlacklistPercents[i] : 0;
+        this.blacklistItems[i].displayPercent = Math.round(sP + (tP - sP) * ease);
+      }
 
       if (progress >= 1) {
         clearInterval(this.animTimer);
@@ -390,11 +562,9 @@ export struct DistractionReportView {
               .fontWeight(FontWeight.Bold)
               
             Column({ space: 12 }) {
-              this.PerformanceBar("完美心流", `${Math.round(this.animFlowRatio * 100)}%`, "#4ADE80", this.animFlowRatio)
-              this.PerformanceBar("极度投入", `${Math.round(this.animFocusedRatio * 100)}%`, "#86EFAC", this.animFocusedRatio)
-              this.PerformanceBar("轻度走神", `${Math.round(this.animSlightRatio * 100)}%`, "#FBBF24", this.animSlightRatio)
-              this.PerformanceBar("中度摸鱼", `${Math.round(this.animModerateRatio * 100)}%`, "#F97316", this.animModerateRatio)
-              this.PerformanceBar("中途放弃", `${Math.round(this.animAbandonRatio * 100)}%`, "#EF4444", this.animAbandonRatio)
+              ForEach(this.performanceBarItems, (item: PerformanceBarItem) => {
+                DistractionPerformanceBarComponent({ item: item })
+              }, (item: PerformanceBarItem) => item.title)
             }
           }
           .alignItems(HorizontalAlign.Start)
@@ -415,9 +585,9 @@ export struct DistractionReportView {
               .margin({ top: -10 })
               
             Column({ space: 16 }) {
-              ForEach(this.reportData.blacklist, (item: DistractionBlacklistItem) => {
-                this.BlacklistBar(item.tag, item.failText, item.failRate)
-              }, (item: DistractionBlacklistItem) => item.tag)
+              ForEach(this.blacklistItems, (item: BlacklistChartItem, index: number) => {
+                DistractionBlacklistComponent({ item: item })
+              }, (item: BlacklistChartItem, index: number) => index.toString())
             }
             .padding({ top: 8 })
           }
@@ -473,9 +643,10 @@ export struct DistractionReportView {
       Row() {
         Row()
           .height('100%')
-          .width(`${Math.max(4, Math.round(ratio * 100))}%`)
+          .width(`${Math.min(100, Math.max(6, Math.round(ratio * 100)))}%`)
           .backgroundColor(barColor)
           .borderRadius(4)
+          .animation({ duration: 400, curve: Curve.FastOutSlowIn })
       }
       .layoutWeight(1)
       .height(16)

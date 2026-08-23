@@ -10,11 +10,19 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "label"
+      "value": "专注航行"
     },
     {
       "name": "location_permission_reason",
       "value": "获取您的位置信息以自动选择距离您最近的出发机场"
+    },
+    {
+      "name": "standby_flight_card_name",
+      "value": "专注飞行 · 待机屏保卡片"
+    },
+    {
+      "name": "standby_flight_card_desc",
+      "value": "在手机横屏待机与熄屏模式下，展示沉浸式航空仪表盘、实时专注倒计时与每日飞行里程。"
     }
   ]
 }

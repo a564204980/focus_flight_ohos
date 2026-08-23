@@ -299,11 +299,54 @@
       return tex;
     }
 
+    const STORAGE_KEY = 'focus_flight_earth_rotation_v1';
+
+    function getSavedEarthState() {
+      try {
+        const str = localStorage.getItem(STORAGE_KEY);
+        if (str) {
+          const parsed = JSON.parse(str);
+          if (parsed && typeof parsed.rotX === 'number' && typeof parsed.rotY === 'number') {
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    let saveTimer = null;
+    function saveEarthState() {
+      if (!earthMesh || !camera) return;
+      try {
+        const data = {
+          rotX: earthMesh.rotation.x,
+          rotY: earthMesh.rotation.y,
+          camZ: camera.position.z,
+          savedAt: Date.now()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function throttledSaveEarthState() {
+      if (saveTimer) return;
+      saveTimer = setTimeout(function() {
+        saveTimer = null;
+        saveEarthState();
+      }, 300);
+    }
+
     function init() {
       scene = new THREE.Scene();
       scene.position.y = 0; // 绝对几何正中心
       camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 1000);
-      camera.position.z = 3.8;
+
+      const savedState = getSavedEarthState();
+      const initialRotX = (savedState && typeof savedState.rotX === 'number') ? savedState.rotX : (34 * Math.PI / 180);
+      const initialRotY = (savedState && typeof savedState.rotY === 'number') ? savedState.rotY : (-(104 * Math.PI / 180) - Math.PI / 2);
+      const initialCamZ = (savedState && typeof savedState.camZ === 'number') ? savedState.camZ : 3.8;
+
+      camera.position.z = initialCamZ;
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(innerWidth, innerHeight);
@@ -327,8 +370,8 @@
       const radius = 1.35;
       const geo = new THREE.SphereGeometry(radius, 64, 64);
       earthMesh = new THREE.Mesh(geo, earthMat);
-      earthMesh.rotation.x = 0.35; // 往下转动，使北半球核心大陆/中国视角自然下移至中央黄金视野
-      earthMesh.rotation.y = -1.2;
+      earthMesh.rotation.x = initialRotX;
+      earthMesh.rotation.y = initialRotY;
       scene.add(earthMesh);
 
       // 2. 3D 浮动云层
@@ -340,8 +383,8 @@
         depthWrite: false
       });
       cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.018, 64, 64), cloudMat);
-      cloudMesh.rotation.x = 0.35;
-      cloudMesh.rotation.y = -1.2;
+      cloudMesh.rotation.x = initialRotX;
+      cloudMesh.rotation.y = initialRotY;
       scene.add(cloudMesh);
 
                         // 3. 完美对标图 2: 紧贴地表的极致柔和太空微羽霞光
@@ -356,46 +399,6 @@
       });
       glowMesh = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.14, 64, 64), atmosphereMat);
       scene.add(glowMesh);
-
-      
-      // 5. 3D 严谨矢量国家与地区边界线网 (Strict 3D Vector Country Borders)
-      if (typeof WORLD_BORDERS !== 'undefined') {
-        const borderPositions = [];
-        const radius = 1.3525;
-
-        WORLD_BORDERS.forEach(line => {
-          for (let i = 0; i < line.length - 1; i++) {
-            const p1 = line[i];
-            const p2 = line[i + 1];
-
-            const lon1 = p1[0] * Math.PI / 180;
-            const lat1 = p1[1] * Math.PI / 180;
-            const lon2 = p2[0] * Math.PI / 180;
-            const lat2 = p2[1] * Math.PI / 180;
-
-            const x1 = radius * Math.cos(lat1) * Math.cos(lon1);
-            const y1 = radius * Math.sin(lat1);
-            const z1 = -radius * Math.cos(lat1) * Math.sin(lon1);
-
-            const x2 = radius * Math.cos(lat2) * Math.cos(lon2);
-            const y2 = radius * Math.sin(lat2);
-            const z2 = -radius * Math.cos(lat2) * Math.sin(lon2);
-
-            borderPositions.push(x1, y1, z1, x2, y2, z2);
-          }
-        });
-
-        const borderGeo = new THREE.BufferGeometry();
-        borderGeo.setAttribute('position', new THREE.Float32BufferAttribute(borderPositions, 3));
-        const borderMat = new THREE.LineBasicMaterial({
-          color: 0x94A3B8,
-          transparent: true,
-          opacity: 0.11,
-          depthWrite: false
-        });
-        borderMesh = new THREE.LineSegments(borderGeo, borderMat);
-        earthMesh.add(borderMesh);
-      }
 
       // 6. 真实 NASA 360度银河全景深空天球 (Realistic NASA Milky Way Skybox)
       if (typeof MILKYWAY_B64 !== 'undefined') {
@@ -474,14 +477,14 @@
       }
 
       function getRotationSensitivity() {
-        // 根据相机距离地表的真实三维距离自适应衰减阻尼，确保放大后贴手转动极其平稳细腻
-        const surfaceDist = Math.max(0.18, camera.position.z - 1.35);
-        return 0.0042 * Math.pow(surfaceDist / 2.45, 1.45);
+        // 根据相机距离地表的距离自适应平滑阻尼，放大后依然跟手灵敏且转速自然
+        const surfaceDist = Math.max(0.45, camera.position.z - 1.35);
+        return Math.max(0.0028, 0.0050 * Math.pow(surfaceDist / 2.45, 0.85));
       }
 
       function getPositionDragSensitivity() {
-        const surfaceDist = Math.max(0.18, camera.position.z - 1.35);
-        return 0.0055 * Math.pow(surfaceDist / 2.45, 1.2);
+        const surfaceDist = Math.max(0.45, camera.position.z - 1.35);
+        return Math.max(0.0035, 0.0060 * Math.pow(surfaceDist / 2.45, 0.90));
       }
 
       function onPointerMove(clientX, clientY) {
@@ -516,6 +519,7 @@
           isPositionDragging = false;
         }
         isDragging = false;
+        saveEarthState(); // 💾 手动拖拽或缩放结束时立即持久化保存当前三维角度与缩放状态
         scheduleAutoRotate();
       }
 
@@ -524,11 +528,14 @@
       window.addEventListener('selectstart', e => { e.preventDefault(); return false; });
       document.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
       document.addEventListener('selectstart', e => { e.preventDefault(); return false; });
+      window.addEventListener('pagehide', saveEarthState);
+      window.addEventListener('beforeunload', saveEarthState);
 
       el.addEventListener('wheel', e => {
         stopAutoRotate();
         const factor = e.deltaY > 0 ? 1.08 : 0.92;
         camera.position.z = Math.max(1.8, Math.min(16.0, camera.position.z * factor));
+        throttledSaveEarthState();
         scheduleAutoRotate();
       }, { passive: true });
 
@@ -561,14 +568,15 @@
             earthMesh.rotation.x += dy;
             cloudMesh.rotation.x += dy;
           
-            
             prevTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            throttledSaveEarthState();
           }
         } else if (e.touches.length === 2 && pinchStart > 0) {
           const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
           const ratio = pinchStart / d;
           camera.position.z = Math.max(1.8, Math.min(16.0, camera.position.z * Math.pow(ratio, 0.85)));
           pinchStart = d;
+          throttledSaveEarthState();
         }
       }, { passive: false });
 
@@ -628,8 +636,12 @@
       }
     }
 
-    let targetRotX = 0, targetRotY = 0, isFlying = false;
-    let targetCamZ = 3.0;
+    // 🇨🇳 默认正面对准中国核心版图 (纬度 34°N, 经度 104°E)
+    const CHINA_DEFAULT_ROTX = 34 * Math.PI / 180;
+    const CHINA_DEFAULT_ROTY = -(104 * Math.PI / 180) - Math.PI / 2;
+
+    let targetRotX = CHINA_DEFAULT_ROTX, targetRotY = CHINA_DEFAULT_ROTY, isFlying = false;
+    let targetCamZ = 3.8;
     let originMarkerMesh = null;
 
     function latLonToVector3(lat, lon, radius) {
@@ -814,6 +826,354 @@
       isRotating = false;
     };
 
+    // 动态生成极简暗夜磨砂玻璃航空代码胶囊标签 (专为全景航网打造，小巧精致，零遮挡)
+    function createMiniAirportBadgeTexture(code) {
+      const cvs = document.createElement('canvas');
+      cvs.width = 160;
+      cvs.height = 70;
+      const ctx = cvs.getContext('2d');
+
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      const displayCode = (code || 'PEK').toUpperCase();
+
+      // 1. 绘制圆角胶囊背景
+      const r = 18;
+      const x = 6, y = 6, w = cvs.width - 12, h = cvs.height - 12;
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+
+      // 半透明暗夜蓝玻璃填充
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+      ctx.fill();
+
+      // 天际蓝极细微光描边
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+
+      // 2. 文字居中
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '800 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 6;
+      ctx.fillText(displayCode, cvs.width / 2, cvs.height / 2 + 2);
+
+      const tex = new THREE.CanvasTexture(cvs);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    // 动态生成纯净白色中文城市名标签 (对标设计图：如 西安、郑州，纯白字配柔和投影，无背景框)
+    function createCleanCityNameTexture(cityName) {
+      const cvs = document.createElement('canvas');
+      cvs.width = 256;
+      cvs.height = 96;
+      const ctx = cvs.getContext('2d');
+
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      const rawName = cityName || '北京';
+      const cleanName = rawName.split(' ')[0].split('(')[0].trim();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '700 42px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "HarmonyOS Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2;
+      ctx.fillText(cleanName, cvs.width / 2, cvs.height / 2);
+
+      const tex = new THREE.CanvasTexture(cvs);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    // 城市地名方位配置表 (根据地理空间与邻近城市分布智能避让排布，对标截图中的 青岛(上)、南京(上)、上海(上)、杭州(下))
+    const CITY_LABEL_DIRECTIONS = {
+      'HGH': 'bottom',      // 杭州 在圆点下方
+      'SHA': 'top',         // 上海 在圆点上方
+      'PVG': 'top',         // 浦东 在圆点上方
+      'NKG': 'top',         // 南京 在圆点上方
+      'TAO': 'top',         // 青岛 在圆点上方
+      'PEK': 'top',         // 北京 在圆点上方
+      'PKX': 'bottom',      // 大兴 在圆点下方
+      'TSN': 'right',       // 天津 在圆点右侧
+      'SZX': 'bottom',      // 深圳 在圆点下方
+      'CAN': 'top',         // 广州 在圆点上方
+      'HKG': 'bottom-right',// 香港 在圆点右下方
+      'MFM': 'bottom-left', // 澳门 在圆点左下方
+      'CTU': 'top',         // 成都 在圆点上方
+      'TFU': 'bottom',      // 天府 在圆点下方
+      'CKG': 'right',       // 重庆 在圆点右方
+      'XIY': 'top',         // 西安 在圆点上方
+      'CGO': 'top',         // 郑州 在圆点上方
+      'WUH': 'top-right',   // 武汉 在圆点右上
+      'CSX': 'bottom',      // 长沙 在圆点下方
+      'KMG': 'bottom',      // 昆明 在圆点下方
+      'XMN': 'right',       // 厦门 在圆点右方
+      'FOC': 'top-right',   // 福州 在圆点右上
+      'SYX': 'bottom',      // 三亚 在圆点下方
+      'HAK': 'top',         // 海口 在圆点上方
+      'HRB': 'top',         // 哈尔滨 在圆点上方
+      'SHE': 'top-right',   // 沈阳 在圆点右上
+      'DLC': 'bottom-right',// 大连 在圆点右下
+      'URC': 'top',         // 乌鲁木齐 在圆点上方
+      'LXA': 'top',         // 拉萨 在圆点上方
+      'LHW': 'top-left',    // 兰州 在圆点左上
+      'LJG': 'bottom-left', // 丽江 在圆点左下
+      'SIN': 'bottom',      // 新加坡 在圆点下方
+      'BKK': 'bottom-left', // 曼谷 在圆点左下
+      'HND': 'top-right',   // 东京 在圆点右上
+      'NRT': 'top-right',   // 成田 在圆点右上
+      'ICN': 'top',         // 首尔 在圆点上方
+      'LHR': 'top',         // 伦敦 在圆点上方
+      'CDG': 'bottom-right',// 巴黎 在圆点右下
+      'FRA': 'top-right',   // 法兰克福 在圆点右上
+      'DXB': 'top',         // 迪拜 在圆点上方
+      'SYD': 'bottom-right',// 悉尼 在圆点右下
+      'AKL': 'bottom',      // 奥克兰 在圆点下方
+      'SFO': 'top-left',    // 旧金山 在圆点左上
+      'JFK': 'top-right',   // 纽约 在圆点右上
+      'LAX': 'bottom-left'  // 洛杉矶 在圆点左下
+    };
+
+    // 辅助生成历史航线网络的极简发光枢纽航标 (对标设计图：纯白外圈 + 纯蓝实心光核 + 智能多方位中文名)
+    function createNetworkBeaconNode(lat, lon, cityName, code, isPrimary, degree) {
+      const beaconGroup = new THREE.Group();
+      beaconGroup.name = 'beaconSubGroup';
+      // 适度抬升至 1.356 确保 100% 浮于地表之上，绝不被球面与地势网格遮挡截断
+      const surfacePos = latLonToVector3(lat, lon, 1.356);
+      const normal = surfacePos.clone().normalize();
+
+      const quaternion = new THREE.Quaternion();
+      quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+      beaconGroup.quaternion.copy(quaternion);
+      beaconGroup.position.copy(surfacePos);
+
+      // 1. 外层纯白圆环 (Outer White Ring - 对标图片)
+      const outerRingGeo = new THREE.RingGeometry(0.0075, 0.0135, 32);
+      const outerRingMat = new THREE.MeshBasicMaterial({
+        color: 0xFFFFFF,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.98,
+        depthTest: false,
+        depthWrite: false
+      });
+      const outerRingMesh = new THREE.Mesh(outerRingGeo, outerRingMat);
+      outerRingMesh.rotation.x = Math.PI / 2;
+      beaconGroup.add(outerRingMesh);
+
+      // 2. 内层天蓝色实心圆核 (Inner Azure Sky-Blue Core - 对标图片)
+      const coreGeo = new THREE.CircleGeometry(0.008, 32);
+      const coreMat = new THREE.MeshBasicMaterial({
+        color: 0x38BDF8, // 纯净天际蓝
+        side: THREE.DoubleSide,
+        depthTest: false,
+        depthWrite: false
+      });
+      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      coreMesh.rotation.x = Math.PI / 2;
+      beaconGroup.add(coreMesh);
+
+      // 3. 智能多方位纯净白色中文城市名 Sprite (对标图 1：青岛上、南京上、上海上、杭州下)
+      const labelTex = createCleanCityNameTexture(cityName);
+      const spriteMat = new THREE.SpriteMaterial({
+        map: labelTex,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false
+      });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(0.14, 0.052, 1.0);
+
+      const dir = (code && CITY_LABEL_DIRECTIONS[code.toUpperCase()]) || 'top';
+      if (dir === 'bottom') {
+        sprite.center.set(0.5, 1.0);
+        sprite.position.set(0, -0.016, 0); // 杭州：悬浮在光点正下方
+      } else if (dir === 'left') {
+        sprite.center.set(1.0, 0.5);
+        sprite.position.set(-0.018, 0, 0);
+      } else if (dir === 'right') {
+        sprite.center.set(0.0, 0.5);
+        sprite.position.set(0.018, 0, 0);
+      } else if (dir === 'top-right') {
+        sprite.center.set(0.0, 0.0);
+        sprite.position.set(0.010, 0.013, 0);
+      } else if (dir === 'top-left') {
+        sprite.center.set(1.0, 0.0);
+        sprite.position.set(-0.010, 0.013, 0);
+      } else if (dir === 'bottom-right') {
+        sprite.center.set(0.0, 1.0);
+        sprite.position.set(0.010, -0.013, 0);
+      } else if (dir === 'bottom-left') {
+        sprite.center.set(1.0, 1.0);
+        sprite.position.set(-0.010, -0.013, 0);
+      } else {
+        // 默认 'top'
+        sprite.center.set(0.5, 0.0);
+        sprite.position.set(0, 0.016, 0); // 青岛/南京/上海/北京：悬浮在光点正上方
+      }
+      beaconGroup.add(sprite);
+
+      beaconSprites.push({ sprite, beaconGroup, isPrimary, degree: degree || 1, lat, lon });
+
+      return { beaconGroup, surfacePos };
+    }
+
+    // 🌐 全球历史飞行航迹网络全景渲染 (统一纯净暖白/银月大圆弧线 + 天蓝双环航标与智能方位地名)
+    window.renderAllHistoricalRoutes = function(routes, userLoc) {
+      if (!earthMesh || !scene) return;
+
+      if (originMarkerMesh) {
+        earthMesh.remove(originMarkerMesh);
+        originMarkerMesh = null;
+      }
+      beaconSprites = []; // 清空旧航标追踪列表
+
+      if (!routes || !Array.isArray(routes) || routes.length === 0) {
+        return;
+      }
+
+      const allRoutesGroup = new THREE.Group();
+      allRoutesGroup.isSingleBeacon = false;
+
+      // 1. 统计各机场通航频次与连接度 (Degree)，提取中文城市名称并创建对标参考图的航标
+      const airportDegreeMap = new Map();
+      routes.forEach(function(r) {
+        airportDegreeMap.set(r.originCode, (airportDegreeMap.get(r.originCode) || 0) + 1);
+        airportDegreeMap.set(r.destCode, (airportDegreeMap.get(r.destCode) || 0) + 1);
+      });
+
+      const airportMap = new Map();
+      routes.forEach(function(r) {
+        if (!airportMap.has(r.originCode)) {
+          airportMap.set(r.originCode, { lat: r.originLat, lon: r.originLon, city: r.originCity, code: r.originCode });
+        }
+        if (!airportMap.has(r.destCode)) {
+          airportMap.set(r.destCode, { lat: r.destLat, lon: r.destLon, city: r.destCity, code: r.destCode });
+        }
+      });
+
+      const degrees = Array.from(airportDegreeMap.values()).sort(function(a, b) { return b - a; });
+      const primaryThreshold = degrees.length > 3 ? Math.max(2, degrees[Math.floor(degrees.length * 0.40)]) : 1;
+
+      const animBaseTime = Date.now();
+
+      let nodeIdx = 0;
+      airportMap.forEach(function(apt, code) {
+        const deg = airportDegreeMap.get(code) || 1;
+        const isPrimary = deg >= primaryThreshold;
+        const pData = createNetworkBeaconNode(apt.lat, apt.lon, apt.city, code, isPrimary, deg);
+
+        // 航标弹性绽放动画 (Staggered Bloom)
+        pData.beaconGroup.scale.set(0.001, 0.001, 0.001);
+        pData.beaconGroup.userData = {
+          isAnimatedBeacon: true,
+          animStart: animBaseTime + Math.min(nodeIdx * 25, 380),
+          animDuration: 600
+        };
+        nodeIdx++;
+
+        allRoutesGroup.add(pData.beaconGroup);
+      });
+
+      // 2. 遍历所有航线段，生成统一色调的三维大圆飞跃弧光流线 (带生长动画)
+      const ROUTE_COLOR = 0xE2E8F0; // 纯净银月白
+      const ROUTE_GLOW = 0xFFFFFF;  // 纯白高光微晕
+
+      routes.forEach(function(r, idx) {
+        const v1 = latLonToVector3(r.originLat, r.originLon, 1.356);
+        const v2 = latLonToVector3(r.destLat, r.destLon, 1.356);
+        const dist = v1.distanceTo(v2);
+
+        // 弧线高度根据大圆跨度平滑起落
+        const arcHeight = 1.356 + Math.min(dist * 0.22, 0.36);
+        const cp1 = v1.clone().lerp(v2, 0.28).normalize().multiplyScalar(arcHeight);
+        const cp2 = v1.clone().lerp(v2, 0.72).normalize().multiplyScalar(arcHeight);
+
+        const curve = new THREE.CubicBezierCurve3(v1, cp1, cp2, v2);
+        const points = curve.getPoints(80);
+        const arcGeo = new THREE.BufferGeometry().setFromPoints(points);
+        arcGeo.setDrawRange(0, 0); // 初始绘制 0 点，随生长动画展开
+
+        const lineDelay = Math.min(idx * 28, 620);
+        const lineDuration = 780;
+
+        // 🌟 Layer 1: 柔和微光辉光外晕 (Halo Layer)
+        const glowMat = new THREE.LineBasicMaterial({
+          color: ROUTE_GLOW,
+          transparent: true,
+          opacity: 0.38,
+          blending: THREE.AdditiveBlending
+        });
+        const glowLine = new THREE.Line(arcGeo, glowMat);
+        glowLine.userData = {
+          isAnimatedRoute: true,
+          animStart: animBaseTime + 100 + lineDelay,
+          animDuration: lineDuration,
+          totalPoints: 80
+        };
+        allRoutesGroup.add(glowLine);
+
+        // 🌟 Layer 2: 纯净银白核心主航线 (Core Stream Layer)
+        const coreMat = new THREE.LineBasicMaterial({
+          color: ROUTE_COLOR,
+          transparent: true,
+          opacity: 0.88
+        });
+        const coreLine = new THREE.Line(arcGeo, coreMat);
+        coreLine.userData = {
+          isAnimatedRoute: true,
+          animStart: animBaseTime + 100 + lineDelay,
+          animDuration: lineDuration,
+          totalPoints: 80
+        };
+        allRoutesGroup.add(coreLine);
+      });
+
+      earthMesh.add(allRoutesGroup);
+      originMarkerMesh = allRoutesGroup;
+
+      // 3. 定位点与持久化朝向处理
+      const saved = getSavedEarthState();
+      if (!saved) {
+        const centerLat = (userLoc && typeof userLoc.lat === 'number') ? userLoc.lat : 34;
+        const centerLon = (userLoc && typeof userLoc.lon === 'number') ? userLoc.lon : 104;
+
+        const userRotX = (centerLat * Math.PI / 180);
+        const userRotY = -(centerLon * Math.PI / 180) - Math.PI / 2;
+
+        earthMesh.rotation.x = userRotX;
+        earthMesh.rotation.y = userRotY;
+        if (cloudMesh) {
+          cloudMesh.rotation.x = userRotX;
+          cloudMesh.rotation.y = userRotY;
+        }
+
+        targetRotX = userRotX;
+        targetRotY = userRotY;
+        targetCamZ = 3.8;
+      } else {
+        targetRotX = earthMesh.rotation.x;
+        targetRotY = earthMesh.rotation.y;
+        targetCamZ = camera.position.z;
+      }
+
+      isFlying = false; // 坚决不执行偏转动画
+      isRotating = true; // 立即开始平稳自转
+    };
+
     function toggleRotate() {
       isRotating = !isRotating;
       const btn = document.getElementById('btn-rotate');
@@ -850,30 +1210,43 @@
         if (line && line.material) {
           line.material.dashOffset -= 0.0012;
 
-          // 根据相机 Z 轴视距动态计算 scale：镜头拉近 (camera.position.z 变小) 时，scale 显著提升，虚线段数动态翻倍自适应增多！
           const cameraDist = camera.position.z;
           const densityScale = Math.max(1.0, Math.min(5.5, 7.8 / Math.max(0.8, cameraDist - 0.5)));
           line.material.scale = densityScale;
         }
       }
 
-      // 仅单点航标时才放缩航标本身，避免包含航线的 routeGroup 坐标系被放大抛入天空
-      if (originMarkerMesh && camera) {
-        const dist = camera.position.z;
-        const ratio = Math.max(0.3, Math.min(2.0, dist / 4.2));
-        const s = Math.pow(ratio, 1.85);
-
-        if (originMarkerMesh.isSingleBeacon) {
-          originMarkerMesh.scale.set(s, s, s);
-        } else {
-          // 多节点航线模式下，只对里面的子航标进行尺寸自适应，绝对不动地表坐标与航线的几何数据！
-          originMarkerMesh.scale.set(1, 1, 1);
-          originMarkerMesh.traverse((child) => {
-            if (child.name === 'beaconSubGroup') {
+      // 航网生长动画与航标弹性绽放驱动引擎
+      if (originMarkerMesh) {
+        const now = Date.now();
+        originMarkerMesh.traverse((child) => {
+          if (child.isLine && child.userData && child.userData.isAnimatedRoute) {
+            const { animStart, animDuration, totalPoints } = child.userData;
+            if (now < animStart) {
+              child.geometry.setDrawRange(0, 0);
+            } else {
+              const p = Math.min(1.0, (now - animStart) / animDuration);
+              // 三次平滑缓出 (Cubic Ease Out)
+              const easeP = 1 - Math.pow(1 - p, 3);
+              const visiblePts = Math.max(2, Math.floor(easeP * totalPoints));
+              child.geometry.setDrawRange(0, visiblePts);
+            }
+          }
+          if (child.name === 'beaconSubGroup' && child.userData && child.userData.isAnimatedBeacon) {
+            const { animStart, animDuration } = child.userData;
+            if (now < animStart) {
+              child.scale.set(0.001, 0.001, 0.001);
+            } else {
+              const p = Math.min(1.0, (now - animStart) / animDuration);
+              // 弹性回弹缓出 (Back Ease Out)
+              const c1 = 1.4;
+              const c3 = c1 + 1;
+              const easeBack = 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2);
+              const s = Math.max(0.001, Math.min(1.15, easeBack));
               child.scale.set(s, s, s);
             }
-          });
-        }
+          }
+        });
       }
 
       // 银河背景极其微弱悠扬自转 + 恒星呼吸微光闪烁
@@ -883,19 +1256,38 @@
         stars.material.opacity = 0.75 + Math.sin(Date.now() * 0.0015) * 0.12;
       }
 
-      // 每帧动态计算城市标签 Sprite 的球面法线可见度，边缘/背面渐隐防止文字截断
+      // 每帧动态计算城市标签 Sprite 与航标圆点的球面法线可见度 (正面清晰显示，背面平滑隐藏)
       if (beaconSprites.length > 0 && earthMesh && camera) {
-        // 地球中心→摄像机方向（正面城市法线与此同向，dot > 0 → 可见）
         const centerToCamera = new THREE.Vector3().subVectors(camera.position, scene.position).normalize();
-        beaconSprites.forEach(({ sprite, beaconGroup }) => {
-          // 将 beaconGroup 的局部 Y 轴（球面法线）转换到世界空间
+        const camDist = camera.position.z;
+        // lodProgress: 0.0 (camDist >= 4.5 远眺聚合态) -> 1.0 (camDist <= 2.6 完全展开)
+        const lodProgress = Math.max(0, Math.min(1, (4.5 - camDist) / 1.9));
+
+        beaconSprites.forEach((item) => {
+          const { sprite, beaconGroup, isPrimary, degree } = item;
           const worldNormal = new THREE.Vector3(0, 1, 0);
           worldNormal.transformDirection(beaconGroup.matrixWorld);
-          // dot > 0: 正面朝向摄像机; dot < 0: 背面
+          
           const dot = worldNormal.dot(centerToCamera);
-          // 完全正面(dot≥0.3)→opacity=1; 边缘过渡区(dot∈[0,0.3])→线性渐隐; 背面(dot≤0)→opacity=0
-          const opacity = Math.max(0, Math.min(1, dot / 0.3));
-          sprite.material.opacity = opacity;
+          const isFront = dot > 0.02;
+          beaconGroup.visible = isFront; // 正面 100% 显示，转到地球背面时优雅隐藏
+
+          if (!isFront) {
+            sprite.material.opacity = 0;
+            return;
+          }
+
+          const normalFade = Math.max(0, Math.min(1, dot / 0.20));
+
+          if (isPrimary) {
+            // 一级骨干核心枢纽：缩小全景态依然清晰呈现
+            sprite.material.opacity = normalFade;
+          } else {
+            // 二级分支节点：在远景全景状态下优雅隐退标签（保留微光小圆核），随着放大平滑绽放淡入！
+            const unlockThreshold = Math.max(0.05, 0.45 - (degree || 1) * 0.10);
+            const secondaryAlpha = Math.max(0, Math.min(1, (lodProgress - unlockThreshold) / (1 - unlockThreshold + 0.001)));
+            sprite.material.opacity = normalFade * secondaryAlpha;
+          }
         });
       }
 

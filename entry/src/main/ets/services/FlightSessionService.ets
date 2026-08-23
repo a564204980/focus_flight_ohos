@@ -11,6 +11,7 @@ import { FlightSessionStore, FlightSessionData } from '../services/FlightSession
 import { LatLngPoint, interpolateLatLng } from '../utils/GeodesicUtils';
 import { findAirportByCode } from '../models/AirportModel';
 import { FlightRecordRepository } from '../database/FlightRecordRepository';
+import { LiveViewManager } from './LiveViewManager';
 
 export class FlightSessionService {
   private ctrl: IndexController;
@@ -165,6 +166,7 @@ export class FlightSessionService {
 
     // 1. 清理本地持久化飞行会话与定时器
     FlightSessionStore.clearSession();
+    LiveViewManager.stopLiveView(!isAborted, 0);
     if (this.ctrl.flightDisplaySync) {
       this.ctrl.flightDisplaySync.stop();
       this.ctrl.flightDisplaySync = undefined;

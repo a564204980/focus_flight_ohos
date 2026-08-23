@@ -15,6 +15,8 @@ export struct HomeFocusPanel {
   @State selectedTab: number = 0;
   @State timerMinutes: number = 45;
   @Watch('onStatsSheetChange') @StorageLink('isStatsSheetVisible') isStatsSheetVisible: boolean = false;
+  @Watch('onSettingsSheetChange') @StorageLink('isSettingsSheetVisible') isSettingsSheetVisible: boolean = false;
+  @StorageLink('isBookFlightSheetVisible') isBookFlightSheetVisible: boolean = false;
   @StorageLink('isFullReportVisible') isFullReportVisible: boolean = false;
   @Prop isFlightInProgress: boolean = false;
   @Watch('onDestinationChange') @StorageLink('selectedDestinationAirport') selectedDestination?: Airport = undefined;
@@ -22,6 +24,12 @@ export struct HomeFocusPanel {
   
   onStatsSheetChange(): void {
     if (!this.isStatsSheetVisible && this.selectedTab === 1) {
+      this.selectedTab = 0;
+    }
+  }
+
+  onSettingsSheetChange(): void {
+    if (!this.isSettingsSheetVisible && this.selectedTab === 2) {
       this.selectedTab = 0;
     }
   }
@@ -95,41 +103,68 @@ export struct HomeFocusPanel {
 
   build() {
     Column() {
-      // 1. Start Flight 暖珊瑚红主按钮 (绝对核心 CTA)
-      Button() {
-        Row({ space: 8 }) {
-          Text(this.isFlightInProgress ? '飞行中...' : '开始飞行')
-            .fontSize(17)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#FFFFFF')
-        }
-      }
-      .width('82%')
-      .height(52)
-      .backgroundColor('#FA6B56')
-      .borderRadius(26)
-      .shadow({ radius: 16, color: 'rgba(250, 107, 86, 0.35)', offsetY: 6 })
-      .onClick(() => {
-        if (!this.selectedDestination) {
-          if (this.onShowTopToast) {
-            this.onShowTopToast('✈️ 请先选择您的飞行目的地');
-          } else {
-            try {
-              promptAction.showToast({
-                message: '✈️ 请先选择您的飞行目的地',
-                duration: 2000
-              });
-            } catch (e) { }
+      // 1. Start Flight 暖珊瑚红主按钮 + 预定航班专属按钮
+      Row({ space: 10 }) {
+        Button() {
+          Row({ space: 8 }) {
+            Text(this.isFlightInProgress ? '飞行中...' : '开始飞行')
+              .fontSize(17)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#FFFFFF')
           }
-          this.destinationDialogController.open();
-          return;
         }
-        if (this.onStartFlight) {
-          AppStorage.setOrCreate('selectedDestinationAirport', this.selectedDestination);
-          AppStorage.setOrCreate('selectedDestinationCode', this.selectedDestination.code);
-          this.onStartFlight(this.timerMinutes, this.selectedDestination);
+        .layoutWeight(1)
+        .height(52)
+        .backgroundColor('#FA6B56')
+        .borderRadius(26)
+        .shadow({ radius: 16, color: 'rgba(250, 107, 86, 0.35)', offsetY: 6 })
+        .onClick(() => {
+          if (!this.selectedDestination) {
+            if (this.onShowTopToast) {
+              this.onShowTopToast('✈️ 请先选择您的飞行目的地');
+            } else {
+              try {
+                promptAction.showToast({
+                  message: '✈️ 请先选择您的飞行目的地',
+                  duration: 2000
+                });
+              } catch (e) { }
+            }
+            this.destinationDialogController.open();
+            return;
+          }
+          if (this.onStartFlight) {
+            AppStorage.setOrCreate('selectedDestinationAirport', this.selectedDestination);
+            AppStorage.setOrCreate('selectedDestinationCode', this.selectedDestination.code);
+            this.onStartFlight(this.timerMinutes, this.selectedDestination);
+          }
+        })
+
+        // 预订航班专属日程按钮 (100% 几何正圆，内含精致图标与“预订”文字)
+        Column({ space: 1 }) {
+          Image($r('app.media.ic_flight_booking'))
+            .width(18)
+            .height(18)
+
+          Text('预订')
+            .fontSize(10)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#FA6B56')
         }
-      })
+        .width(52)
+        .height(52)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .backgroundColor('#FFFFFF')
+        .borderRadius(26)
+        .shadow({ radius: 10, color: 'rgba(0, 0, 0, 0.07)', offsetY: 3 })
+        .border({ width: 1.5, color: '#EAE1D8' })
+        .onClick(() => {
+          this.isBookFlightSheetVisible = true;
+        })
+      }
+      .width('86%')
+      .justifyContent(FlexAlign.Center)
 
       // 2. 次级轻量化航线指示器 (低调半透明温润胶囊，不与主按钮争夺焦点)
       Row({ space: 6 }) {
@@ -175,61 +210,9 @@ export struct HomeFocusPanel {
         this.destinationDialogController.open();
       })
 
-      // 3. 底部三图标导航栏
-      Row() {
-        // Tab 0: 首页 (Home)
-        Column({ space: 4 }) {
-          Image($r('app.media.ic_nav_flight'))
-            .width(24)
-            .height(24)
-            .fillColor(this.selectedTab === 0 ? '#1E293B' : '#94A3B8')
-          
-          Circle({ width: 5, height: 5 })
-            .fill('#FA6B56')
-            .opacity(this.selectedTab === 0 ? 1 : 0)
-        }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Center)
-        .onClick(() => { this.selectedTab = 0; })
-
-        // Tab 1: 历史 / 统计 (Stats)
-        Column({ space: 4 }) {
-          Image($r('app.media.ic_nav_stats'))
-            .width(24)
-            .height(24)
-            .fillColor(this.selectedTab === 1 ? '#1E293B' : '#94A3B8')
-
-          Circle({ width: 5, height: 5 })
-            .fill('#FA6B56')
-            .opacity(this.selectedTab === 1 ? 1 : 0)
-        }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Center)
-        .onClick(() => { 
-          this.selectedTab = 1;
-          this.isStatsSheetVisible = true;
-        })
-
-        // Tab 2: 个人 / 我的 (Mine)
-        Column({ space: 4 }) {
-          Image($r('app.media.ic_nav_mine'))
-            .width(24)
-            .height(24)
-            .fillColor(this.selectedTab === 2 ? '#1E293B' : '#94A3B8')
-
-          Circle({ width: 5, height: 5 })
-            .fill('#FA6B56')
-            .opacity(this.selectedTab === 2 ? 1 : 0)
-        }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Center)
-        .onClick(() => { this.selectedTab = 2; })
-      }
-      .width('100%')
-      .padding({ left: 32, right: 32 })
     }
     .width('100%')
-    .padding({ top: 20, bottom: 20 })
+    .padding({ top: 20, bottom: 84 })
     .linearGradient({
       angle: 180,
       colors: [

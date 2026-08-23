@@ -396,8 +396,8 @@ export struct PassportStatsView {
         .linearGradient({ angle: 135, colors: [ ["#E0F2FE", 0], ["#BAE6FD", 1] ] })
         .shadow({ radius: 16, color: "rgba(186, 230, 253, 0.4)", offsetY: 8 })
 
-        // Bottom space for scrolling
-        Row().height(40)
+        // Bottom space for floating capsule nav bar
+        Row().height(90)
       }
       .width("100%")
       .padding({ left: 20, right: 20, top: 10 })

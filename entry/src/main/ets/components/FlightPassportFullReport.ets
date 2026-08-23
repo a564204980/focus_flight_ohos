@@ -26,6 +26,20 @@ export class ChartItem {
   }
 }
 
+@Observed
+export class TagChartItem {
+  @Track tag: string;
+  @Track count: number;
+  @Track displayCount: number;
+  @Track ratioPercent: number;
+  constructor(tag: string, count: number, ratioPercent: number = 15, displayCount: number = 0) {
+    this.tag = tag;
+    this.count = count;
+    this.displayCount = displayCount > 0 ? displayCount : count;
+    this.ratioPercent = ratioPercent;
+  }
+}
+
 @Component
 export struct FlightPassportFullReport {
   onClose?: () => void;
@@ -48,6 +62,17 @@ export struct FlightPassportFullReport {
     abortedFlightsCount: 0,
     avgDistractedMin: 0
   };
+  @State allTimeStats: FlightStatsSummary = {
+    totalFlights: 0,
+    totalMinutes: 0,
+    totalDistanceKm: 0,
+    uniqueDestinationsCount: 0,
+    currentStreakDays: 0,
+    shortHaulCount: 0,
+    longHaulCount: 0,
+    abortedFlightsCount: 0,
+    avgDistractedMin: 0
+  };
 
   // 数字滚动动画插值状态
   @State animFlights: number = 0;
@@ -57,6 +82,8 @@ export struct FlightPassportFullReport {
   @State animStreak: number = 0;
   @State animShortHaul: number = 0;
   @State animLongHaul: number = 0;
+  @State animTotalTags: number = 0;
+  @State animTagProgress: number = 0;
   private animTimer: number = -1;
 
   @State chartData: Array<ChartItem> = [
@@ -68,7 +95,7 @@ export struct FlightPassportFullReport {
     new ChartItem("周五", 0),
     new ChartItem("周六", 0)
   ];
-  @State topTags: Array<TopTagItem> = [];
+  @State topTags: Array<TagChartItem> = [];
   @State barGrowthProgress: number = 0;
   controller: webview.WebviewController = new webview.WebviewController();
 
@@ -104,6 +131,8 @@ export struct FlightPassportFullReport {
     this.animStreak = 0;
     this.animShortHaul = 0;
     this.animLongHaul = 0;
+    this.animTotalTags = 0;
+    this.animTagProgress = 0;
     this.barGrowthProgress = 0;
   }
 
@@ -113,19 +142,44 @@ export struct FlightPassportFullReport {
 
   private async loadDbStats(fromZero: boolean = false): Promise<void> {
     try {
-      await FlightRecordRepository.seed2025MockDataIfEmpty();
       const years = await FlightRecordRepository.getAvailableYears();
       this.availableYears = years;
       const yearFilter = this.selectedTimeTab === 'all' ? undefined : parseInt(this.selectedTimeTab);
       const summary = await FlightRecordRepository.getStatsSummary(yearFilter);
+      const allTimeSummary = await FlightRecordRepository.getStatsSummary(undefined);
+      if (allTimeSummary) {
+        this.allTimeStats = allTimeSummary;
+      }
+      await this.loadTopTags();
       if (summary) {
         this.stats = summary;
         this.startNumberRollingAnimation(summary, fromZero);
       }
       await this.loadTrendChartData();
-      await this.loadTopTags();
+      await this.syncHistoricalRoutesToEarth();
     } catch (e) {
       hilog.error(0x0000, 'FlightPassportFullReport', 'Failed to load stats: %{public}s', JSON.stringify(e));
+    }
+  }
+
+  /**
+   * 同步数据库历史航线网络至 3D 互动地球 (以用户定位点为正中心直接对齐)
+   */
+  private async syncHistoricalRoutesToEarth(): Promise<void> {
+    try {
+      const yearFilter = this.selectedTimeTab === 'all' ? undefined : parseInt(this.selectedTimeTab);
+      const routes = await FlightRecordRepository.getHistoricalRouteSegments(yearFilter);
+      const userLoc: Record<string, string | number> = this.nearestAirport ? {
+        'lat': this.nearestAirport.lat,
+        'lon': this.nearestAirport.lon,
+        'code': this.nearestAirport.code,
+        'city': this.nearestAirport.city
+      } : { 'lat': 34, 'lon': 104, 'code': 'CTU', 'city': '成都' };
+
+      const jsCode = `if (window.renderAllHistoricalRoutes) { window.renderAllHistoricalRoutes(${JSON.stringify(routes)}, ${JSON.stringify(userLoc)}); }`;
+      this.controller.runJavaScript(jsCode);
+    } catch (e) {
+      hilog.error(0x0000, 'FlightPassportFullReport', 'Failed to sync routes to earth: %{public}s', JSON.stringify(e));
     }
   }
 
@@ -161,7 +215,21 @@ export struct FlightPassportFullReport {
       const yearFilter = this.selectedTimeTab === 'all' ? undefined : parseInt(this.selectedTimeTab);
       const tags = await FlightRecordRepository.getTopTaskTags(yearFilter);
       if (tags && tags.length > 0) {
-        this.topTags = tags;
+        this.getUIContext().animateTo({ duration: 400, curve: Curve.FastOutSlowIn }, () => {
+          const minLen = Math.min(this.topTags.length, tags.length);
+          for (let i = 0; i < minLen; i++) {
+            this.topTags[i].tag = tags[i].tag;
+            this.topTags[i].count = tags[i].count;
+            this.topTags[i].ratioPercent = tags[i].ratioPercent;
+          }
+          if (tags.length > this.topTags.length) {
+            for (let i = this.topTags.length; i < tags.length; i++) {
+              this.topTags.push(new TagChartItem(tags[i].tag, tags[i].count, tags[i].ratioPercent));
+            }
+          } else if (this.topTags.length > tags.length) {
+            this.topTags.splice(tags.length, this.topTags.length - tags.length);
+          }
+        });
       }
     } catch (e) {
       // ignore
@@ -184,6 +252,9 @@ export struct FlightPassportFullReport {
     const startStreak = fromZero ? 0 : this.animStreak;
     const startShort = fromZero ? 0 : this.animShortHaul;
     const startLong = fromZero ? 0 : this.animLongHaul;
+    const startTags = fromZero ? 0 : this.animTotalTags;
+    const targetTags = this.topTags.length;
+    const startTagCounts: Array<number> = this.topTags.map((t: TagChartItem) => fromZero ? 0 : t.displayCount);
 
     const targetFlights = targetStats.totalFlights;
     const targetMinutes = targetStats.totalMinutes;
@@ -193,7 +264,7 @@ export struct FlightPassportFullReport {
     const targetShort = targetStats.shortHaulCount;
     const targetLong = targetStats.longHaulCount;
 
-    const duration = 500; // 500ms
+    const duration = 350; // 350ms 顺滑过渡
     const fps = 60;
     const totalFrames = Math.round((duration / 1000) * fps);
     let frame = 0;
@@ -211,6 +282,13 @@ export struct FlightPassportFullReport {
       this.animStreak = Math.round(startStreak + (targetStreak - startStreak) * ease);
       this.animShortHaul = Math.round(startShort + (targetShort - startShort) * ease);
       this.animLongHaul = Math.round(startLong + (targetLong - startLong) * ease);
+      this.animTotalTags = Math.round(startTags + (targetTags - startTags) * ease);
+
+      for (let i = 0; i < this.topTags.length; i++) {
+        const startVal = i < startTagCounts.length ? startTagCounts[i] : 0;
+        const targetVal = this.topTags[i].count;
+        this.topTags[i].displayCount = Math.round(startVal + (targetVal - startVal) * ease);
+      }
 
       if (progress >= 1) {
         clearInterval(this.animTimer);
@@ -355,7 +433,7 @@ export struct FlightPassportFullReport {
                       this.getUIContext().animateTo({ duration: 300, curve: Curve.FastOutSlowIn }, () => {
                         this.selectedTimeTab = tabItem.id;
                       });
-                      this.loadDbStats();
+                      this.loadDbStats(false);
                     }
                   })
               }, (tabItem: TimeTabItem) => tabItem.id)
@@ -385,6 +463,9 @@ export struct FlightPassportFullReport {
                 .width("100%")
                 .height(300)
                 .backgroundColor(Color.Transparent)
+                .onPageEnd(() => {
+                  this.syncHistoricalRoutesToEarth();
+                })
 
               // 2. 顶部飞机与动态机场定位带
               Row({ space: 16 }) {
@@ -614,81 +695,74 @@ export struct FlightPassportFullReport {
               Text(`约合 ${(this.animMinutes / 60).toFixed(1)} 小时 · ${Math.round(this.animMinutes / 25)} 次标准番茄钟`).fontSize(14).fontColor("#94A3B8").margin({ top: 4 })
             }.width("100%").alignItems(HorizontalAlign.Start).padding({ left: 20, right: 20, bottom: 20 })
 
-            // 里程碑进度条 1: 环球探索 (排版优化：标题与数值外置，彻底解决文字挤压与截断)
+            // 里程碑进度条 1: 环球探索 (始终展示终身累计图鉴)
             Column({ space: 8 }) {
               Row() {
                 Row({ space: 6 }) {
                   Text("🗺️").fontSize(14)
                   Text("环球探索").fontSize(13).fontWeight(FontWeight.Bold).fontColor("#1E293B")
+                  Text("终身里程碑")
+                    .fontSize(10)
+                    .fontColor("#6366F1")
+                    .backgroundColor("rgba(99, 102, 241, 0.08)")
+                    .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                    .borderRadius(4)
+                    .fontWeight(FontWeight.Medium)
                 }
                 Blank()
-                Text(`${this.animDestinations} / 250+ 座机场`).fontSize(12).fontColor("#64748B").fontWeight(FontWeight.Medium)
+                Text(`${this.allTimeStats.uniqueDestinationsCount} / 250+ 座机场`).fontSize(12).fontColor("#64748B").fontWeight(FontWeight.Medium)
               }.width("100%")
 
               Stack({ alignContent: Alignment.Start }) {
-                Row().width("100%").height(10).backgroundColor("#F1F5F9").borderRadius(5)
+                Row().width("100%").height(12).backgroundColor("#F1F5F9").borderRadius(6)
                 Row()
-                  .width(`${Math.min(100, Math.max(4, Math.round((this.animDestinations / 250) * 100)))}%`)
-                  .height(10)
+                  .width(`${Math.min(100, Math.max(4, Math.round((this.allTimeStats.uniqueDestinationsCount / 250) * 100)))}%`)
+                  .height(12)
                   .linearGradient({ angle: 90, colors: [["#6366F1", 0], ["#4F46E5", 1]] })
-                  .borderRadius(5)
+                  .borderRadius(6)
+                  .animation({ duration: 350, curve: Curve.FastOutSlowIn })
               }.width("100%")
             }.width("100%").padding({ left: 20, right: 20, bottom: 16 })
 
-            // 里程碑进度条 2: 大师之路
+            // 里程碑进度条 2: 大师之路 (始终展示终身累计总进度)
             Column({ space: 8 }) {
               Row() {
                 Row({ space: 6 }) {
                   Text("🎓").fontSize(14)
                   Text("大师之路 (一万小时定律)").fontSize(13).fontWeight(FontWeight.Bold).fontColor("#1E293B")
+                  Text("终身成就")
+                    .fontSize(10)
+                    .fontColor("#8B5CF6")
+                    .backgroundColor("rgba(139, 92, 246, 0.08)")
+                    .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                    .borderRadius(4)
+                    .fontWeight(FontWeight.Medium)
                 }
                 Blank()
-                Text(`${((this.animMinutes / 60) / 10000 * 100).toFixed(2)}%`).fontSize(12).fontColor("#64748B").fontWeight(FontWeight.Medium)
+                Text(`${((this.allTimeStats.totalMinutes / 60) / 10000 * 100).toFixed(2)}%`).fontSize(12).fontColor("#64748B").fontWeight(FontWeight.Medium)
               }.width("100%")
 
               Stack({ alignContent: Alignment.Start }) {
-                Row().width("100%").height(10).backgroundColor("#F1F5F9").borderRadius(5)
+                Row().width("100%").height(12).backgroundColor("#F1F5F9").borderRadius(6)
                 Row()
-                  .width(`${Math.min(100, Math.max(4, Math.round(((this.animMinutes / 60) / 10000 * 100))))}%`)
-                  .height(10)
+                  .width(`${Math.min(100, Math.max(4, Math.round(((this.allTimeStats.totalMinutes / 60) / 10000 * 100))))}%`)
+                  .height(12)
                   .linearGradient({ angle: 90, colors: [["#8B5CF6", 0], ["#7C3AED", 1]] })
-                  .borderRadius(5)
+                  .borderRadius(6)
+                  .animation({ duration: 350, curve: Curve.FastOutSlowIn })
               }.width("100%")
-            }.width("100%").padding({ left: 20, right: 20, bottom: 26 })
+            }.width("100%").padding({ left: 20, right: 20, bottom: 24 })
 
-            // 四宫格换算
-            Row() {
-              Column({ space: 2 }) {
-                Text("累计天数").fontSize(12).fontColor("#94A3B8")
-                Text((this.animMinutes / (60 * 24)).toFixed(1)).fontSize(20).fontWeight(FontWeight.Bold).fontColor("#000000")
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-
-              Column({ space: 2 }) {
-                Text("折合周数").fontSize(12).fontColor("#94A3B8")
-                Text((this.animMinutes / (60 * 24 * 7)).toFixed(1)).fontSize(20).fontWeight(FontWeight.Bold).fontColor("#000000")
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-            }.width("100%").padding({ left: 20, right: 20, bottom: 16 })
-
-            Row() {
-              Column({ space: 2 }) {
-                Text("折合月数").fontSize(12).fontColor("#94A3B8")
-                Text((this.animMinutes / (60 * 24 * 30)).toFixed(1)).fontSize(20).fontWeight(FontWeight.Bold).fontColor("#000000")
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-
-              Column({ space: 2 }) {
-                Text("折合年数").fontSize(12).fontColor("#94A3B8")
-                Text((this.animMinutes / (60 * 24 * 365)).toFixed(2)).fontSize(20).fontWeight(FontWeight.Bold).fontColor("#000000")
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-            }.width("100%").padding({ left: 20, right: 20, bottom: 30 })
+            Divider().color("#F1F5F9").margin({ left: 20, right: 20, bottom: 20 })
 
             // 5. 排行榜 (Top Visited Airports) -> 最常专注任务 (动态从数据库读取)
             Column({ space: 16 }) {
               Text("最常执行任务 (Top Tags)").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#000000")
               Text(`${this.topTags.length} 个总标签`).fontSize(14).fontColor("#94A3B8").margin({ top: -8 })
               
-              ForEach(this.topTags, (tagItem: TopTagItem) => {
-                this.HorizontalBarItem(tagItem.tag, tagItem.count, tagItem.percentWidth)
-              }, (tagItem: TopTagItem) => tagItem.tag)
+              ForEach(this.topTags, (tagItem: TagChartItem) => {
+                TopTagBarComponent({ item: tagItem })
+              })
             }.width("100%").alignItems(HorizontalAlign.Start).padding({ left: 20, right: 20, bottom: 60 })
 
           } // Closes bottom white Column
@@ -727,27 +801,6 @@ export struct FlightPassportFullReport {
   }
 
   @Builder
-  TimeGridItem(label: string, value: string) {
-    Column({ space: 2 }) {
-      Text(label).fontSize(12).fontColor("#94A3B8")
-      Text(value).fontSize(20).fontWeight(FontWeight.Bold).fontColor("#000000")
-    }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-  }
-
-  @Builder
-  HorizontalBarItem(label: string, count: number, percentWidth: string) {
-    Row({ space: 12 }) {
-      Text(label).fontSize(14).fontWeight(FontWeight.Bold).fontColor("#000000").width(110)
-      Row()
-        .height(16)
-        .width(percentWidth)
-        .backgroundColor("#8B5CF6")
-        .borderRadius(8)
-      Text(count.toString()).fontSize(14).fontColor("#94A3B8").width(24).textAlign(TextAlign.End)
-    }.width("100%")
-  }
-
-  @Builder
   DarkGridItem(label: string, value: string, unit?: string) {
     Column({ space: 4 }) {
       Text(label).fontSize(10).fontColor("rgba(255,255,255,0.5)").letterSpacing(1)
@@ -758,6 +811,52 @@ export struct FlightPassportFullReport {
         }
       }.alignItems(VerticalAlign.Bottom)
     }.alignItems(HorizontalAlign.Start).width("100%")
+  }
+}
+
+@Component
+export struct TopTagBarComponent {
+  @ObjectLink item: TagChartItem;
+
+  private getBarWidthPercent(): string {
+    return `${Math.min(100, Math.max(12, this.item.ratioPercent))}%`;
+  }
+
+  build() {
+    Row({ space: 12 }) {
+      Text(this.item.tag)
+        .fontSize(13)
+        .fontWeight(FontWeight.Medium)
+        .fontColor("#1E293B")
+        .width(108)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+      Stack({ alignContent: Alignment.Start }) {
+        Row()
+          .width("100%")
+          .height(12)
+          .backgroundColor("#F1F5F9")
+          .borderRadius(6)
+
+        Row()
+          .width(this.getBarWidthPercent())
+          .height(12)
+          .linearGradient({ angle: 90, colors: [["#8B5CF6", 0], ["#6366F1", 1]] })
+          .borderRadius(6)
+          .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+      }
+      .layoutWeight(1)
+
+      Text(`${this.item.displayCount} 次`)
+        .fontSize(12)
+        .fontWeight(FontWeight.Medium)
+        .fontColor("#64748B")
+        .width(36)
+        .textAlign(TextAlign.End)
+    }
+    .width("100%")
+    .alignItems(VerticalAlign.Center)
   }
 }
 

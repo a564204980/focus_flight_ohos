@@ -2,11 +2,12 @@ import { CabinInteriorOverlay } from './CabinInteriorOverlay';
 
 /**
  * PlaneCabinShellOverlay.ets
- * 飞机实体、地面阴影、11.8 倍放大剖开外壳与透视机舱联动组件
+ * 飞机实体、地面阴影、机身皮肤涂装【自机头向机尾推进覆盖】全息激光扫掠换装动效、11.8 倍放大剖开外壳与透视机舱联动组件
  */
 
 @Component
 export struct PlaneCabinShellOverlay {
+  @Watch('onSkinChange') @StorageLink('selectedPlaneSkinIndex') selectedPlaneSkinIndex: number = 0;
   @Prop isMapBackgroundVisible: boolean = false;
   @Prop isCabinExposed: boolean = false;
   @Prop isFullFocusMode: boolean = false;
@@ -21,6 +22,54 @@ export struct PlaneCabinShellOverlay {
 
   onSeatClick?: (seatId: string) => void;
   onConfirmFlight?: (seatId: string, tagId: string, durationMinutes: number) => void;
+
+  // ✈️ 自机头向机尾推进覆盖状态
+  @State currentSkinIndex: number = 0; // 底层旧皮肤
+  @State topSkinIndex: number = 0;     // 顶层推进展开新皮肤
+  @State sweepProgress: number = 1.0;  // 0.0 -> 1.0 推进覆盖进度
+  @State isSweeping: boolean = false;
+
+  aboutToAppear(): void {
+    this.currentSkinIndex = this.selectedPlaneSkinIndex;
+    this.topSkinIndex = this.selectedPlaneSkinIndex;
+    this.sweepProgress = 1.0;
+  }
+
+  onSkinChange(): void {
+    const nextSkin = this.selectedPlaneSkinIndex;
+    if (nextSkin !== this.topSkinIndex) {
+      // 1. 底层先固定为当前皮肤作为垫底背景
+      this.currentSkinIndex = this.topSkinIndex;
+      // 2. 顶层设定为新皮肤，扫掠高度归零
+      this.topSkinIndex = nextSkin;
+      this.sweepProgress = 0.0;
+      this.isSweeping = true;
+
+      // 3. 启动自机头向机尾推进的平滑扫掠动效 (900ms 丝滑 FastOutSlowIn)
+      setTimeout(() => {
+        this.getUIContext()?.animateTo({
+          duration: 900,
+          curve: Curve.FastOutSlowIn,
+          onFinish: () => {
+            this.currentSkinIndex = nextSkin;
+            this.isSweeping = false;
+          }
+        }, () => {
+          this.sweepProgress = 1.0;
+        });
+      }, 30);
+    }
+  }
+
+  private getPlaneImageByIndex(skinIndex: number): Resource {
+    if (skinIndex === 1) {
+      return $r('app.media.plane_skin_whale');
+    }
+    if (skinIndex === 2) {
+      return $r('app.media.plane_skin_aurora');
+    }
+    return $r('app.media.plane_skin_cat');
+  }
 
   build() {
     Stack({ alignContent: Alignment.Center }) {
@@ -39,7 +88,7 @@ export struct PlaneCabinShellOverlay {
         .hitTestBehavior(HitTestMode.None)
 
       // 2. 飞机 3D 实体主图
-      Image($r('app.media.b737_800_top_3'))
+      Image(this.getPlaneImageByIndex(this.selectedPlaneSkinIndex))
         .width(315)
         .height(450.1)
         .objectFit(ImageFit.Contain)
@@ -52,12 +101,12 @@ export struct PlaneCabinShellOverlay {
         .translate({ x: this.planeX, y: this.planeY })
         .hitTestBehavior((this.isMapBackgroundVisible && !this.isCabinExposed) ? HitTestMode.None : HitTestMode.Transparent)
 
-      // 2.5 全屏暗色遮罩：覆盖在放大的飞机之上，选座卡片之下 (使用 if 控制 DOM 挂载，绝对不阻挡底层点击)
+      // 2.5 全屏暗色遮罩：覆盖在放大的飞机之上，选座卡片之下
       if (this.isFullFocusMode) {
         Column()
           .width('100%')
           .height('100%')
-          .backgroundColor('#0F172A') // 深邃沉浸暗夜蓝
+          .backgroundColor('#0F172A')
           .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
           .transition(TransitionEffect.OPACITY.animation({ duration: 2500, curve: Curve.EaseInOut }))
           .hitTestBehavior(HitTestMode.None)

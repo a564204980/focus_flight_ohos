@@ -91,7 +91,8 @@ export struct CabinWindowViewOverlay {
           // 2.1.1 纯代码真实平流层分形流云海 (多阶水汽羽化、双层视差流动、24 小时无缝无限连续流淌)
           CabinWindowProceduralClouds({
             containerWidth: 185,
-            containerHeight: 310
+            containerHeight: 310,
+            isFlightPaused: this.isFlightPaused
           })
 
           // 2.1.2 可手势拖拽交互客机遮光板 (双向绑定 shadeProgress)

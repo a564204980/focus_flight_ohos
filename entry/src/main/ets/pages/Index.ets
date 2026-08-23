@@ -1,6 +1,7 @@
 import { IndexDialogsOverlay } from '../components/IndexDialogsOverlay';
 import { IndexFlightOverlays } from '../components/IndexFlightOverlays';
 import { IndexHangarHudLayer } from '../components/IndexHangarHudLayer';
+import { FloatingCapsuleNavBar } from '../components/FloatingCapsuleNavBar';
 import { IndexController } from '../controllers/IndexController';
 import { FlightViewModel } from '../viewmodels/FlightViewModel';
 import { common } from '@kit.AbilityKit';
@@ -68,10 +69,13 @@ function getPekRunwayEnd(): LatLngPoint {
 struct Index {
   @State vm: FlightViewModel = new FlightViewModel();
   private controller!: IndexController;
-  @State currentThemeIndex: number = 0;
+  @StorageLink('currentThemeIndex') currentThemeIndex: number = 0;
 
   @StorageLink('isFullReportVisible') isFullReportVisible: boolean = false;
   @StorageLink('isStatsSheetVisible') isStatsSheetVisible: boolean = false;
+  @StorageLink('isSettingsSheetVisible') isSettingsSheetVisible: boolean = false;
+  @StorageLink('isThemeSelectSheetVisible') isThemeSelectSheetVisible: boolean = false;
+  @StorageLink('isProPaywallVisible') isProPaywallVisible: boolean = false;
 
   aboutToAppear() {
     this.controller = new IndexController(this.vm);
@@ -254,7 +258,6 @@ struct Index {
       this.buildBaseLayer()
       IndexHangarHudLayer({ 
         vm: this.vm,
-        currentThemeIndex: this.currentThemeIndex,
         showTopToast: (message: string, duration?: number): void => { this.controller.showTopToast(message, duration); },
         onSeatSelectedInIndex: (seatId: string, tagId?: string, durationMinutes?: number): void => { this.controller.onSeatSelectedInIndex(seatId, tagId, durationMinutes); },
         onTractorClick: (): void => { this.controller.onTractorClick(); },
@@ -275,8 +278,37 @@ struct Index {
         abortFlightAndReturnToHangar: (): void => { this.controller.abortFlightAndReturnToHangar(); },
         onRouteStyleChanged: (routeId: string): void => { this.controller.onRouteStyleChanged(routeId); },
         onTrailEffectChanged: (trailId: string): void => { this.controller.onTrailEffectChanged(trailId); },
+        onSkinSelected: (skinIndex: number): void => { this.controller.playPlaneSkinChangeAnimation(skinIndex); },
         returnFromMapToHangar: (isAborted?: boolean): void => { this.controller.returnFromMapToHangar(isAborted); }
       })
+
+      // 🌟 全局常驻底部导航栏 (在首页平铺，在常规抽屉变胶囊，在全屏弹窗/飞行中彻底隐藏)
+      if (!this.vm.isFlightInProgress &&
+          !this.vm.isFullFocusMode &&
+          !this.vm.isMapBackgroundVisible &&
+          !this.vm.isCabinExposed &&
+          !this.isFullReportVisible &&
+          !this.isProPaywallVisible &&
+          !this.vm.isDistractionReportVisible &&
+          !this.vm.isLiveLogVisible &&
+          !this.vm.isTrailSettingsVisible &&
+          !this.vm.isArrivalBoardingPassVisible &&
+          !this.vm.isAbortDialogVisible) {
+        Column() {
+          FloatingCapsuleNavBar({
+            isFlightInProgress: this.vm.isFlightInProgress,
+            isFullFocusMode: this.vm.isFullFocusMode
+          })
+        }
+        .width('100%')
+        .padding({ bottom: 28 })
+        .position({ x: 0, y: '100%' })
+        .markAnchor({ x: 0, y: '100%' })
+        .alignItems(HorizontalAlign.Center)
+        .hitTestBehavior(HitTestMode.Transparent)
+        .transition(TransitionEffect.OPACITY.animation({ duration: 200, curve: Curve.FastOutSlowIn }))
+        .zIndex(600)
+      }
     }
     .width('100%')
     .height('100%')
