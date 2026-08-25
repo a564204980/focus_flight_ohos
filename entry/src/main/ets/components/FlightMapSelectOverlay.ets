@@ -588,6 +588,7 @@ export struct FlightMapSelectOverlay {
       try { promptAction.showToast({ message: '请先选择目的地机场 🛫', duration: 2000 }); } catch (e) {}
       return;
     }
+    AppStorage.setOrCreate('lastCheckInTimeMs', Date.now());
     const selected = findAirportByCode(this.currentSelectedCode);
     if (selected && this.onDestinationSelected) this.onDestinationSelected(selected, this.currentMinutes);
     this.handleClose();

@@ -6,6 +6,7 @@ import { LiveFlightLogDrawer } from './LiveFlightLogDrawer';
 import { FlightPassportFullReport } from './FlightPassportFullReport';
 import { ArrivalBoardingPassCard } from './ArrivalBoardingPassCard';
 import { PilotProfileSettingsDrawer } from './PilotProfileSettingsDrawer';
+import { FlightAlertsSettingsDrawer } from './FlightAlertsSettingsDrawer';
 import { FocusVoyageProPaywallModal } from './FocusVoyageProPaywallModal';
 import { ThemeSelectSheetContent } from './CyberThemeSelector';
 import { FlightBookingSheet } from './FlightBookingSheet';
@@ -18,6 +19,7 @@ export struct IndexDialogsOverlay {
   @StorageLink('isFullReportVisible') isFullReportVisible: boolean = false;
   @StorageLink('isStatsSheetVisible') isStatsSheetVisible: boolean = false;
   @StorageLink('isSettingsSheetVisible') isSettingsSheetVisible: boolean = false;
+  @StorageLink('isFlightAlertsSheetVisible') isFlightAlertsSheetVisible: boolean = false;
   @StorageLink('isBookFlightSheetVisible') isBookFlightSheetVisible: boolean = false;
   @StorageLink('isProPaywallVisible') isProPaywallVisible: boolean = false;
   @StorageLink('isThemeSelectSheetVisible') isThemeSelectSheetVisible: boolean = false;
@@ -282,6 +284,18 @@ export struct IndexDialogsOverlay {
 
         // 抽屉卡片主体
         Column() {
+          // 顶部小横条指示器 (与飞行护照抽屉一致)
+          Row() {
+            Row()
+              .width(36)
+              .height(4)
+              .backgroundColor('#D1D5DB')
+              .borderRadius(2)
+          }
+          .width('100%')
+          .height(20)
+          .justifyContent(FlexAlign.Center)
+
           PilotProfileSettingsDrawer({
             onClose: () => {
               this.isSettingsSheetVisible = false;
@@ -290,12 +304,12 @@ export struct IndexDialogsOverlay {
           .layoutWeight(1)
         }
         .width('100%')
-        .height('92%')
+        .height('88%')
         .backgroundColor('#FFFFFF')
         .borderRadius({ topLeft: 24, topRight: 24 })
         .clip(true)
-        .shadow({ radius: 30, color: 'rgba(0,0,0,0.35)', offsetY: -8 })
-        .position({ x: 0, y: this.isSettingsSheetVisible ? '8%' : '120%' })
+        .shadow({ radius: 25, color: 'rgba(0,0,0,0.25)', offsetY: -6 })
+        .position({ x: 0, y: this.isSettingsSheetVisible ? '12%' : '120%' })
         .animation({ duration: 350, curve: Curve.FastOutSlowIn })
       }
       .width('100%')
@@ -303,6 +317,67 @@ export struct IndexDialogsOverlay {
       .position({ x: 0, y: 0 })
       .hitTestBehavior(this.isSettingsSheetVisible ? HitTestMode.Default : HitTestMode.None)
       .zIndex(520)
+
+      // 9.6 专属「我的专注提醒」全新独立抽屉面板 (FlightAlertsSettingsDrawer, zIndex 530)
+      Stack({ alignContent: Alignment.Bottom }) {
+        // 半透明黑色背景遮罩
+        Rect()
+          .width('100%')
+          .height('100%')
+          .fill('rgba(0, 0, 0, 0.45)')
+          .opacity(this.isFlightAlertsSheetVisible ? 1 : 0)
+          .hitTestBehavior(this.isFlightAlertsSheetVisible ? HitTestMode.Default : HitTestMode.None)
+          .animation({ duration: 300 })
+          .onClick(() => {
+            if (this.isFlightAlertsSheetVisible) {
+              this.isFlightAlertsSheetVisible = false;
+            }
+          })
+          .onTouch((e: TouchEvent) => {
+            e.stopPropagation();
+          })
+
+        // 抽屉卡片主体 (从屏幕底部升起)
+        Column() {
+          // 顶部小横条指示器 (与各抽屉完全统一)
+          Row() {
+            Row()
+              .width(36)
+              .height(4)
+              .backgroundColor('#D1D5DB')
+              .borderRadius(2)
+          }
+          .width('100%')
+          .height(20)
+          .justifyContent(FlexAlign.Center)
+
+          FlightAlertsSettingsDrawer({
+            onClose: () => {
+              this.isFlightAlertsSheetVisible = false;
+            }
+          })
+          .layoutWeight(1)
+        }
+        .width('100%')
+        .height('88%')
+        .backgroundColor('#FFFFFF')
+        .borderRadius({ topLeft: 24, topRight: 24 })
+        .clip(true)
+        .shadow({ radius: 25, color: 'rgba(0,0,0,0.25)', offsetY: -6 })
+        .position({ x: 0, y: this.isFlightAlertsSheetVisible ? '12%' : '120%' })
+        .animation({ duration: 350, curve: Curve.FastOutSlowIn })
+        .onClick(() => {
+          // 拦截抽屉内部点击
+        })
+        .onTouch((e: TouchEvent) => {
+          e.stopPropagation();
+        })
+      }
+      .width('100%')
+      .height('100%')
+      .position({ x: 0, y: 0 })
+      .hitTestBehavior(this.isFlightAlertsSheetVisible ? HitTestMode.Default : HitTestMode.None)
+      .zIndex(530)
 
       // 10. 专注飞行日志全屏页面（提前常驻挂载 WebGL 3D 地球，0ms秒开无白屏，zIndex 900）
       FlightPassportFullReport({

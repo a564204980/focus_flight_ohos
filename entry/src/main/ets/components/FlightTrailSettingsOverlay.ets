@@ -15,6 +15,7 @@
 
 import vibrator from '@ohos.vibrator';
 import { displaySync } from '@kit.ArkGraphics2D';
+import { CloseButton } from './CloseButton';
 import { TrailParticle, TrailParticleRenderHelper } from '../utils/TrailParticleRenderHelper';
 
 export interface VisualOptionItem {
@@ -153,53 +154,47 @@ export struct FlightTrailSettingsOverlay {
             this.triggerHaptic();
             this.onClose();
           })
+          .onTouch((event: TouchEvent) => {
+            event.stopPropagation();
+          })
 
         // 2. 纯白大圆角抽屉面板 (参考图 2 高级 Flighty 质感)
         Column() {
           // 2.1 顶部药丸拖拽指示条
-          Row()
-            .width(36)
-            .height(4)
-            .borderRadius(2)
-            .backgroundColor('#E2E8F0')
-            .margin({ top: 10, bottom: 8 })
-
-          // 2.2 头部信息栏
           Row() {
-            Column({ space: 4 }) {
-              Text('飞行外观')
-                .fontSize(20)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#0F172A')
+            Row()
+              .width(36)
+              .height(4)
+              .borderRadius(2)
+              .backgroundColor('#D1D5DB')
+          }
+          .width('100%')
+          .height(20)
+          .justifyContent(FlexAlign.Center)
+          .margin({ top: 4, bottom: 2 })
 
-              Text('定制专属航线光带与机尾喷气粒子，自由组合沉浸心流。')
-                .fontSize(12)
-                .fontColor('#64748B')
-                .lineHeight(16)
-            }
-            .alignItems(HorizontalAlign.Start)
-            .layoutWeight(1)
-            .padding({ right: 12 })
+          // 2.2 头部标题栏 (参考数据/设置界面的统一规范：大标题 + 统一 CloseButton)
+          Row() {
+            Text('飞行外观')
+              .fontSize(28)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#000000')
 
-            // 右上角圆形关闭按钮 (顶部与大标题基准线水平对齐)
-            Stack({ alignContent: Alignment.Center }) {
-              Text('✕')
-                .fontSize(12)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#64748B')
-            }
-            .width(30)
-            .height(30)
-            .borderRadius(15)
-            .backgroundColor('#F1F5F9')
-            .onClick(() => {
-              this.triggerHaptic();
-              this.onClose();
+            Blank()
+
+            CloseButton({
+              circleColor: '#F1F5F9',
+              iconColor: '#0F172A',
+              buttonSize: 32,
+              onClickAction: () => {
+                this.triggerHaptic();
+                this.onClose();
+              }
             })
           }
           .width('100%')
-          .padding({ left: 20, right: 20, top: 4, bottom: 12 })
-          .alignItems(VerticalAlign.Top)
+          .padding({ left: 24, right: 24, top: 4, bottom: 12 })
+          .alignItems(VerticalAlign.Center)
 
           // 2.3 顶部双 Tab 分段平滑滑动胶囊 (航线效果 | 巡航尾迹)
           Stack({ alignContent: Alignment.Start }) {
@@ -454,9 +449,22 @@ export struct FlightTrailSettingsOverlay {
         .borderRadius({ topLeft: 24, topRight: 24 })
         .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.16)', offsetY: -4 })
         .transition(TransitionEffect.move(TransitionEdge.BOTTOM).animation({ duration: 280, curve: Curve.FastOutSlowIn }))
+        .onClick(() => {
+          // 🛑 拦截抽屉面板内部点击，防止穿透到底层地图
+        })
+        .onTouch((event: TouchEvent) => {
+          event.stopPropagation();
+        })
       }
       .width('100%')
       .height('100%')
+      .hitTestBehavior(HitTestMode.Default)
+      .onClick(() => {
+        // 拦截全屏点击
+      })
+      .onTouch((event: TouchEvent) => {
+        event.stopPropagation();
+      })
       .zIndex(999)
     }
   }

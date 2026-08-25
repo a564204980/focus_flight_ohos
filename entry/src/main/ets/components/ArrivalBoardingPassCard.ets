@@ -91,6 +91,9 @@ export struct ArrivalBoardingPassCard {
           .backdropBlur(40)
           .animation({ duration: 400, curve: Curve.EaseInOut })
           .onClick(() => {})
+          .onTouch((event: TouchEvent) => {
+            event.stopPropagation();
+          })
 
         // 2. 登机牌卡片主体 (上下分体式裂变设计 Split Ticket，极具现代高级感)
         Column({ space: 4 }) { // 4vp 的微小缝隙，构成撕裂感
@@ -326,6 +329,12 @@ export struct ArrivalBoardingPassCard {
           .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.4)', offsetY: 8 })
         }
         .width('88%')
+        .onClick(() => {
+          // 拦截卡片内部点击
+        })
+        .onTouch((event: TouchEvent) => {
+          event.stopPropagation();
+        })
         .transition(
           TransitionEffect.asymmetric(
             TransitionEffect.OPACITY
@@ -340,6 +349,13 @@ export struct ArrivalBoardingPassCard {
       }
       .width('100%')
       .height('100%')
+      .hitTestBehavior(HitTestMode.Default)
+      .onClick(() => {
+        // 拦截全屏点击
+      })
+      .onTouch((event: TouchEvent) => {
+        event.stopPropagation();
+      })
       .zIndex(300)
     }
   }

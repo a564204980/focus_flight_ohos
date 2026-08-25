@@ -95,10 +95,23 @@ export struct FlightAbortConfirmDialog {
         .border({ width: 1.5, color: '#FFFFFF', radius: 24 })
         .borderRadius(24)
         .shadow({ radius: 35, color: 'rgba(15, 23, 42, 0.22)', offsetY: 12 })
+        .onClick(() => {
+          // 拦截对话框内部点击
+        })
+        .onTouch((event: TouchEvent) => {
+          event.stopPropagation();
+        })
       }
       .width('100%')
       .height('100%')
       .position({ x: 0, y: 0 })
+      .hitTestBehavior(HitTestMode.Default)
+      .onClick(() => {
+        // 拦截全屏点击
+      })
+      .onTouch((event: TouchEvent) => {
+        event.stopPropagation();
+      })
       .zIndex(999)
     }
   }

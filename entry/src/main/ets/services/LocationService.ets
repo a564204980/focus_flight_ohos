@@ -6,6 +6,7 @@
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { geoLocationManager } from '@kit.LocationKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { preferences } from '@kit.ArkData';
 import { Airport, findNearestAirport } from '../models/AirportModel';
 
 const DOMAIN = 0x0000;
@@ -56,8 +57,13 @@ export class LocationService {
         const nearest = findNearestAirport(location.latitude, location.longitude);
         hilog.info(DOMAIN, 'LocationService', `Matched nearest airport: ${nearest.name} (${nearest.code})`);
         
-        // 保存定位所得的最近机场到 AppStorage
+        // 保存当前定位的最近机场到 AppStorage (用于本次航班选择)
         AppStorage.setOrCreate('nearestAirport', nearest);
+
+        // 3. 永久固化用户的首次母港签发机场 (如果首次已记录，后续改变定位这里绝不覆盖更新)
+        if (context) {
+          await LocationService.persistInitialIssueAirportIfEmpty(context, nearest);
+        }
         return nearest;
       }
     } catch (err) {
@@ -65,5 +71,51 @@ export class LocationService {
     }
 
     return null;
+  }
+
+  /**
+   * 确保并固化用户的首次母港签发机场 (一旦首次记录，终生不再变更)
+   */
+  static async persistInitialIssueAirportIfEmpty(context: common.Context, airport: Airport): Promise<string> {
+    try {
+      const pref = await preferences.getPreferences(context, 'focus_passport_prefs');
+      const existing = await pref.get('initial_issue_airport', '');
+      if (!existing || typeof existing !== 'string' || existing.length === 0) {
+        const airportName = `${airport.city || airport.name}机场 (${airport.code})`;
+        await pref.put('initial_issue_airport', airportName);
+        await pref.flush();
+        AppStorage.setOrCreate('initialIssueAirportName', airportName);
+        return airportName;
+      } else {
+        AppStorage.setOrCreate('initialIssueAirportName', existing as string);
+        return existing as string;
+      }
+    } catch (e) {
+      const airportName = `${airport.city || airport.name}机场 (${airport.code})`;
+      AppStorage.setOrCreate('initialIssueAirportName', airportName);
+      return airportName;
+    }
+  }
+
+  /**
+   * 获取用户首次签发母港机场名称 (优先从持久化首选项读取)
+   */
+  static async getInitialIssueAirportName(context?: common.Context): Promise<string> {
+    try {
+      const memory = AppStorage.get<string>('initialIssueAirportName');
+      if (memory && memory.length > 0) {
+        return memory;
+      }
+      const ctx = context || AppStorage.get<common.UIAbilityContext>('abilityContext');
+      if (ctx) {
+        const pref = await preferences.getPreferences(ctx, 'focus_passport_prefs');
+        const existing = await pref.get('initial_issue_airport', '');
+        if (existing && typeof existing === 'string' && existing.length > 0) {
+          AppStorage.setOrCreate('initialIssueAirportName', existing);
+          return existing;
+        }
+      }
+    } catch (e) { }
+    return '成都双流 (CTU)';
   }
 }

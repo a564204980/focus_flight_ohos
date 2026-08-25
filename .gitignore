@@ -33,3 +33,10 @@ Desktop.ini
 *.hsp
 *.app
 *.har
+
+# Temporary Debug & Screenshots
+screen*.jpeg
+screen*.png
+screen*.jpg
+layout*.json
+run.py

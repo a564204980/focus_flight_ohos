@@ -600,55 +600,43 @@ export struct FocusVoyageProPaywallModal {
     .shadow({ radius: 30, color: 'rgba(0, 0, 0, 0.35)', offsetY: 6 })
   }
 
-  // 👑 PRO 会员全部尊享权益列表 (纯净文字美化版)
+  // 👑 PRO 会员全部尊享权益列表 (无序圆点列表版)
   @Builder
   private buildVipFeatureList() {
-    Column({ space: 4.5 }) {
+    Column({ space: 5.5 }) {
       // 细分割线
       Row()
         .width('100%')
         .height(0.5)
         .backgroundColor('#E2E8F0')
-        .margin({ top: 3, bottom: 5 })
+        .margin({ top: 3, bottom: 4 })
 
-      // 权益 1: 无限制飞行架次
-      Text('无限飞行架次 · 自由探索全球航线')
-        .fontSize(11.5)
-        .fontColor('#475569')
-        .width('100%')
-
-      // 权益 2: 机舱舷窗
-      Text('沉浸机舱舷窗 · 俯瞰高空云海地貌')
-        .fontSize(11.5)
-        .fontColor('#475569')
-        .width('100%')
-
-      // 权益 3: 机上白噪音
-      Text('沉浸机上白噪音 · 助眠降噪专注巡航')
-        .fontSize(11.5)
-        .fontColor('#475569')
-        .width('100%')
-
-      // 权益 4: 实况窗与小组件
-      Text('灵动实况窗 · 锁屏与桌面航况小组件')
-        .fontSize(11.5)
-        .fontColor('#475569')
-        .width('100%')
-
-      // 权益 5: 飞行护照数据统计
-      Text('全维度飞行护照 · 深度航程数据统计')
-        .fontSize(11.5)
-        .fontColor('#475569')
-        .width('100%')
-
-      // 权益 6: 动态航迹历史回放
-      Text('3D 动态航迹复盘 · 沉浸回放历史航线')
-        .fontSize(11.5)
-        .fontColor('#475569')
-        .width('100%')
+      this.buildBulletItem('无限飞行架次')
+      this.buildBulletItem('沉浸机舱舷窗')
+      this.buildBulletItem('沉浸机上白噪音')
+      this.buildBulletItem('灵动实况窗')
+      this.buildBulletItem('专注生涯护照')
+      this.buildBulletItem('全维度飞行护照')
+      this.buildBulletItem('3D 动态航迹复盘')
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
+  }
+
+  @Builder
+  private buildBulletItem(title: string) {
+    Row({ space: 7 }) {
+      Circle({ width: 3.5, height: 3.5 })
+        .fill('#64748B')
+        .margin({ top: 0.5 })
+
+      Text(title)
+        .fontSize(12)
+        .fontColor('#475569')
+        .layoutWeight(1)
+    }
+    .width('100%')
+    .alignItems(VerticalAlign.Center)
   }
 
   // 方案 2: 终身机长买断 (LIFETIME)

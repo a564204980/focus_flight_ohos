@@ -14,6 +14,7 @@
  */
 
 import { promptAction } from '@kit.ArkUI';
+import { CloseButton } from './CloseButton';
 
 /**
  * Focus Flight 设置中心 (1:1 像素级还原 Flighty 极简单行 Inset-Grouped 中文设计规范)
@@ -39,81 +40,71 @@ export struct PilotProfileSettingsDrawer {
 
   build() {
     Column() {
-      // 1. 顶部右上角极简关闭按钮 (X)
-      Row() {
-        Blank()
-
-        Button({ type: ButtonType.Circle }) {
-          Text('✕')
-            .fontSize(15)
-            .fontWeight(FontWeight.Medium)
-            .fontColor('#0F172A')
-        }
-        .width(36)
-        .height(36)
-        .backgroundColor('#F1F5F9')
-        .onClick(() => {
-          if (this.onClose) {
-            this.onClose();
-          }
-        })
-      }
-      .width('100%')
-      .padding({ left: 24, right: 20, top: 12, bottom: 4 })
-
-      // 2. 大标题 "设置"
+      // 1. 顶部 Header: 大标题 "设置" + 水平对齐右侧 CloseButton (与飞行护照抽屉 1:1 一致)
       Row() {
         Text('设置')
           .fontSize(34)
           .fontWeight(FontWeight.Bold)
           .fontColor('#000000')
-          .letterSpacing(-0.5)
+
+        Blank()
+
+        CloseButton({
+          circleColor: '#F1F5F9',
+          iconColor: '#0F172A',
+          buttonSize: 32,
+          onClickAction: () => {
+            if (this.onClose) {
+              this.onClose();
+            }
+          }
+        })
       }
       .width('100%')
-      .padding({ left: 24, right: 24, bottom: 18 })
+      .padding({ left: 24, right: 24, top: 12, bottom: 14 })
 
-      // 3. 可滚动列表主体
+      // 2. 可滚动列表主体
       Scroll() {
         Column() {
-          // 3.1 👑 Focus Flight Pro 尊享卡片
+          // 2.1 👑 Focus Flight Pro 尊享卡片
           this.buildProBanner()
 
-          // 3.2 飞行提醒 (ALERTS)
-          this.buildSectionHeader('飞行提醒 · ALERTS')
+          // 2.2 飞行提醒
+          this.buildSectionHeader('飞行提醒')
           this.buildAlertsGroup()
 
-          // 3.3 自动化 (AUTOMATIONS)
-          this.buildSectionHeader('自动化 · AUTOMATIONS')
+          // 2.3 自动化
+          this.buildSectionHeader('自动化')
           this.buildAutomationsGroup()
 
-          // 3.4 系统生态拓展 (EXTENSIONS)
-          this.buildSectionHeader('系统生态拓展 · EXTENSIONS')
+          // 2.4 系统生态拓展
+          this.buildSectionHeader('系统生态拓展')
           this.buildExtensionsGroup()
 
-          // 3.5 个性化定制 (CUSTOMIZE)
-          this.buildSectionHeader('个性化定制 · CUSTOMIZE')
+          // 2.5 个性化定制
+          this.buildSectionHeader('个性化定制')
           this.buildCustomizeGroup()
 
-          // 3.6 数据与管理 (MANAGE)
-          this.buildSectionHeader('数据与管理 · MANAGE')
+          // 2.6 数据与管理
+          this.buildSectionHeader('数据与管理')
           this.buildManageGroup()
 
-          // 3.7 帮助中心 (HELP CENTER)
-          this.buildSectionHeader('帮助中心 · HELP CENTER')
+          // 2.7 帮助中心
+          this.buildSectionHeader('帮助中心')
           this.buildHelpCenterGroup()
 
-          // 3.8 更多 (MORE)
-          this.buildSectionHeader('更多 · MORE')
+          // 2.8 更多
+          this.buildSectionHeader('更多')
           this.buildMoreGroup()
 
-          // 3.9 底部治愈小诗
+          // 2.9 底部治愈小诗
           Column({ space: 6 }) {
             Text('“ 翱翔于专注的天际，静享心流时光 ”')
               .fontSize(12)
               .fontStyle(FontStyle.Italic)
               .fontColor('#94A3B8')
 
-            Text('专注航行 · HarmonyOS NEXT · v1.2.0')
+            Text('专注航行 Pro · HarmonyOS NEXT · v1.2.0')
               .fontSize(10)
               .fontColor('#CBD5E1')
           }
@@ -155,7 +146,7 @@ export struct PilotProfileSettingsDrawer {
           .fontWeight(FontWeight.Bold)
           .fontColor('#6D28D9')
 
-        Text('解锁全部高阶航线与专属机身涂装')
+        Text('解锁全部高阶功能带来极致用户体验')
           .fontSize(13)
           .fontColor('#7C3AED')
       }
@@ -184,12 +175,11 @@ export struct PilotProfileSettingsDrawer {
   private buildSectionHeader(title: string) {
     Column() {
       Text(title)
-        .fontSize(11)
+        .fontSize(12.5)
         .fontWeight(FontWeight.Bold)
         .fontColor('#64748B')
-        .letterSpacing(0.8)
         .width('100%')
-        .padding({ left: 24, right: 24, top: 26, bottom: 8 })
+        .padding({ left: 24, right: 24, top: 24, bottom: 8 })
 
       Divider()
         .color('#F1F5F9')
@@ -202,12 +192,8 @@ export struct PilotProfileSettingsDrawer {
   @Builder
   private buildAlertsGroup() {
     Column() {
-      this.buildListRow('🛫', '我的专注航班', () => {
-        this.showToast('航班起飞与降落提醒已开启');
-      })
-      this.buildInnerDivider()
-      this.buildListRow('👥', '同行好友动态', () => {
-        this.showToast('支持与好友共同登机开启专注');
+      this.buildListRow($r('app.media.ic_set_flights'), '#3B82F6', '我的专注提醒', () => {
+        AppStorage.setOrCreate('isFlightAlertsSheetVisible', true);
       })
     }
     .width('100%')
@@ -217,17 +203,9 @@ export struct PilotProfileSettingsDrawer {
   @Builder
   private buildAutomationsGroup() {
     Column() {
-      this.buildListRow('📅', '系统日历行程同步', () => {
+      this.buildListRow($r('app.media.ic_set_calendar'), '#EF4444', '系统日历行程同步', () => {
         this.calendarSyncEnabled = !this.calendarSyncEnabled;
         this.showToast(this.calendarSyncEnabled ? '已开启系统日历同步' : '已关闭日历同步');
-      })
-      this.buildInnerDivider()
-      this.buildListRow('✈️', '行程助手排期联动', () => {
-        this.showToast('专注时刻自动排期已就绪');
-      })
-      this.buildInnerDivider()
-      this.buildListRow('✉️', '通过邮件导入计划', () => {
-        this.showToast('邮件航班计划解析已启用');
       })
     }
     .width('100%')
@@ -237,21 +215,21 @@ export struct PilotProfileSettingsDrawer {
   @Builder
   private buildExtensionsGroup() {
     Column() {
-      this.buildListRow('📱', '灵动胶囊 / 实况窗', () => {
+      this.buildListRow($r('app.media.ic_set_capsule'), '#8B5CF6', '灵动胶囊 / 实况窗', () => {
         this.liveViewEnabled = !this.liveViewEnabled;
         this.showToast(this.liveViewEnabled ? '实况窗已开启' : '实况窗已关闭');
       })
       this.buildInnerDivider()
-      this.buildListRow('🪟', '锁屏与熄屏微件', () => {
+      this.buildListRow($r('app.media.ic_set_lockscreen'), '#6366F1', '锁屏与熄屏微件', () => {
         this.lockScreenEnabled = !this.lockScreenEnabled;
         this.showToast(this.lockScreenEnabled ? '锁屏航程微件已启用' : '锁屏微件已停用');
       })
       this.buildInnerDivider()
-      this.buildListRow('📱', '桌面万能卡片微件', () => {
+      this.buildListRow($r('app.media.ic_set_widget'), '#F59E0B', '桌面万能卡片微件', () => {
         this.showToast('长按手机桌面空白处即可添加 Focus Flight 微件');
       })
       this.buildInnerDivider()
-      this.buildListRow('⌚', '智能手表抬腕联动', () => {
+      this.buildListRow($r('app.media.ic_set_watch'), '#14B8A6', '智能手表抬腕联动', () => {
         this.showToast('智能手表抬腕同步已就绪');
       })
     }
@@ -262,11 +240,11 @@ export struct PilotProfileSettingsDrawer {
   @Builder
   private buildCustomizeGroup() {
     Column() {
-      this.buildListRow('🎨', '应用图标与机身涂装', () => {
+      this.buildListRow($r('app.media.ic_set_paint'), '#EC4899', '应用图标与机身涂装', () => {
         this.showToast('提供经典珊瑚红、夕阳金霞、极夜星空等多款涂装');
       })
       this.buildInnerDivider()
-      this.buildListRow('📏', '航行情报单位', () => {
+      this.buildListRow($r('app.media.ic_set_unit'), '#64748B', '航行情报单位', () => {
         if (this.flightUnit.includes('公里')) {
           this.flightUnit = '航空节 (Knots, 英尺)';
           this.showToast('已切换为航空节单位 (Knots / ft)');
@@ -283,11 +261,11 @@ export struct PilotProfileSettingsDrawer {
   @Builder
   private buildManageGroup() {
     Column() {
-      this.buildListRow('📦', '导入历史航行记录', () => {
+      this.buildListRow($r('app.media.ic_set_import'), '#0EA5E9', '导入历史航行记录', () => {
         this.showToast('支持从外部 CSV 或番茄钟记录导入');
       })
       this.buildInnerDivider()
-      this.buildListRow('👤', '账户与云端数据备份', () => {
+      this.buildListRow($r('app.media.ic_set_cloud'), '#2563EB', '账户与云端数据备份', () => {
         this.showToast('已与华为账号云空间完成数据加密同步');
       })
     }
@@ -298,15 +276,15 @@ export struct PilotProfileSettingsDrawer {
   @Builder
   private buildHelpCenterGroup() {
     Column() {
-      this.buildListRow('❓', '常见问题与飞行指南', () => {
+      this.buildListRow($r('app.media.ic_set_faq'), '#84CC16', '常见问题与飞行指南', () => {
         this.showToast('航线巡航：设定时长起飞\n舷窗视界：沉浸云海放松\n气流颠簸：离开应用提示');
       })
       this.buildInnerDivider()
-      this.buildListRow('📢', '向机务团队发送反馈', () => {
+      this.buildListRow($r('app.media.ic_set_feedback'), '#F97316', '向机务团队发送反馈', () => {
         this.showToast('感谢支持！机务团队将不断优化航行体验');
       })
       this.buildInnerDivider()
-      this.buildListRow('✨', '版本新特性', () => {
+      this.buildListRow($r('app.media.ic_set_sparkle'), '#EAB308', '版本新特性', () => {
         this.showToast('新增 60fps 真实客机舷窗平流层视频引擎');
       })
     }
@@ -317,35 +295,49 @@ export struct PilotProfileSettingsDrawer {
   @Builder
   private buildMoreGroup() {
     Column() {
-      this.buildListRow('🎁', '赠送好友 Pro 体验卡', () => {
+      this.buildListRow($r('app.media.ic_set_gift'), '#A855F7', '赠送好友 Pro 体验卡', () => {
         this.showToast('已生成好友同行邀请卡');
       })
       this.buildInnerDivider()
-      this.buildListRow('✉️', '加入先锋机长俱乐部', () => {
+      this.buildListRow($r('app.media.ic_set_club'), '#1E293B', '加入先锋机长俱乐部', () => {
         this.showToast('欢迎加入「专注航行」先锋机长体验计划');
       })
       this.buildInnerDivider()
-      this.buildListRow('✈️', '关于 专注航行', () => {
-        this.showToast('专注航行 Focus Voyage v1.2.0');
+      this.buildListRow($r('app.media.ic_set_about'), '#475569', '关于 专注航行 Pro', () => {
+        this.showToast('专注航行 Pro (Focus Flight Pro) v1.2.0');
       })
     }
     .width('100%')
   }
 
-  // 1:1 极简列表项 (左图标 + 标题 + [可选右侧标签] + 右箭头)
+  // 1:1 极简精致列表项 (圆角多彩底座 + 纯白高清矢量 SVG 图标 + 标题 + [可选右侧标签] + 右箭头)
   @Builder
-  private buildListRow(icon: string, title: string, onClick?: () => void, rightValue?: string) {
+  private buildListRow(
+    iconRes: Resource,
+    bgColor: string,
+    title: string,
+    onClick?: () => void,
+    rightValue?: string
+  ) {
     Row() {
-      // 左侧图标
-      Text(icon)
-        .fontSize(18)
-        .width(28)
-        .textAlign(TextAlign.Center)
-        .margin({ right: 14 })
+      // 左侧：iOS / Flighty 顶级圆角微光彩色徽章底座
+      Row() {
+        Image(iconRes)
+          .width(16)
+          .height(16)
+          .fillColor('#FFFFFF')
+      }
+      .width(28)
+      .height(28)
+      .borderRadius(7)
+      .backgroundColor(bgColor)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(VerticalAlign.Center)
+      .margin({ right: 14 })
 
       // 中间文本
       Text(title)
-        .fontSize(16)
+        .fontSize(15)
         .fontWeight(FontWeight.Medium)
         .fontColor('#0F172A')
         .layoutWeight(1)
@@ -360,13 +352,13 @@ export struct PilotProfileSettingsDrawer {
 
       // 右侧浅灰箭头 ›
       Text('›')
-        .fontSize(22)
+        .fontSize(20)
         .fontWeight(FontWeight.Normal)
         .fontColor('#CBD5E1')
         .margin({ left: 4 })
     }
     .width('100%')
-    .padding({ left: 24, right: 24, top: 15, bottom: 15 })
+    .padding({ left: 24, right: 24, top: 13, bottom: 13 })
     .backgroundColor('#FFFFFF')
     .onClick(() => {
       if (onClick) {

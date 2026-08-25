@@ -1,5 +1,6 @@
 import { CloseButton } from './CloseButton'
 import { FlightSessionData, FlightEvent } from '../services/FlightSessionStore';
+import { Airport } from '../models/AirportModel';
 
 export interface TimelineItemData {
   id: string;
@@ -31,9 +32,33 @@ export struct LiveFlightLogDrawer {
   private currentTurbulenceIntensity: number = 0;
   
   @StorageLink('activeFlightSession') @Watch('onBadgeInputsChanged') flightSession: FlightSessionData | null = null;
+  @StorageLink('selectedDestinationAirport') destinationAirport: Airport | undefined = undefined;
   @StorageProp('lastFlightEventUpdate') @Watch('onBadgeInputsChanged') updateTick: number = 0;
   @State timelineData: TimelineItemData[] = [];
   private timerId: number = -1;
+
+  private getRouteFlightNo(): string {
+    return 'FF 8820';
+  }
+
+  private getFormattedFlightDate(): string {
+    const now = new Date();
+    const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+    const dayStr = days[now.getDay()];
+    const monthStr = months[now.getMonth()];
+    const dateNum = now.getDate();
+    return `${this.getRouteFlightNo()} · ${dayStr}, ${dateNum} ${monthStr}`;
+  }
+
+  private getRouteCityName(): string {
+    const destCity = this.destinationAirport?.city || '北京';
+    return `成都 到 ${destCity}`;
+  }
+
+  private getCardSubtitle(): string {
+    return "B737-800 · 巡航飞行中";
+  }
 
   @State badgeText: string = '✓ 状态良好';
   @State badgeColor: string = '#10B981';
@@ -79,39 +104,43 @@ export struct LiveFlightLogDrawer {
     this.physicsTimer = setInterval(() => {
       this.simTime += 0.02;
       const targetIntensity = (this.isTurbulent || this.isTestingTurbulence) ? 1.0 : 0.0;
-      // 极柔和的气动阻尼过渡 (Attack: ~0.5s 平滑进入, Release: ~0.8s 优雅回弹)
-      const lerpSpeed = (targetIntensity > this.currentTurbulenceIntensity) ? 0.05 : 0.035;
+      // 气动阻尼平滑过渡
+      const lerpSpeed = (targetIntensity > this.currentTurbulenceIntensity) ? 0.06 : 0.035;
       this.currentTurbulenceIntensity += (targetIntensity - this.currentTurbulenceIntensity) * lerpSpeed;
       
       const intensity = this.currentTurbulenceIntensity;
       
-      // 1. 常规万米巡航：极微弱呼吸浮空感
-      const cruiseHeave = Math.sin(this.simTime * 1.5) * 0.9;
-      const cruiseDrift = Math.cos(this.simTime * 0.9) * 0.4;
+      // 1. 常规万米平流层巡航飞行（极柔和舒缓的呼吸感）：
+      // - 垂直呼吸沉浮：±1.8vp（约 4.5s 缓慢呼吸周期）
+      const cruiseHeave = Math.sin(this.simTime * 1.4) * 1.8;
+      // - 水平微滑移：±0.8vp 极平稳的迎风气流滑行
+      const cruiseDrift = Math.cos(this.simTime * 0.9) * 0.8;
+      // - 真实巡航微仰角：机头保持自然上扬 +1.0°，伴随 ±0.25° 的细腻呼吸微调
+      const cruisePitch = 1.0 + Math.sin(this.simTime * 1.2) * 0.25;
       
-      // 2. 真实微气流多重谐波 (整体幅度大幅缩减收敛，呈现极细腻微震颤)
-      // 垂直沉浮 (短波气穴微浮沉)
+      // 2. 真实气流颠簸（高频紧致震颤，而非大幅度晃动）：
+      // - 垂直高频轻颤：约 ±2.2vp 紧凑抖动
       const heaveWave = (
-        Math.sin(this.simTime * 4.2) * 1.5 + 
-        Math.sin(this.simTime * 8.6) * 0.6 + 
-        (Math.random() - 0.5) * 0.35
+        Math.sin(this.simTime * 14.0) * 1.4 + 
+        Math.sin(this.simTime * 24.0) * 0.8 + 
+        (Math.random() - 0.5) * 0.6
       ) * intensity;
       
-      // 横向漂移 (微侧风)
+      // - 横向微颠簸
       const swayWave = (
-        Math.cos(this.simTime * 3.4) * 1.1 + 
-        Math.sin(this.simTime * 7.1) * 0.4
+        Math.cos(this.simTime * 10.0) * 1.0 + 
+        (Math.random() - 0.5) * 0.5
       ) * intensity;
       
-      // 俯仰微晃 (迎角自适应)
+      // - 颠簸俯仰微震：约 ±0.8° 的高频紧致震动
       const pitchWave = (
-        Math.sin(this.simTime * 4.2 - 0.5) * 0.7 + 
-        Math.cos(this.simTime * 9.3) * 0.25
+        Math.sin(this.simTime * 16.0) * 0.8 + 
+        Math.cos(this.simTime * 28.0) * 0.4
       ) * intensity;
 
       this.planeOffsetY = cruiseHeave + heaveWave;
       this.planeOffsetX = cruiseDrift + swayWave;
-      this.planeRotation = pitchWave;
+      this.planeRotation = cruisePitch + pitchWave;
     }, 20);
   }
 
@@ -184,11 +213,13 @@ export struct LiveFlightLogDrawer {
   buildTimelineData() {
     if (!this.flightSession) {
       // Fallback for preview / testing
-      this.timelineData = [
+      let previewList: TimelineItemData[] = [
         { id: '1', iconType: 'arrow_up', title: '预计降落', subtitle: '距离到达目的地还有 21 分钟', statusText: '预计 14:45', statusColor: '#10B981', lineStyle: 'end' },
-        { id: '3', iconType: 'plane', title: '深度心流巡航', subtitle: '飞行高度 35,000 英尺', statusText: '完美', statusColor: '#10B981', lineStyle: 'transition' },
-        { id: '8', iconType: 'clock', title: '撤出登机口', subtitle: '设备锁定，航线开始', statusText: '14:00', statusColor: '#10B981', lineStyle: 'start' }
+        { id: '3', iconType: 'plane', title: '深度心流巡航', subtitle: '飞行高度 35,000 英尺', statusText: '专注中', statusColor: '#10B981', lineStyle: 'flown' },
+        { id: '8', iconType: 'dot', title: '登机', subtitle: '设备锁定，航线开始', statusText: '14:00', statusColor: '#9CA3AF', lineStyle: 'flown' },
+        { id: '9', iconType: 'start', title: '办理值机', subtitle: '选择目的地航线，完成登机牌确认', statusText: '13:58', statusColor: '#10B981', lineStyle: 'start' }
       ];
+      this.timelineData = previewList;
       return;
     }
 
@@ -210,8 +241,8 @@ export struct LiveFlightLogDrawer {
       lineStyle: 'end'
     });
 
-    // 2. 如果剩余时间小于等于 5 分钟，且还没降落，插入“准备下降” (只有在真正接近尾声时出现)
-    if (remainingMins <= 5 && remainingMins > 0) {
+    // 2. 最后 3 分钟内：插入“准备下降”
+    if (remainingMins <= 3 && remainingMins > 0) {
       newList.push({
         id: 'descent',
         iconType: 'dot',
@@ -219,15 +250,14 @@ export struct LiveFlightLogDrawer {
         subtitle: '收起小桌板，即将抵达目标',
         statusText: '',
         statusColor: '',
-        lineStyle: 'future' // 这时它上面的降落是 end，下面的是当前巡航
+        lineStyle: 'future'
       });
     }
 
-    // 3. 历史真实事件流 (如果有)
     // 3. 历史真实事件流 (保证起点必存且历史事件永不丢失)
     const rawEvents: FlightEvent[] = this.flightSession.events ? [...this.flightSession.events] : [];
     
-    // 确保列表底部必定有 "撤出登机口" 起点
+    // 确保列表包含 "登机" 事件 (原 gate_departure)
     const hasDeparture = rawEvents.some(e => e.type === 'gate_departure');
     if (!hasDeparture) {
       rawEvents.push({
@@ -249,10 +279,8 @@ export struct LiveFlightLogDrawer {
     }
 
     // 遍历事件列表（从新到旧）
-    const totalCount = rawEvents.length;
     rawEvents.forEach((evt, idx) => {
       const isLatest = idx === 0;
-      const isOldest = idx === totalCount - 1;
       
       let icon = 'dot';
       let status = '';
@@ -280,21 +308,36 @@ export struct LiveFlightLogDrawer {
         color = '#9CA3AF';
         status = this.formatTime(evt.timestampMs);
       } else if (evt.type === 'gate_departure') {
-        mappedTitle = '撤出登机口';
-        icon = 'start';
-        color = '#10B981';
+        mappedTitle = '登机';
+        icon = isLatest ? 'plane' : 'dot';
+        color = '#9CA3AF';
         status = this.formatTime(evt.timestampMs);
       }
       
       newList.push({
         id: evt.id,
-        iconType: isOldest ? 'start' : icon,
+        iconType: icon,
         title: mappedTitle,
         subtitle: evt.note || '',
         statusText: status,
         statusColor: color,
-        lineStyle: isLatest ? 'transition' : (isOldest ? 'start' : 'flown')
+        lineStyle: isLatest ? 'transition' : 'flown'
       });
+    });
+
+    // 4. 最底部航程真正起点：办理值机 (Check-in)
+    const checkInTimeMs = this.flightSession.checkInTimeMs || 
+      AppStorage.get<number>('lastCheckInTimeMs') || 
+      (this.flightSession.startTimeMs - 60000);
+
+    newList.push({
+      id: 'check_in_origin',
+      iconType: 'start',
+      title: '办理值机',
+      subtitle: '选择目的地航线，完成登机牌确认',
+      statusText: this.formatTime(checkInTimeMs),
+      statusColor: '#10B981',
+      lineStyle: 'start'
     });
 
     this.timelineData = newList;
@@ -321,26 +364,25 @@ export struct LiveFlightLogDrawer {
           Row()
             .width(40)
             .height(5)
-            .backgroundColor('#E5E7EB')
+            .backgroundColor('#E2E8F0')
             .borderRadius(2.5)
         }
         .width('100%')
-        .height(24)
+        .height(18)
         .justifyContent(FlexAlign.Center)
-        .margin({ top: 4, bottom: 8 })
+        .margin({ top: 8, bottom: 4 })
 
-        // 头部标题区域 (还原 Flighty 头部风格)
+        // 头部标题区域
         Row() {
-          Column() {
-            Text("FOCUS FLIGHT · 当前航段")
+          Column({ space: 2 }) {
+            Text("专注航行 Pro · 当前航段")
               .fontSize(11)
-              .fontColor('#6B7280')
+              .fontColor('#64748B')
               .fontWeight(FontWeight.Medium)
             Text("航行日志")
               .fontSize(20)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#111827')
-              .margin({ top: 2 })
+              .fontColor('#0F172A')
           }
           .alignItems(HorizontalAlign.Start)
           
@@ -348,8 +390,8 @@ export struct LiveFlightLogDrawer {
           
           // 关闭按钮 (通用组件)
           CloseButton({
-            circleColor: '#F3F4F6',
-            iconColor: '#111827',
+            circleColor: '#F1F5F9',
+            iconColor: '#0F172A',
             onClickAction: () => {
               this.sheetHeight = '0%';
               setTimeout(() => {
@@ -360,9 +402,7 @@ export struct LiveFlightLogDrawer {
         }
         .width('100%')
         .padding({ left: 20, right: 20 })
-        .margin({ bottom: 20 })
-        
-        Divider().color('#F3F4F6').strokeWidth(1).margin({ bottom: 20 })
+        .margin({ bottom: 12 })
 
         // 核心时间轴白底卡片
         Scroll() {
@@ -386,21 +426,23 @@ export struct LiveFlightLogDrawer {
                     .borderRadius(4)
                 }.width('100%').padding({ left: 16, right: 16, top: 16 })
                 
-                Text("B737-800")
+                Text(this.getCardSubtitle())
                   .fontSize(13)
-                  .fontColor('rgba(255,255,255,0.8)')
+                  .fontColor('rgba(255,255,255,0.85)')
                   .margin({ top: 4, left: 16 })
                   
-                // 飞机形象展示 (支持气流颠簸时忽上忽下、忽左忽右、轻微俯仰)
+                // 飞机形象展示
                 Image($r('app.media.b737_800_flat_3'))
                   .width('80%')
-                  .objectFit(ImageFit.Contain)
+                  .aspectRatio(2.07)
                   .alignSelf(ItemAlign.Center)
+                  .objectFit(ImageFit.Contain)
                   .margin({ top: 16, bottom: 8 })
                   .translate({ x: this.planeOffsetX, y: this.planeOffsetY })
                   .rotate({ angle: this.planeRotation })
                   
-                Row({ space: 8 }) {
+                Row() {
+                  // 1. 左侧状态标签 (固定 height: 24vp 保证各种状态/Emoji下高度绝对严丝合缝)
                   Row() {
                     Text(this.badgeText)
                       .fontSize(12)
@@ -408,14 +450,22 @@ export struct LiveFlightLogDrawer {
                       .fontColor('#FFFFFF')
                       .opacity(this.badgeOpacity)
                   }
+                  .height(24)
+                  .padding({ left: 8, right: 8 })
+                  .justifyContent(FlexAlign.Center)
+                  .alignItems(VerticalAlign.Center)
                   .backgroundColor(this.badgeColor)
-                  .padding({ left: 8, right: 8, top: 4, bottom: 4 })
                   .borderRadius(4)
                   .scale({ x: this.badgeScale, y: this.badgeScale })
                   .animation({ duration: 260, curve: Curve.FastOutSlowIn })
+
+                  Blank()
                 }
                 .width('100%')
-                .padding({ left: 16, bottom: 12 })
+                .height(24)
+                .alignItems(VerticalAlign.Center)
+                .padding({ left: 16, right: 16 })
+                .margin({ bottom: 12 })
               }
               .width('100%')
               .linearGradient({
@@ -452,20 +502,38 @@ export struct LiveFlightLogDrawer {
             .borderRadius(16)
             .border({ width: 1, color: '#E5E7EB' })
           }
-          .padding({ left: 16, right: 16, bottom: 40 })
+          .width('100%')
+          .justifyContent(FlexAlign.Start)
+          .padding({ left: 16, right: 16, top: 0, bottom: 48 })
         }
         .width('100%')
         .layoutWeight(1)
+        .align(Alignment.Top)
         .scrollBar(BarState.Off)
+        .edgeEffect(EdgeEffect.Spring)
       }
       .width('100%')
       .height(this.sheetHeight)
+      .animation({ duration: 380, curve: Curve.FastOutSlowIn })
       .backgroundColor('#FFFFFF')
       .borderRadius({ topLeft: 24, topRight: 24 })
       .shadow({ radius: 30, color: 'rgba(0,0,0,0.15)', offsetY: -10 })
+      .onClick(() => {
+        // 🛑 拦截抽屉内部点击，防止穿透到底层地图
+      })
+      .onTouch((event: TouchEvent) => {
+        event.stopPropagation();
+      })
     }
     .width('100%')
     .height('100%')
+    .hitTestBehavior(HitTestMode.Default)
+    .onClick(() => {
+      // 拦截根节点点击
+    })
+    .onTouch((event: TouchEvent) => {
+      event.stopPropagation();
+    })
   }
 }
 

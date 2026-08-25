@@ -4,6 +4,7 @@ import { CloseButton } from './CloseButton';
 import { LocationService } from '../services/LocationService';
 import { Airport } from '../models/AirportModel';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { PassportShareModal } from './passport/PassportShareModal';
 import {
   FlightRecordRepository,
   FlightStatsSummary,
@@ -44,6 +45,7 @@ export class TagChartItem {
 export struct FlightPassportFullReport {
   onClose?: () => void;
   @Prop @Watch('onVisibleChanged') isVisible: boolean = false;
+  @State isShareModalVisible: boolean = false;
   @State earthAngle: number = 0;
   @State currentChartMode: string = 'week';
   @StorageProp('nearestAirport') nearestAirport: Airport | undefined = undefined;
@@ -364,7 +366,8 @@ export struct FlightPassportFullReport {
   }
 
   build() {
-    Column() {
+    Stack({ alignContent: Alignment.Bottom }) {
+      Column() {
       // 沉浸式深紫色头部导航
       Column() {
         Row() {
@@ -395,6 +398,9 @@ export struct FlightPassportFullReport {
             Image($r("sys.media.ohos_ic_public_share"))
               .width(16).height(16).fillColor("#FFFFFF")
           }
+          .onClick(() => {
+            this.isShareModalVisible = true;
+          })
         }
         .width("100%")
         .padding({ left: 20, right: 20, top: 48, bottom: 16 })
@@ -776,10 +782,26 @@ export struct FlightPassportFullReport {
       .width("100%")
       .layoutWeight(1)
 
-    } // Closes build()'s outer Column
+      } // Closes build()'s outer Column
+      .width("100%")
+      .height("100%")
+      .backgroundColor("#110928")
+
+      // 护照分享弹窗 (支持紫外线紫光灯显影模式)
+      if (this.isShareModalVisible) {
+        PassportShareModal({
+          isVisible: this.isShareModalVisible,
+          stats: this.stats,
+          timeTabLabel: this.selectedTimeTab === 'all' ? '总记录' : `${this.selectedTimeTab}年`,
+          yearFilter: this.selectedTimeTab === 'all' ? 0 : parseInt(this.selectedTimeTab, 10),
+          onClose: () => {
+            this.isShareModalVisible = false;
+          }
+        })
+      }
+    } // Closes build()'s Stack
     .width("100%")
     .height("100%")
-    .backgroundColor("#110928")
   } // Closes build()
 
   getGradientColor(index: number, total: number): string {

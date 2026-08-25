@@ -29,6 +29,7 @@ export interface FlightSessionData {
   originCode: string;
   destCode: string;
   startTimeMs: number;
+  checkInTimeMs?: number;     // 🎫 用户办理值机/选定目的地的时间
   isWindowViewMode?: boolean; // 🪟 记录用户是否处于舷窗视角模式
   events?: FlightEvent[];     // 飞行日志事件流
 }

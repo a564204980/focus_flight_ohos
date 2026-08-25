@@ -74,6 +74,7 @@ struct Index {
   @StorageLink('isFullReportVisible') isFullReportVisible: boolean = false;
   @StorageLink('isStatsSheetVisible') isStatsSheetVisible: boolean = false;
   @StorageLink('isSettingsSheetVisible') isSettingsSheetVisible: boolean = false;
+  @StorageLink('isFlightAlertsSheetVisible') isFlightAlertsSheetVisible: boolean = false;
   @StorageLink('isThemeSelectSheetVisible') isThemeSelectSheetVisible: boolean = false;
   @StorageLink('isProPaywallVisible') isProPaywallVisible: boolean = false;
 
@@ -289,6 +290,7 @@ struct Index {
           !this.vm.isCabinExposed &&
           !this.isFullReportVisible &&
           !this.isProPaywallVisible &&
+          !this.isFlightAlertsSheetVisible &&
           !this.vm.isDistractionReportVisible &&
           !this.vm.isLiveLogVisible &&
           !this.vm.isTrailSettingsVisible &&

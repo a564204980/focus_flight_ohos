@@ -1,6 +1,7 @@
 
 import { router } from '@kit.ArkUI';
 import { FlightRecordRepository, FlightStatsSummary } from '../database/FlightRecordRepository';
+import { PassportShareModal } from './passport/PassportShareModal';
 
 interface TimeTabItem {
   id: string;
@@ -13,6 +14,7 @@ export struct PassportStatsView {
   onOpenFullReport?: () => void;
   onOpenDistractionReport?: (year: string) => void;
 
+  @State isShareModalVisible: boolean = false;
   @StorageProp('isStatsSheetVisible') @Watch('onStatsSheetVisibleChanged') isStatsSheetVisible: boolean = false;
   @StorageProp('flightStatsUpdateTrigger') @Watch('onStatsTriggerChanged') statsTrigger: number = 0;
   @State stats: FlightStatsSummary = {
@@ -184,106 +186,112 @@ export struct PassportStatsView {
   }
 
   build() {
-    Scroll() {
-      Column({ space: 24 }) {
-        // 1. Header: Passport + Icons
-        Row() {
-          Text("飞行护照")
-            .fontSize(34)
-            .fontWeight(FontWeight.Bold)
-            .fontColor("#000000")
-          
-          Blank()
+    Stack({ alignContent: Alignment.Bottom }) {
+      Scroll() {
+        Column({ space: 24 }) {
+          // 1. Header: Passport + Icons
+          Row() {
+            Text("飞行护照")
+              .fontSize(34)
+              .fontWeight(FontWeight.Bold)
+              .fontColor("#000000")
+            
+            Blank()
 
-          // Custom Close Button
-          Stack({ alignContent: Alignment.Center }) {
-            // 背景与阴影
+            // Custom Close Button
+            Stack({ alignContent: Alignment.Center }) {
+              // 背景与阴影
+              Row()
+                .width(32)
+                .height(32)
+                .backgroundColor("#FFFFFF")
+                .borderRadius(16)
+                .shadow({ radius: 6, color: "rgba(0,0,0,0.08)", offsetY: 2 })
+
+              // 完美居中且加粗的自定义“X”号
+              Stack({ alignContent: Alignment.Center }) {
+                Rect().width(14).height(2.5).radius(1).fill("#000000").rotate({ angle: 45 })
+                Rect().width(14).height(2.5).radius(1).fill("#000000").rotate({ angle: -45 })
+              }
+            }
+            .width(32)
+            .height(32)
+            .onClick(() => {
+              if (this.onClose) {
+                this.onClose();
+              }
+            })
+          }
+          .width("100%")
+          .padding({ top: 12 })
+
+          // 2. Tabs (All-Time / 2026 / 2025 / ...) - 动态多年度滑动高亮胶囊动效
+          Stack({ alignContent: Alignment.Start }) {
+            // 底槽背景
             Row()
-              .width(32)
+              .width(this.getTabList().length * 68)
+              .height(32)
+              .backgroundColor("rgba(0, 0, 0, 0.05)")
+              .borderRadius(16)
+
+            // 平滑滑动的白色高亮胶囊
+            Row()
+              .width(68)
               .height(32)
               .backgroundColor("#FFFFFF")
               .borderRadius(16)
-              .shadow({ radius: 6, color: "rgba(0,0,0,0.08)", offsetY: 2 })
+              .shadow({ radius: 4, color: "rgba(0,0,0,0.06)", offsetY: 1 })
+              .offset({ x: this.getSelectedTabIndex() * 68 })
+              .animation({ duration: 300, curve: Curve.FastOutSlowIn })
 
-            // 完美居中且加粗的自定义“X”号
-            Stack({ alignContent: Alignment.Center }) {
-              Rect().width(14).height(2.5).radius(1).fill("#000000").rotate({ angle: 45 })
-              Rect().width(14).height(2.5).radius(1).fill("#000000").rotate({ angle: -45 })
+            // 选项文字层
+            Row() {
+              ForEach(this.getTabList(), (tabItem: TimeTabItem) => {
+                Text(tabItem.label)
+                  .fontSize(13)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(this.selectedTimeTab === tabItem.id ? "#000000" : "#94A3B8")
+                  .textAlign(TextAlign.Center)
+                  .width(68)
+                  .height(32)
+                  .onClick(() => {
+                    if (this.selectedTimeTab !== tabItem.id) {
+                      this.getUIContext().animateTo({ duration: 300, curve: Curve.FastOutSlowIn }, () => {
+                        this.selectedTimeTab = tabItem.id;
+                      });
+                      this.loadDbStats();
+                    }
+                  })
+              }, (tabItem: TimeTabItem) => tabItem.id)
             }
-          }
-          .width(32)
-          .height(32)
-          .onClick(() => {
-            if (this.onClose) {
-              this.onClose();
-            }
-          })
-        }
-        .width("100%")
-        .padding({ top: 12 })
-
-        // 2. Tabs (All-Time / 2026 / 2025 / ...) - 动态多年度滑动高亮胶囊动效
-        Stack({ alignContent: Alignment.Start }) {
-          // 底槽背景
-          Row()
             .width(this.getTabList().length * 68)
             .height(32)
-            .backgroundColor("rgba(0, 0, 0, 0.05)")
-            .borderRadius(16)
-
-          // 平滑滑动的白色高亮胶囊
-          Row()
-            .width(68)
-            .height(32)
-            .backgroundColor("#FFFFFF")
-            .borderRadius(16)
-            .shadow({ radius: 4, color: "rgba(0,0,0,0.06)", offsetY: 1 })
-            .offset({ x: this.getSelectedTabIndex() * 68 })
-            .animation({ duration: 300, curve: Curve.FastOutSlowIn })
-
-          // 选项文字层
-          Row() {
-            ForEach(this.getTabList(), (tabItem: TimeTabItem) => {
-              Text(tabItem.label)
-                .fontSize(13)
-                .fontWeight(FontWeight.Medium)
-                .fontColor(this.selectedTimeTab === tabItem.id ? "#000000" : "#94A3B8")
-                .textAlign(TextAlign.Center)
-                .width(68)
-                .height(32)
-                .onClick(() => {
-                  if (this.selectedTimeTab !== tabItem.id) {
-                    this.getUIContext().animateTo({ duration: 300, curve: Curve.FastOutSlowIn }, () => {
-                      this.selectedTimeTab = tabItem.id;
-                    });
-                    this.loadDbStats();
-                  }
-                })
-            }, (tabItem: TimeTabItem) => tabItem.id)
           }
-          .width(this.getTabList().length * 68)
-          .height(32)
-        }
-        .width("100%")
+          .width("100%")
 
-        // 3. Main Card (Dark Blue)
-        Column() {
-          // Card Header
-          Row() {
-            Column({ space: 2 }) {
-              Text("我的专注飞行记录")
-                .fontSize(12)
-                .fontWeight(FontWeight.Bold)
-                .fontColor("rgba(255,255,255,0.9)")
-                .letterSpacing(0.5)
-              Text("Focus Flight · 终身专注里程碑")
-                .fontSize(9)
-                .fontColor("rgba(255,255,255,0.5)")
-            }.alignItems(HorizontalAlign.Start)
-            Blank()
-            Image($r("sys.media.ohos_ic_public_share"))
-              .width(16).height(16).fillColor("#FFFFFF")
-          }.width("100%").padding(20)
+          // 3. Main Card (Dark Blue)
+          Column() {
+            // Card Header
+            Row() {
+              Column({ space: 2 }) {
+                Text("我的专注飞行记录")
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor("rgba(255,255,255,0.9)")
+                  .letterSpacing(0.5)
+                Text("Focus Flight · 终身专注里程碑")
+                  .fontSize(9)
+                  .fontColor("rgba(255,255,255,0.5)")
+              }.alignItems(HorizontalAlign.Start)
+              Blank()
+              Image($r("sys.media.ohos_ic_public_share"))
+                .width(20)
+                .height(20)
+                .fillColor("#FFFFFF")
+                .onClick(() => {
+                  this.isShareModalVisible = true;
+                })
+            }.width("100%").padding(20)
 
           // Grid Data
           Row() {
@@ -406,6 +414,22 @@ export struct PassportStatsView {
     .height("100%")
     .backgroundColor("#fff7f4")
     .scrollBar(BarState.Off)
+
+    // 6. 专属纸质护照分享弹窗 (带紫外线紫光灯显影模式)
+    if (this.isShareModalVisible) {
+      PassportShareModal({
+        isVisible: this.isShareModalVisible,
+        stats: this.stats,
+        timeTabLabel: this.selectedTimeTab === 'all' ? '总记录' : `${this.selectedTimeTab}年`,
+        yearFilter: this.selectedTimeTab === 'all' ? 0 : parseInt(this.selectedTimeTab, 10),
+        onClose: () => {
+          this.isShareModalVisible = false;
+        }
+      })
+    }
   }
+  .width("100%")
+  .height("100%")
+}
 }
 

@@ -35,6 +35,7 @@ export class FlightSessionService {
     const destApt = this.ctrl.currentDestinationAirport || findAirportByCode('PEK');
     const destCode = destApt ? destApt.code : 'PEK';
 
+    const checkInTime = AppStorage.get<number>('lastCheckInTimeMs') || (Date.now() - 60000);
     // 存储当前飞行专注会话状态
     FlightSessionStore.saveSession({
       isFlightActive: true,
@@ -45,6 +46,7 @@ export class FlightSessionService {
       originCode: 'CTU',
       destCode: destCode,
       startTimeMs: Date.now(),
+      checkInTimeMs: checkInTime,
       events: [{
         id: 'start_' + Date.now(),
         type: 'gate_departure',

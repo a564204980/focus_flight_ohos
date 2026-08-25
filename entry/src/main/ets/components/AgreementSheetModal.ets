@@ -137,11 +137,13 @@ export struct AgreementSheetModal {
               this.buildPrivacyPolicyContent()
             }
           }
+          .width('100%')
           .padding({ left: 24, right: 24, top: 16, bottom: 32 })
           .alignItems(HorizontalAlign.Start)
         }
         .layoutWeight(1)
         .width('100%')
+        .align(Alignment.Top)
         .scrollBar(BarState.Off)
       }
       .width('100%')
@@ -165,7 +167,7 @@ export struct AgreementSheetModal {
         .fontSize(12)
         .fontColor('#94A3B8')
 
-      Text('欢迎使用「专注航行（Focus Flight）」。在您使用本应用及 PRO 会员服务前，请仔细阅读本协议。')
+      Text('欢迎使用「专注航行 Pro（Focus Flight Pro）」。在您使用本应用及 PRO 会员服务前，请仔细阅读本协议。')
         .fontSize(13)
         .fontColor('#475569')
         .lineHeight(20)
@@ -185,7 +187,7 @@ export struct AgreementSheetModal {
         .fontWeight(FontWeight.Bold)
         .fontColor('#0F172A')
 
-      Text('1. 会员权益：享有无限飞行架次、沉浸机舱舷窗、机上白噪音、灵动实况窗与小组件、全维度飞行护照统计、3D 航迹复盘等特权。')
+      Text('1. 会员权益：享有无限飞行架次、沉浸机舱舷窗、机上白噪音、灵动实况窗与小组件、专注生涯护照、全维度飞行护照统计、3D 航迹复盘等特权。')
         .fontSize(13)
         .fontColor('#475569')
         .lineHeight(20)
@@ -222,7 +224,7 @@ export struct AgreementSheetModal {
         .fontSize(12)
         .fontColor('#94A3B8')
 
-      Text('专注航行（Focus Flight）高度重视您的隐私保护。本政策向您说明我们如何收集、使用与保护您的信息。')
+      Text('专注航行 Pro（Focus Flight Pro）高度重视您的隐私保护。本政策向您说明我们如何收集、使用与保护您的信息。')
         .fontSize(13)
         .fontColor('#475569')
         .lineHeight(20)
