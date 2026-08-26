@@ -13,6 +13,7 @@ export struct IndexFlightOverlays {
 
   toggleMapTypeMode: () => void = () => {};
   toggleCameraFollowMode: () => void = () => {};
+  toggleWeatherMode: () => void = () => {};
   returnFromMapToHangar: (isAborted?: boolean) => void = () => {};
   returnFromCabinToHangar: () => void = () => {};
   triggerHapticFeedback: () => void = () => {};
@@ -32,6 +33,7 @@ export struct IndexFlightOverlays {
           remainingTimeString: this.vm.remainingTimeString,
           isTurbulenceAlertVisible: this.vm.isTurbulenceAlertVisible,
           turbulenceMessageText: this.vm.turbulenceMessageText,
+          currentWeatherType: this.vm.currentWeatherType,
           onOpenSettings: () => {
             this.triggerHapticFeedback();
             this.vm.isTrailSettingsVisible = !this.vm.isTrailSettingsVisible;
@@ -44,6 +46,9 @@ export struct IndexFlightOverlays {
           onTestArrivalBoardingPass: () => {
             this.triggerHapticFeedback();
             this.vm.isArrivalBoardingPassVisible = true;
+          },
+          onToggleWeather: () => {
+            this.toggleWeatherMode();
           },
           onToggleMapType: () => this.toggleMapTypeMode(),
           onToggleCameraFollow: () => this.toggleCameraFollowMode(),

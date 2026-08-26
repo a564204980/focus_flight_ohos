@@ -103,68 +103,41 @@ export struct HomeFocusPanel {
 
   build() {
     Column() {
-      // 1. Start Flight 暖珊瑚红主按钮 + 预定航班专属按钮
-      Row({ space: 10 }) {
-        Button() {
-          Row({ space: 8 }) {
-            Text(this.isFlightInProgress ? '飞行中...' : '开始飞行')
-              .fontSize(17)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFFFFF')
-          }
-        }
-        .layoutWeight(1)
-        .height(52)
-        .backgroundColor('#FA6B56')
-        .borderRadius(26)
-        .shadow({ radius: 16, color: 'rgba(250, 107, 86, 0.35)', offsetY: 6 })
-        .onClick(() => {
-          if (!this.selectedDestination) {
-            if (this.onShowTopToast) {
-              this.onShowTopToast('✈️ 请先选择您的飞行目的地');
-            } else {
-              try {
-                promptAction.showToast({
-                  message: '✈️ 请先选择您的飞行目的地',
-                  duration: 2000
-                });
-              } catch (e) { }
-            }
-            this.destinationDialogController.open();
-            return;
-          }
-          if (this.onStartFlight) {
-            AppStorage.setOrCreate('selectedDestinationAirport', this.selectedDestination);
-            AppStorage.setOrCreate('selectedDestinationCode', this.selectedDestination.code);
-            this.onStartFlight(this.timerMinutes, this.selectedDestination);
-          }
-        })
-
-        // 预订航班专属日程按钮 (100% 几何正圆，内含精致图标与“预订”文字)
-        Column({ space: 1 }) {
-          Image($r('app.media.ic_flight_booking'))
-            .width(18)
-            .height(18)
-
-          Text('预订')
-            .fontSize(10)
+      // 1. Start Flight 暖珊瑚红主按钮 (100% 居中大气独立大圆角胶囊)
+      Button() {
+        Row({ space: 8 }) {
+          Text(this.isFlightInProgress ? '飞行中...' : '开始飞行')
+            .fontSize(17)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#FA6B56')
+            .fontColor('#FFFFFF')
         }
-        .width(52)
-        .height(52)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(HorizontalAlign.Center)
-        .backgroundColor('#FFFFFF')
-        .borderRadius(26)
-        .shadow({ radius: 10, color: 'rgba(0, 0, 0, 0.07)', offsetY: 3 })
-        .border({ width: 1.5, color: '#EAE1D8' })
-        .onClick(() => {
-          this.isBookFlightSheetVisible = true;
-        })
       }
       .width('86%')
-      .justifyContent(FlexAlign.Center)
+      .height(52)
+      .backgroundColor('#FA6B56')
+      .borderRadius(26)
+      .shadow({ radius: 16, color: 'rgba(250, 107, 86, 0.35)', offsetY: 6 })
+      .onClick(() => {
+        if (!this.selectedDestination) {
+          if (this.onShowTopToast) {
+            this.onShowTopToast('✈️ 请先选择您的飞行目的地');
+          } else {
+            try {
+              promptAction.showToast({
+                message: '✈️ 请先选择您的飞行目的地',
+                duration: 2000
+              });
+            } catch (e) { }
+          }
+          this.destinationDialogController.open();
+          return;
+        }
+        if (this.onStartFlight) {
+          AppStorage.setOrCreate('selectedDestinationAirport', this.selectedDestination);
+          AppStorage.setOrCreate('selectedDestinationCode', this.selectedDestination.code);
+          this.onStartFlight(this.timerMinutes, this.selectedDestination);
+        }
+      })
 
       // 2. 次级轻量化航线指示器 (低调半透明温润胶囊，不与主按钮争夺焦点)
       Row({ space: 6 }) {

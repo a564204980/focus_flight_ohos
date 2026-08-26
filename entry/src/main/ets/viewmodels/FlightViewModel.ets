@@ -54,6 +54,9 @@ export class FlightViewModel {
   turbulenceMessageText: string = '遭遇巡航微气流，航向平稳修正中';
   isDistractionReportVisible: boolean = false; // 新增分心报告页状态;
   isLiveLogVisible: boolean = false; // 实时飞行日志抽屉状态;
+  isPreFlightBoardingPassVisible: boolean = false; // ✈️ 拟物电影级起飞登机牌掉落过场状态;
+  isPreFlightPosterPreviewOnly: boolean = false; // 🧪 是否仅为测试预览模式 (不触发起飞);
+  currentWeatherType: 'clear' | 'thunderstorm' | 'snow' = 'clear'; // 当前俯视与机舱沉浸天气状态
   isTopToastVisible: boolean = false;
   topToastMessage: string = '';
   backgroundStartTime: number = 0;

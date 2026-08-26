@@ -23,11 +23,17 @@ import { vibrator } from '@kit.SensorServiceKit';
 export struct FloatingCapsuleNavBar {
   @StorageLink('isStatsSheetVisible') isStatsSheetVisible: boolean = false;
   @StorageLink('isSettingsSheetVisible') isSettingsSheetVisible: boolean = false;
+  @StorageLink('isThemeSelectSheetVisible') isThemeSelectSheetVisible: boolean = false;
+  @StorageLink('isBookFlightSheetVisible') isBookFlightSheetVisible: boolean = false;
   @Prop isFlightInProgress: boolean = false;
   @Prop isFullFocusMode: boolean = false;
 
   private isDrawerOpen(): boolean {
     return this.isStatsSheetVisible || this.isSettingsSheetVisible;
+  }
+
+  private shouldHideNavBar(): boolean {
+    return this.isThemeSelectSheetVisible || this.isBookFlightSheetVisible;
   }
 
   private triggerHaptic(): void {
@@ -144,6 +150,8 @@ export struct FloatingCapsuleNavBar {
     })
     .shadow(this.isDrawerOpen() ? { radius: 24, color: 'rgba(0, 0, 0, 0.14)', offsetY: 6 } : { radius: 0, color: 'transparent' })
     .padding({ left: 18, right: 18 })
-    .animation({ duration: 320, curve: Curve.FastOutSlowIn })
+    .opacity(this.shouldHideNavBar() ? 0 : 1)
+    .hitTestBehavior(this.shouldHideNavBar() ? HitTestMode.None : HitTestMode.Default)
+    .animation({ duration: this.isDrawerOpen() ? 0 : 250, curve: Curve.FastOutSlowIn })
   }
 }

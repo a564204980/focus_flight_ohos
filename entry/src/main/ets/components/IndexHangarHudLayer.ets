@@ -1,11 +1,12 @@
 
 import { HomeFocusPanel } from './HomeFocusPanel';
 import { HeaderGreetingBar } from './HeaderGreetingBar';
-import { CyberThemeSelector } from './CyberThemeSelector';
+import { CyberThemeSelector, FlightBookingSignboard } from './CyberThemeSelector';
 import { GroundServiceVehiclesOverlay } from './GroundServiceVehiclesOverlay';
 import { PlaneCabinShellOverlay } from './PlaneCabinShellOverlay';
 import { FlightViewModel } from '../viewmodels/FlightViewModel';
 import { Airport, findAirportByCode } from '../models/AirportModel';
+import { FlightSessionStore } from '../services/FlightSessionStore';
 
 @Component
 export struct IndexHangarHudLayer {
@@ -18,6 +19,7 @@ export struct IndexHangarHudLayer {
   onTractorClick: () => void = () => {};
   enterCabinSelectionFromHangar: () => void = () => {};
   onFuelTruckClick: () => void = () => {};
+  triggerPreFlightPosterCeremony: (isPreviewOnly?: boolean) => void = () => {};
 
   build() {
     Stack({ alignContent: Alignment.Top }) {
@@ -53,11 +55,31 @@ export struct IndexHangarHudLayer {
         )
       }
 
-      // 2.5 停机坪机位地面标牌互动 (刻度尺上方右侧)
+      // 2.5 停机坪机位地面标牌组 (刻度尺上方右侧：测试海报、航班预订、机位装扮)
       if (this.vm.isHudVisible && !this.vm.isFullFocusMode && !this.vm.isMapBackgroundVisible) {
-        Column() {
+        Column({ space: 6 }) {
+          // 🎫 测试机票海报与掉落过场按钮
+          Row({ space: 4 }) {
+            Text('🎫')
+              .fontSize(11)
+            Text('测试海报')
+              .fontSize(11)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#7C3AED')
+          }
+          .padding({ left: 8, right: 8, top: 3.5, bottom: 3.5 })
+          .backgroundColor('#F5F3FF')
+          .border({ width: 1, color: '#DDD6FE', radius: 12 })
+          .borderRadius(12)
+          .shadow({ radius: 6, color: 'rgba(124, 58, 237, 0.15)', offsetY: 2 })
+          .onClick(() => {
+            this.triggerPreFlightPosterCeremony(true);
+          })
+
+          FlightBookingSignboard()
           CyberThemeSelector()
         }
+        .alignItems(HorizontalAlign.End)
         .position({ x: '100%', y: '73%' })
         .markAnchor({ x: '100%', y: '100%' })
         .margin({ right: 24, bottom: 6 })
@@ -132,7 +154,31 @@ export struct IndexHangarHudLayer {
           if (dest) {
             this.currentDestinationAirport = dest;
           }
-          this.enterCabinSelectionFromHangar();
+          const destCode = dest ? dest.code : 'PEK';
+          const destApt = dest || findAirportByCode('PEK');
+          AppStorage.setOrCreate('selectedDestinationAirport', destApt);
+          AppStorage.setOrCreate('selectedDestinationCode', destCode);
+
+          // 存储当前飞行会话并进入地图巡航就位
+          FlightSessionStore.saveSession({
+            isFlightActive: true,
+            flightNo: 'FF-337',
+            seatId: '01A',
+            taskTitle: this.vm.currentFocusTagTitle || '深度工作',
+            durationMin: this.vm.selectedFocusDurationMinutes,
+            originCode: 'CTU',
+            destCode: destCode,
+            startTimeMs: Date.now(),
+            checkInTimeMs: Date.now(),
+            events: [{
+              id: 'start_' + Date.now(),
+              type: 'gate_departure',
+              timestampMs: Date.now(),
+              note: '设备锁定，航线开始'
+            }]
+          });
+
+          this.triggerPreFlightPosterCeremony(false);
         }
       })
         .position({ x: 0, y: '100%' })

@@ -226,6 +226,23 @@ export struct PassportPaperCard {
     Stack({ alignContent: Alignment.TopStart }) {
       // 1. 卡片主体容器 (320 × 490, 20vp 大圆角)
       Column() {
+        // 0. 全幅护照水印底纹 (复用参考图中的机场代码矩阵)
+        // 绝对定位垫在卡片最底层，下半部透出，上半部被地图遮挡
+        Text("MEX KMG CJU LGA JFK BUD LPA BCN BOM YYZ SEA CLT HRB AGP YUL SGN DOH HGH DTW JED MEL FLL PRG STL ITM TNA BNA NNG AUS AEP PER ALC HOU EDI NCE BRU DUS XMN VIE CGO SLC YVR DCA CSX AKL HEL KBP SJW MHD SNA VCE EZE LYS COK ATL FRA IST DEL CGK SIN BKK JFK KUL SFO MAD CTU LAS BCN BOM YYZ SEA CLT HRB AGP YUL SGN DOH HGH DTW JED MEL FLL PRG STL ITM TNA BNA NNG AUS AEP PER ALC HOU EDI NCE BRU DUS XMN VIE CGO SLC YVR DCA CSX AKL HEL KBP SJW MHD SNA VCE EZE LYS COK ATL FRA IST DEL CGK SIN BKK JFK KUL SFO MAD CTU LAS BCN BOM YYZ SEA CLT HRB AGP YUL SGN DOH HGH DTW JED MEL FLL PRG STL ITM TNA BNA NNG AUS AEP PER ALC HOU EDI NCE BRU DUS XMN VIE CGO SLC YVR DCA CSX AKL HEL KBP SJW MHD SNA VCE EZE LYS COK ATL FRA IST DEL CGK SIN BKK JFK KUL SFO MAD CTU LAS BCN BOM YYZ SEA CLT HRB AGP YUL SGN DOH HGH DTW JED MEL FLL PRG STL ITM TNA BNA NNG AUS AEP PER ALC HOU EDI NCE BRU DUS XMN VIE CGO SLC YVR DCA CSX AKL HEL KBP SJW MHD SNA VCE EZE LYS COK ATL FRA IST DEL CGK SIN BKK JFK KUL SFO MAD CTU LAS BCN BOM YYZ SEA CLT HRB AGP YUL SGN DOH HGH DTW JED MEL FLL PRG STL ITM TNA BNA NNG AUS AEP PER ALC HOU EDI NCE BRU DUS XMN VIE CGO SLC YVR DCA CSX AKL HEL KBP SJW MHD SNA VCE EZE LYS COK ATL FRA IST DEL CGK SIN BKK JFK KUL SFO MAD CTU LAS")
+          .fontFamily('monospace')
+          .fontSize(11)
+          .fontWeight(FontWeight.Bolder)
+          .fontColor(this.isBlacklight ? 'rgba(255, 255, 255, 0.04)' : 'rgba(100, 116, 139, 0.04)')
+          .lineHeight(20)
+          .letterSpacing(1.5)
+          .rotate({ angle: -25 })
+          .position({ x: '-40%', y: '-10%' })
+          .width('180%')
+          .height('130%')
+          .textAlign(TextAlign.Center)
+          .hitTestBehavior(HitTestMode.None)
+          .zIndex(0)
+
         // ==================== 1. 上半部分: 全幅世界地图 (高 190vp) ====================
         Stack({ alignContent: Alignment.TopStart }) {
           // 1.1 复古纸质雕刻底图 / 极光雕刻底图
@@ -270,16 +287,6 @@ export struct PassportPaperCard {
               Text('🇨🇦').fontSize(13)
             }
 
-            Blank()
-
-            // 右侧时间筛选胶囊 (如 "总记录")
-            Text(this.timeTabLabel || '总记录')
-              .fontSize(11)
-              .fontWeight(FontWeight.Bold)
-              .fontColor(this.isBlacklight ? '#E0E7FF' : '#78350F')
-              .padding({ left: 10, right: 10, top: 3.5, bottom: 3.5 })
-              .backgroundColor(this.isBlacklight ? 'rgba(99, 102, 241, 0.25)' : '#F5EBE1')
-              .borderRadius(10)
           }
           .width('100%')
           .padding({ left: 16, right: 16, top: 10 })
@@ -332,7 +339,7 @@ export struct PassportPaperCard {
               this.buildMetaRow('认证机构', '专注航行 Pro', false)
               this.buildMetaRow('签发地点', this.initialIssueAirportName || '成都机场 (CTU)', false)
               this.buildMetaRow('签发日期', '2026年8月24日', false)
-              this.buildMetaRow('机长资质', '2026 终身资深机长', true)
+              this.buildMetaRow('飞行资质', '终身资深机长', true)
             }
             .alignItems(HorizontalAlign.Start)
           }

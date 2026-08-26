@@ -123,10 +123,10 @@ export class FlightSessionService {
         this.ctrl.vm.isHudVisible = true;
       });
 
-      // 3. 2 秒过渡期满（UI 飞机已完全无缝淡出至 0），由底层地图 Marker 立即接管并直接动力全推起飞！
+      // 3. 2 秒过渡期满（UI 飞机已完全无缝淡出至 0），由底层地图 Marker 立即接管并启动电影级登机牌掉落仪式！
       setTimeout(() => {
         this.ctrl.vm.isPlaneMarkerActive = true;
-        this.ctrl.startFlightAnimationDirectly();
+        this.ctrl.vm.isPreFlightBoardingPassVisible = true;
       }, 2000);
     }, 350);
   }

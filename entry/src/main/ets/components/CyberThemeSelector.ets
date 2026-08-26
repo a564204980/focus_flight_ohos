@@ -347,6 +347,7 @@ export struct ThemeSelectSheetContent {
 export struct CyberThemeSelector {
   @StorageLink('currentThemeIndex') currentThemeIndex: number = 0;
   @StorageLink('isThemeSelectSheetVisible') isThemeSelectSheetVisible: boolean = false;
+  @State isPressed: boolean = false;
   private readonly themeNames: string[] = ['默认', '晴空航迹', '云鲸航线', '戴竹蜻蜓蓝色胖子', '空港幻想', '机修大队', '星港先锋', '苍穹机甲'];
 
   private getDisplayText(): string {
@@ -381,8 +382,84 @@ export struct CyberThemeSelector {
     .border({ width: 1, color: '#E2E8F0', radius: 6 })
     .borderRadius(6)
     .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.08)', offsetY: 2 })
+    .scale({ x: this.isPressed ? 0.93 : 1.0, y: this.isPressed ? 0.93 : 1.0 })
+    .animation({ duration: 150, curve: Curve.EaseOut })
+    .onTouch((event: TouchEvent) => {
+      if (event.type === TouchType.Down) {
+        this.isPressed = true;
+      } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+        this.isPressed = false;
+      }
+    })
     .onClick(() => {
       this.isThemeSelectSheetVisible = true;
+    })
+  }
+}
+
+/**
+ * 停机坪拟物微缩机票/登机票根互动小徽章 (FlightBookingSignboard)
+ */
+@Component
+export struct FlightBookingSignboard {
+  @StorageLink('isBookFlightSheetVisible') isBookFlightSheetVisible: boolean = false;
+  @State isPressed: boolean = false;
+
+  build() {
+    // 🎫 拟物微缩机票票根小徽章 (主联 + 撕票细虚线 + 副联 FLT)
+    Row({ space: 0 }) {
+      // 1. 机票主联 (Main Ticket)：日历小图标 + "预订"
+      Row({ space: 4 }) {
+        Image($r('app.media.ic_flight_booking'))
+          .width(12)
+          .height(12)
+          .objectFit(ImageFit.Contain)
+
+        Text('预订')
+          .fontSize(11)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#1E293B')
+      }
+      .padding({ left: 7, right: 5, top: 3, bottom: 3 })
+
+      // 2. 机票中间微型撕票虚线 (Perforated Line)
+      Stack({ alignContent: Alignment.Center }) {
+        Column() {
+          Rect().width(1).height(2.5).fill('#CBD5E1').margin({ bottom: 1.5 })
+          Rect().width(1).height(2.5).fill('#CBD5E1').margin({ bottom: 1.5 })
+          Rect().width(1).height(2.5).fill('#CBD5E1')
+        }
+        .height(14)
+        .justifyContent(FlexAlign.Center)
+      }
+      .width(3)
+      .height(18)
+
+      // 3. 机票副联 (Stub Tail)：航空专属珊瑚红 FLT 标签
+      Row() {
+        Text('FLT')
+          .fontSize(9)
+          .fontWeight(FontWeight.Bolder)
+          .fontColor('#FA6B56')
+      }
+      .padding({ left: 4, right: 6, top: 3, bottom: 3 })
+    }
+    .height(23)
+    .backgroundColor('rgba(255, 255, 255, 0.95)')
+    .border({ width: 1, color: '#E2E8F0', radius: 5 })
+    .borderRadius(5)
+    .shadow({ radius: 6, color: 'rgba(0, 0, 0, 0.08)', offsetY: 2 })
+    .scale({ x: this.isPressed ? 0.93 : 1.0, y: this.isPressed ? 0.93 : 1.0 })
+    .animation({ duration: 150, curve: Curve.EaseOut })
+    .onTouch((event: TouchEvent) => {
+      if (event.type === TouchType.Down) {
+        this.isPressed = true;
+      } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+        this.isPressed = false;
+      }
+    })
+    .onClick(() => {
+      this.isBookFlightSheetVisible = true;
     })
   }
 }

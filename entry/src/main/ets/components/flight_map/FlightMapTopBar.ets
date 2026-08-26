@@ -11,7 +11,9 @@ export struct FlightMapTopBar {
   @Prop ctuScreenX: number = 0;
   @Prop ctuScreenY: number = 0;
   @Prop currentZoomLevel: number = 5.5;
+  @Prop currentMapType: number = 2; // 默认 mapCommon.MapType.TERRAIN
   onClose?: () => void;
+  onToggleMapType?: () => void;
 
   private triggerHaptic(): void {
     try {
@@ -52,6 +54,28 @@ export struct FlightMapTopBar {
       })
 
       Blank()
+
+      // 右侧：图层切换按钮 (立体地形 / 标准矢量 / 卫星遥感)
+      Stack({ alignContent: Alignment.Center }) {
+        Image($r('app.media.ic_map_layers_white'))
+          .width(18)
+          .height(18)
+          .objectFit(ImageFit.Contain)
+      }
+      .width(38)
+      .height(38)
+      .borderRadius(19)
+      .backgroundColor('rgba(15, 23, 42, 0.45)')
+      .backdropBlur(25)
+      .border({ width: 1, color: 'rgba(255, 255, 255, 0.16)', radius: 19 })
+      .shadow({ radius: 10, color: 'rgba(0, 0, 0, 0.25)', offsetY: 2 })
+      .hitTestBehavior(HitTestMode.Block)
+      .onClick(() => {
+        this.triggerHaptic();
+        if (this.onToggleMapType) {
+          this.onToggleMapType();
+        }
+      })
     }
     .width('100%')
     .padding({ left: 20, right: 20 })

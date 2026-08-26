@@ -26,12 +26,14 @@ export struct FlightMapHudOverlay {
   @Prop remainingTimeString: string = '45:00';
   @Prop isTurbulenceAlertVisible: boolean = false;
   @Prop turbulenceMessageText: string = '遭遇巡航微气流，航向平稳修正中';
+  @Prop currentWeatherType: 'clear' | 'thunderstorm' | 'snow' = 'clear';
 
   @State private isMapControlsVisible: boolean = false;
 
   public onOpenSettings: () => void = () => {};
   public onToggleWindowView: () => void = () => {};
   public onTestArrivalBoardingPass: () => void = () => {};
+  public onToggleWeather: () => void = () => {};
   public onToggleMapType: () => void = () => {};
   public onToggleCameraFollow: () => void = () => {};
   public onExitFlight: () => void = () => {};
@@ -254,6 +256,33 @@ export struct FlightMapHudOverlay {
             .hitTestBehavior(this.isWindowViewMode ? HitTestMode.None : HitTestMode.Default)
             .onClick(() => {
               this.onTestArrivalBoardingPass();
+            })
+
+            // 1.2.4 ⛈️/☀️/❄️ 专属【高空天气系统】测试切换按钮
+            Stack({ alignContent: Alignment.Center }) {
+              Text(this.currentWeatherType === 'clear' ? '☀️' : (this.currentWeatherType === 'thunderstorm' ? '⛈️' : '❄️'))
+                .fontSize(16)
+            }
+            .width(40)
+            .height(40)
+            .borderRadius(20)
+            .backgroundColor((this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(255, 255, 255, 0.90)' : 'rgba(0, 0, 0, 0.50)')
+            .backdropBlur(25)
+            .border({
+              width: 0.8,
+              color: (this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.16)',
+              radius: 20
+            })
+            .shadow({
+              radius: 10,
+              color: (this.isTerrainMode() && !this.isWindowViewMode) ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.25)',
+              offsetY: 2
+            })
+            .opacity(this.isWindowViewMode ? 0.0 : 1.0)
+            .animation({ duration: 320, curve: Curve.EaseInOut })
+            .hitTestBehavior(this.isWindowViewMode ? HitTestMode.None : HitTestMode.Default)
+            .onClick(() => {
+              this.onToggleWeather();
             })
           }
           .width(40)

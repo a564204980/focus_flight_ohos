@@ -41,7 +41,7 @@ export struct PassportShareModal {
   onClose?: () => void;
 
   @State private isBlacklight: boolean = false;
-  @State private modalOffsetY: number = 650;
+  @State private modalOffsetY: number = 1200;
   @State private maskOpacity: number = 0;
   @State private routes: HistoricalRouteSegment[] = [];
 
@@ -73,7 +73,7 @@ export struct PassportShareModal {
   }
 
   private animateIn(): void {
-    this.modalOffsetY = 650;
+    this.modalOffsetY = 1200;
     this.maskOpacity = 0;
     this.getUIContext()?.animateTo({
       duration: 320,
@@ -94,7 +94,7 @@ export struct PassportShareModal {
         }
       }
     }, () => {
-      this.modalOffsetY = 650;
+      this.modalOffsetY = 1200;
       this.maskOpacity = 0;
     });
   }
@@ -118,7 +118,17 @@ export struct PassportShareModal {
 
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      // 1. 全屏沉浸展台背景 (柔和通透渐变，拦截所有点击穿透)
+      // 0. 终极物理防穿透空气墙 (在最底层，用来兜底吸收所有未被上面的按钮消费的点击与滑动)
+      // 【关键修复】：绝对不能用空的 Text('')，否则会被 ArkUI 引擎优化掉导致尺寸为 0 并且无法命中测试！必须用 Row。
+      Row()
+        .width('120%')
+        .height('120%')
+        .position({ x: '-10%', y: '-10%' })
+        .backgroundColor('rgba(0,0,0,0.01)') // 必须存在微弱的物理实色以确保能够触发 Touch Test
+        .onClick(() => {})
+        .gesture(PanGesture().onActionUpdate(() => {}))
+
+      // 1. 全屏沉浸展台背景 (柔和通透渐变)
       Row()
         .width('100%')
         .height('100%')
@@ -129,10 +139,6 @@ export struct PassportShareModal {
             : [['#EBF1F6', 0.0], ['#DFE7EF', 0.5], ['#D0DCE7', 1.0]]
         })
         .opacity(this.maskOpacity)
-        .hitTestBehavior(HitTestMode.Block)
-        .onClick(() => {
-          // 拦截背景空白处点击，防止穿透到下层页面
-        })
 
       // 2. 护照分享操作面板主体 (GPU 平移动画)
       Column() {
@@ -277,5 +283,6 @@ export struct PassportShareModal {
     .height('100%')
     .position({ x: 0, y: 0 })
     .zIndex(1200)
+    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
 }

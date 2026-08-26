@@ -22,6 +22,7 @@ import { RadarScanOverlay } from './flight_map/RadarScanOverlay';
 import { FlightMapTopBar } from './flight_map/FlightMapTopBar';
 import { FlightMapZoomControls } from './flight_map/FlightMapZoomControls';
 import { FlightMapBottomPanel } from './flight_map/FlightMapBottomPanel';
+import { ImmersiveWeatherOverlay } from './ImmersiveWeatherOverlay';
 
 export interface RadarPingWave {
   id: string;
@@ -41,6 +42,8 @@ export interface ScanTargetMarker {
 // 兼容旧导入，保持对外接口 100% 不变
 export type { ScreenVpPoint, AirportMarkerEntry };
 export { RULER_FIVE_MIN_UNITS, RULER_STEP_WIDTH };
+
+const CLEAN_MAP_STYLE_JSON: string = '[{"mapFeature":"all","featureName":"label","visibility":"off"},{"mapFeature":"poi","options":"all","visibility":"off"},{"mapFeature":"administrative","featureName":"label","visibility":"off"},{"mapFeature":"administrative","options":"all","visibility":"off"},{"mapFeature":"road","featureName":"label","visibility":"off"},{"mapFeature":"road","options":"all","visibility":"off"},{"mapFeature":"transportation","featureName":"label","visibility":"off"},{"mapFeature":"transportation","options":"all","visibility":"off"},{"mapFeature":"water","featureName":"label","visibility":"off"}]';
 
 @CustomDialog
 export struct FlightMapSelectOverlay {
@@ -111,6 +114,7 @@ export struct FlightMapSelectOverlay {
   private lastVibrateTime: number = 0;
   private lastSnappedMinutes: number = 15;
   private markerPixelMapCache: Map<string, image.PixelMap> = new Map();
+  @State currentMapType: number = mapCommon.MapType.STANDARD; // 采用纯净矢量航图，配合自定义样式彻底擦除所有文字注记
   private scanStartTime: number = 0;
 
   // ── 地图初始化配置 ────────────────────────────
@@ -120,13 +124,40 @@ export struct FlightMapSelectOverlay {
       zoom: 5.54,
       tilt: 0
     },
-    mapType: mapCommon.MapType.SATELLITE,
+    mapType: mapCommon.MapType.STANDARD,
     zoomControlsEnabled: false,
     compassControlsEnabled: false,
     rotateGesturesEnabled: true,
     zoomGesturesEnabled: true,
     scrollGesturesEnabled: true
   };
+
+  private toggleMapType(): void {
+    if (this.currentMapType === mapCommon.MapType.STANDARD) {
+      this.currentMapType = mapCommon.MapType.TERRAIN;
+    } else if (this.currentMapType === mapCommon.MapType.TERRAIN) {
+      this.currentMapType = mapCommon.MapType.SATELLITE;
+    } else {
+      this.currentMapType = mapCommon.MapType.STANDARD;
+    }
+    if (this.huaweiMapController) {
+      try {
+        if (this.currentMapType === mapCommon.MapType.STANDARD) {
+          this.huaweiMapController.setDayNightMode(mapCommon.DayNightMode.NIGHT);
+          this.huaweiMapController.setCustomMapStyle({ styleContent: CLEAN_MAP_STYLE_JSON });
+        } else {
+          this.huaweiMapController.setDayNightMode(mapCommon.DayNightMode.DAY);
+          this.huaweiMapController.setCustomMapStyle({ styleContent: '' });
+        }
+        this.huaweiMapController.setMapType(this.currentMapType);
+      } catch (e) {}
+    }
+    promptAction.showToast({
+      message: this.currentMapType === mapCommon.MapType.STANDARD ? '🗺️ 已切换为 纯净无注记暗夜航图' :
+               (this.currentMapType === mapCommon.MapType.TERRAIN ? '⛰️ 已切换为 3D 立体地形图' : '🛰️ 已切换为 卫星遥感切片'),
+      duration: 1500
+    });
+  }
 
   // ─────────────────────────────────────────────
   // 生命周期
@@ -1021,6 +1052,12 @@ export struct FlightMapSelectOverlay {
       // 📍 映射控制器就绪瞬间同步计算 CTU 精确屏幕 VP 坐标，消除定位错位与二次平移动画
       this.refreshCtuScreenPosition();
 
+      // 🧹 彻底去除地图上的国家名、地名、行政区划与 POI 注记，保持最纯净的航空地形底图
+      try {
+        controller.setDayNightMode(mapCommon.DayNightMode.NIGHT);
+        controller.setCustomMapStyle({ styleContent: CLEAN_MAP_STYLE_JSON });
+      } catch (e) {}
+
       // ⚡⚡⚡ 地图就绪后延迟淡入，等待界面进场动画先行完成
       setTimeout(() => {
         this.mapOpacity = 1.0;
@@ -1201,7 +1238,7 @@ export struct FlightMapSelectOverlay {
           .hitTestBehavior(HitTestMode.None)
       }
 
-      // 5. 顶部状态条 (含左上角 HUD 水晶返回按钮)
+      // 5. 顶部状态条 (含左上角 HUD 水晶返回按钮 与 右上角图层切换水晶按钮)
       FlightMapTopBar({
         selectedCode: this.currentSelectedCode,
         currentMinutes: this.currentMinutes,
@@ -1209,7 +1246,9 @@ export struct FlightMapSelectOverlay {
         ctuScreenX: this.ctuScreenX,
         ctuScreenY: this.ctuScreenY,
         currentZoomLevel: this.currentZoomLevel,
-        onClose: () => { this.handleClose(); }
+        currentMapType: this.currentMapType,
+        onClose: () => { this.handleClose(); },
+        onToggleMapType: () => { this.toggleMapType(); }
       })
       .position({ x: 0, y: 52 })
 

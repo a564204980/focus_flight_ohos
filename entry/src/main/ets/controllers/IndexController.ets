@@ -128,6 +128,11 @@ export class IndexController {
   ];
 
   public topToastTimer: number = -1;
+
+  // 🌤️ 航程天气动态调度系统 (基于专注总时长的气象带分布)
+  public scheduledWeatherCheckpoints: number[] = []; // 天气触发进度点集合 (例如 [0.5] 或 [0.35, 0.75])
+  public triggeredWeatherCheckpoints: boolean[] = []; // 各检查点是否已触发
+  public autoWeatherClearTimerId: number = -1; // 自动穿出云层放晴定时器
   public showTopToast(message: string, duration: number = 3500) {
     this.flightSessionService.showTopToast(message, duration);
   }
@@ -523,7 +528,12 @@ export class IndexController {
           if (session.isWindowViewMode) {
             this.vm.isWindowViewMode = true;
           }
-          this.startFlightAnimationDirectly(elapsedMs);
+          if (elapsedMs < 3000) {
+            // ✈️ 刚刚确认开启新专注，播放电影级登机牌掉落仪式！
+            this.vm.isPreFlightBoardingPassVisible = true;
+          } else {
+            this.startFlightAnimationDirectly(elapsedMs);
+          }
           return;
         } else {
           // 专注时长已在后台自然完成
@@ -563,6 +573,24 @@ export class IndexController {
     } catch (e) {
       // ignore
     }
+  }
+
+  /**
+   * 🗺️ 启动真实地图高空全景 + 拟物机票掉落过场仪式
+   */
+  public triggerPreFlightPosterCeremony(isPreviewOnly: boolean = true): void {
+    this.triggerHapticFeedback();
+    this.vm.isPreFlightPosterPreviewOnly = isPreviewOnly;
+
+    if (!isPreviewOnly) {
+      this.vm.isMapBackgroundVisible = true;
+      this.vm.isFullFocusMode = false;
+      this.vm.isCabinExposed = false;
+      this.vm.planeOpacity = 0;
+      this.vm.isPlaneMarkerActive = true;
+    }
+
+    this.vm.isPreFlightBoardingPassVisible = true;
   }
 
   /**
@@ -676,11 +704,27 @@ export class IndexController {
       totalDurationMin: durationMinutes
     });
 
-    if (this.flightDisplaySync) { this.flightDisplaySync.stop(); this.flightDisplaySync = undefined; }
-
     this.flightPauseElapsedMs = resumeElapsedMs > 0 ? resumeElapsedMs : 0;
     this.flightPauseSegmentStartTime = Date.now();
     this.vm.isFlightPaused = false;
+
+    // 🌤️ 初始化航程天气检查点 (仅在全新起飞时初始化；若是切后台前台恢复，保留触发状态，已飞过的检查点标记为已触发，严禁重复触发)
+    const mins = durationMinutes || this.vm.selectedFocusDurationMinutes || 15;
+    const initialProgress = totalFlightDurationMs > 0 ? (resumeElapsedMs > 0 ? resumeElapsedMs : 0) / totalFlightDurationMs : 0;
+    
+    let checkpoints: number[] = [];
+    if (mins <= 35) {
+      checkpoints = [0.50];
+    } else if (mins <= 60) {
+      checkpoints = [0.35, 0.75];
+    } else {
+      checkpoints = [0.25, 0.55, 0.85];
+    }
+    this.scheduledWeatherCheckpoints = checkpoints;
+
+    if (this.triggeredWeatherCheckpoints.length !== checkpoints.length || resumeElapsedMs === 0) {
+      this.triggeredWeatherCheckpoints = checkpoints.map(cp => initialProgress >= cp);
+    }
 
     // Catmull-Rom 样条插值函数
     const getSmoothPos = (idx: number): mapCommon.LatLng => {
@@ -742,6 +786,17 @@ export class IndexController {
       const remainingKm = Math.max(0, Math.round((1.0 - overallProgress) * rawTotalPhysicalDist));
       if (this.vm.remainingDistanceKm !== remainingKm) {
         this.vm.remainingDistanceKm = remainingKm;
+      }
+
+      // 🌤️ 航程自动天气检查点判定 (需处于巡航阶段且未进入降落区)
+      if (this.scheduledWeatherCheckpoints.length > 0 && remainingMs >= 40000 && totalElapsed >= 20000) {
+        for (let i = 0; i < this.scheduledWeatherCheckpoints.length; i++) {
+          if (!this.triggeredWeatherCheckpoints[i] && overallProgress >= this.scheduledWeatherCheckpoints[i]) {
+            this.triggeredWeatherCheckpoints[i] = true;
+            this.triggerAutomaticWeatherEvent();
+            break;
+          }
+        }
       }
 
       // 终点到达逻辑
@@ -1368,5 +1423,60 @@ export class IndexController {
    */
   public abortFlightAndReturnToHangar() {
     this.flightSessionService.abortFlightAndReturnToHangar();
+  }
+
+  /**
+   * ⛈️ 触发一次自动高空穿云天气事件 (完整生命周期约 26~30 秒)
+   */
+  public triggerAutomaticWeatherEvent(forcedWeather?: 'thunderstorm' | 'snow'): void {
+    if (!this.vm.isFlightInProgress) {
+      return;
+    }
+    const weather = forcedWeather || (Math.random() > 0.15 ? 'thunderstorm' : 'snow');
+    this.vm.currentWeatherType = weather;
+
+    const startMsg = weather === 'thunderstorm' ? 
+      '前方遭遇高空对流雷暴云团，机组正在穿云巡航' : 
+      '前方遭遇高空极地冷锋降雪，航向平稳修正中';
+    this.vm.turbulenceMessageText = startMsg;
+    this.vm.isTurbulenceAlertVisible = true;
+    this.recordFlightEvent('turbulence', startMsg);
+
+    if (this.autoWeatherClearTimerId !== -1) {
+      clearTimeout(this.autoWeatherClearTimerId);
+    }
+    // 24 秒后自动穿出云层并恢复晴空
+    this.autoWeatherClearTimerId = setTimeout(() => {
+      if (this.vm.isFlightInProgress && this.vm.currentWeatherType !== 'clear') {
+        this.vm.currentWeatherType = 'clear';
+        const endMsg = '已脱离气流云层，重归平流层晴空巡航';
+        this.vm.turbulenceMessageText = endMsg;
+        this.recordFlightEvent('turbulence', endMsg);
+        setTimeout(() => {
+          if (this.vm.turbulenceMessageText === endMsg) {
+            this.vm.isTurbulenceAlertVisible = false;
+          }
+        }, 4000);
+      }
+    }, 24000);
+  }
+
+  /**
+   * 🌤️ 手动切换天气测试模式
+   */
+  public toggleWeatherMode(): void {
+    this.triggerHapticFeedback();
+    if (this.vm.currentWeatherType === 'clear') {
+      this.triggerAutomaticWeatherEvent('thunderstorm');
+    } else if (this.vm.currentWeatherType === 'thunderstorm') {
+      this.triggerAutomaticWeatherEvent('snow');
+    } else {
+      if (this.autoWeatherClearTimerId !== -1) {
+        clearTimeout(this.autoWeatherClearTimerId);
+        this.autoWeatherClearTimerId = -1;
+      }
+      this.vm.currentWeatherType = 'clear';
+      this.vm.isTurbulenceAlertVisible = false;
+    }
   }
 }

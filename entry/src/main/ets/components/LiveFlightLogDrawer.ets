@@ -12,7 +12,26 @@ export interface TimelineItemData {
   lineStyle: string;
 }
 
+interface CardRainDrop {
+  x: number;
+  y: number;
+  len: number;
+  speed: number;
+  opacity: number;
+}
+
+interface CardSnowFlake {
+  x: number;
+  y: number;
+  r: number;
+  speedY: number;
+  speedX: number;
+  opacity: number;
+  swayOffset: number;
+}
+
 export interface FlightStatusBadgeInfo {
+  icon: string;
   text: string;
   color: string;
 }
@@ -23,6 +42,7 @@ export struct LiveFlightLogDrawer {
   @State sheetHeight: string = '0%';
   
   @Prop @Watch('onBadgeInputsChanged') isTurbulent: boolean = false;
+  @Prop @Watch('onBadgeInputsChanged') currentWeatherType: 'clear' | 'thunderstorm' | 'snow' = 'clear';
   @State planeOffsetX: number = 0;
   @State planeOffsetY: number = 0;
   @State planeRotation: number = 0;
@@ -30,6 +50,13 @@ export struct LiveFlightLogDrawer {
   private physicsTimer: number = -1;
   private simTime: number = 0;
   private currentTurbulenceIntensity: number = 0;
+
+  // 🌧️ 飞机预览卡片微型动态气象层
+  private weatherCardContext: CanvasRenderingContext2D = new CanvasRenderingContext2D(new RenderingContextSettings(true));
+  private cardRainDrops: CardRainDrop[] = [];
+  private cardSnowFlakes: CardSnowFlake[] = [];
+  private cardCanvasWidth: number = 320;
+  private cardCanvasHeight: number = 190;
   
   @StorageLink('activeFlightSession') @Watch('onBadgeInputsChanged') flightSession: FlightSessionData | null = null;
   @StorageLink('selectedDestinationAirport') destinationAirport: Airport | undefined = undefined;
@@ -57,10 +84,46 @@ export struct LiveFlightLogDrawer {
   }
 
   private getCardSubtitle(): string {
+    if (this.currentWeatherType === 'thunderstorm') {
+      return "B737-800 · 穿越对流雷暴云团";
+    } else if (this.currentWeatherType === 'snow') {
+      return "B737-800 · 穿越高空冷锋风雪带";
+    }
     return "B737-800 · 巡航飞行中";
   }
 
-  @State badgeText: string = '✓ 状态良好';
+  private getCardGradientColors(): [ResourceColor, number][] {
+    if (this.currentWeatherType === 'thunderstorm') {
+      return [
+        ['#1E293B', 0.0],  // 沉稳风暴深蓝灰 (绝无怪异紫色)
+        ['#334155', 0.45], // 高空阴云灰
+        ['#475569', 0.68], // 细腻平滑过渡层
+        ['#94A3B8', 0.84], // 浅云雾微散
+        ['#E2E8F0', 0.94], // 柔和极浅灰
+        ['#FFFFFF', 1.0]   // 100% 丝滑无缝融入白底
+      ];
+    } else if (this.currentWeatherType === 'snow') {
+      return [
+        ['#334155', 0.0],  // 极地冷锋灰
+        ['#475569', 0.45], // 冰云蓝灰
+        ['#64748B', 0.68],
+        ['#CBD5E1', 0.86],
+        ['#F1F5F9', 0.95],
+        ['#FFFFFF', 1.0]
+      ];
+    }
+    return [
+      ['#5A99E5', 0.0],  // 晴空明媚蔚蓝
+      ['#74A9ED', 0.45],
+      ['#A0C6F5', 0.70],
+      ['#D6E6FC', 0.88],
+      ['#F3F8FE', 0.96],
+      ['#FFFFFF', 1.0]
+    ];
+  }
+
+  @State badgeIcon: string = '✓';
+  @State badgeText: string = '状态良好';
   @State badgeColor: string = '#10B981';
   @State badgeScale: number = 1.0;
   @State badgeOpacity: number = 1.0;
@@ -68,14 +131,16 @@ export struct LiveFlightLogDrawer {
   onBadgeInputsChanged() {
     this.updateBadgeState(true);
     this.buildTimelineData();
+    this.initCardWeatherParticles();
   }
 
   updateBadgeState(animate: boolean = true) {
     const newBadge = this.computeFlightStatusBadge();
-    if (this.badgeText === newBadge.text && this.badgeColor === newBadge.color) {
+    if (this.badgeText === newBadge.text && this.badgeIcon === newBadge.icon && this.badgeColor === newBadge.color) {
       return;
     }
     if (!animate) {
+      this.badgeIcon = newBadge.icon;
       this.badgeText = newBadge.text;
       this.badgeColor = newBadge.color;
       return;
@@ -88,6 +153,7 @@ export struct LiveFlightLogDrawer {
     });
 
     setTimeout(() => {
+      this.badgeIcon = newBadge.icon;
       this.badgeText = newBadge.text;
       this.badgeColor = newBadge.color;
       this.getUIContext()?.animateTo({ duration: 260, curve: Curve.FastOutSlowIn }, () => {
@@ -97,13 +163,109 @@ export struct LiveFlightLogDrawer {
     }, 150);
   }
 
+  private initCardWeatherParticles(): void {
+    const w = this.cardCanvasWidth > 0 ? this.cardCanvasWidth : 320;
+    const h = this.cardCanvasHeight > 0 ? this.cardCanvasHeight : 190;
+
+    if (this.currentWeatherType === 'thunderstorm') {
+      this.cardRainDrops = [];
+      for (let i = 0; i < 40; i++) {
+        this.cardRainDrops.push({
+          x: Math.random() * (w + 60) - 30,
+          y: Math.random() * h,
+          len: Math.random() * 8 + 12,
+          speed: Math.random() * 5 + 10,
+          opacity: Math.random() * 0.35 + 0.25
+        });
+      }
+    } else if (this.currentWeatherType === 'snow') {
+      this.cardSnowFlakes = [];
+      for (let i = 0; i < 24; i++) {
+        this.cardSnowFlakes.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 2.0 + 1.0,
+          speedY: Math.random() * 0.8 + 0.6,
+          speedX: (Math.random() - 0.5) * 0.4,
+          opacity: Math.random() * 0.5 + 0.3,
+          swayOffset: Math.random() * Math.PI * 2
+        });
+      }
+    }
+  }
+
+  private renderCardWeatherFrame(): void {
+    if (!this.weatherCardContext || this.currentWeatherType === 'clear') {
+      return;
+    }
+    const w = this.cardCanvasWidth > 0 ? this.cardCanvasWidth : 320;
+    const h = this.cardCanvasHeight > 0 ? this.cardCanvasHeight : 190;
+
+    try {
+      this.weatherCardContext.clearRect(0, 0, w, h);
+
+      if (this.currentWeatherType === 'thunderstorm') {
+        const windAngle = 0.18; // 轻微斜向迎风
+
+        for (let drop of this.cardRainDrops) {
+          drop.y += drop.speed;
+          drop.x += drop.speed * windAngle;
+
+          if (drop.y > h + 10) {
+            drop.y = -15;
+            drop.x = Math.random() * (w + 60) - 30;
+          }
+
+          const startX = drop.x;
+          const startY = drop.y - drop.len;
+          const endX = drop.x + drop.len * windAngle;
+          const endY = drop.y;
+
+          // 渐变雨丝 (头部浅、尾部亮)
+          const grad = this.weatherCardContext.createLinearGradient(startX, startY, endX, endY);
+          grad.addColorStop(0.0, 'rgba(255, 255, 255, 0.0)');
+          grad.addColorStop(0.5, `rgba(224, 235, 255, ${drop.opacity * 0.5})`);
+          grad.addColorStop(1.0, `rgba(255, 255, 255, ${drop.opacity})`);
+
+          this.weatherCardContext.beginPath();
+          this.weatherCardContext.moveTo(startX, startY);
+          this.weatherCardContext.lineTo(endX, endY);
+          this.weatherCardContext.strokeStyle = grad;
+          this.weatherCardContext.lineWidth = 1.1;
+          this.weatherCardContext.stroke();
+        }
+      } else if (this.currentWeatherType === 'snow') {
+        for (let s of this.cardSnowFlakes) {
+          s.y += s.speedY;
+          s.x += s.speedX + Math.sin(this.simTime * 2.0 + s.swayOffset) * 0.4;
+
+          if (s.y > h + 10) {
+            s.y = -10;
+            s.x = Math.random() * w;
+          }
+
+          const grad = this.weatherCardContext.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r);
+          grad.addColorStop(0.0, `rgba(255, 255, 255, ${s.opacity})`);
+          grad.addColorStop(0.7, `rgba(240, 248, 255, ${s.opacity * 0.5})`);
+          grad.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+
+          this.weatherCardContext.beginPath();
+          this.weatherCardContext.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          this.weatherCardContext.fillStyle = grad;
+          this.weatherCardContext.fill();
+        }
+      }
+    } catch (_e) {}
+  }
+
   private startPhysicsLoop() {
     if (this.physicsTimer !== -1) {
       return;
     }
     this.physicsTimer = setInterval(() => {
       this.simTime += 0.02;
-      const targetIntensity = (this.isTurbulent || this.isTestingTurbulence) ? 1.0 : 0.0;
+      const isWeatherRough = this.currentWeatherType === 'thunderstorm' || this.currentWeatherType === 'snow';
+      const targetIntensity = (this.isTurbulent || this.isTestingTurbulence || isWeatherRough) ? 1.0 : 0.0;
       // 气动阻尼平滑过渡
       const lerpSpeed = (targetIntensity > this.currentTurbulenceIntensity) ? 0.06 : 0.035;
       this.currentTurbulenceIntensity += (targetIntensity - this.currentTurbulenceIntensity) * lerpSpeed;
@@ -118,7 +280,7 @@ export struct LiveFlightLogDrawer {
       // - 真实巡航微仰角：机头保持自然上扬 +1.0°，伴随 ±0.25° 的细腻呼吸微调
       const cruisePitch = 1.0 + Math.sin(this.simTime * 1.2) * 0.25;
       
-      // 2. 真实气流颠簸（高频紧致震颤，而非大幅度晃动）：
+      // 2. 真实气流与天气颠簸（高频紧致震颤，而非大幅度晃动）：
       // - 垂直高频轻颤：约 ±2.2vp 紧凑抖动
       const heaveWave = (
         Math.sin(this.simTime * 14.0) * 1.4 + 
@@ -141,6 +303,9 @@ export struct LiveFlightLogDrawer {
       this.planeOffsetY = cruiseHeave + heaveWave;
       this.planeOffsetX = cruiseDrift + swayWave;
       this.planeRotation = cruisePitch + pitchWave;
+
+      // 🌧️ 逐帧刷新卡片内微型雨雪气象粒子
+      this.renderCardWeatherFrame();
     }, 20);
   }
 
@@ -154,6 +319,7 @@ export struct LiveFlightLogDrawer {
   aboutToAppear() {
     this.updateBadgeState(false);
     this.buildTimelineData();
+    this.initCardWeatherParticles();
     this.startPhysicsLoop();
     setTimeout(() => {
       this.sheetHeight = '85%';
@@ -180,10 +346,18 @@ export struct LiveFlightLogDrawer {
   }
 
   computeFlightStatusBadge(): FlightStatusBadgeInfo {
-    let badge: FlightStatusBadgeInfo = { text: '✓ 状态良好', color: '#10B981' };
+    let badge: FlightStatusBadgeInfo = { icon: '✓', text: '状态良好', color: '#10B981' };
+
+    // ⛈️ 优先判定高空恶劣天气状态
+    if (this.currentWeatherType === 'thunderstorm') {
+      return { icon: '⛈️', text: '穿越雷雨区', color: '#334155' };
+    } else if (this.currentWeatherType === 'snow') {
+      return { icon: '❄️', text: '迎风降雪巡航', color: '#0284C7' };
+    }
+
     if (!this.flightSession) {
       if (this.isTurbulent || this.isTestingTurbulence) {
-        badge = { text: '⚠️ 遭遇微气流', color: '#F59E0B' };
+        badge = { icon: '⚠️', text: '遭遇微气流', color: '#F59E0B' };
       }
       return badge;
     }
@@ -195,17 +369,17 @@ export struct LiveFlightLogDrawer {
     const latestEvent = this.flightSession.events && this.flightSession.events.length > 0 ? this.flightSession.events[0] : null;
 
     if (remainingMs <= 0) {
-      badge = { text: '✨ 顺利降落', color: '#059669' };
+      badge = { icon: '✨', text: '顺利降落', color: '#059669' };
     } else if (this.isTurbulent || this.isTestingTurbulence) {
-      badge = { text: '⚠️ 遭遇微气流', color: '#F59E0B' };
+      badge = { icon: '⚠️', text: '遭遇微气流', color: '#F59E0B' };
     } else if (latestEvent && latestEvent.type === 'deviation') {
-      badge = { text: '⚠️ 偏离航线', color: '#EF4444' };
+      badge = { icon: '⚠️', text: '偏离航线', color: '#EF4444' };
     } else if (latestEvent && latestEvent.type === 'recovery' && (now - latestEvent.timestampMs < 45000)) {
-      badge = { text: '⚡ 航向修正', color: '#06B6D4' };
+      badge = { icon: '⚡', text: '航向修正', color: '#06B6D4' };
     } else if (remainingMins <= 5) {
-      badge = { text: '🛫 准备进近', color: '#8B5CF6' };
+      badge = { icon: '🛫', text: '准备进近', color: '#8B5CF6' };
     } else {
-      badge = { text: '✓ 状态良好', color: '#10B981' };
+      badge = { icon: '✓', text: '状态良好', color: '#10B981' };
     }
     return badge;
   }
@@ -409,75 +583,71 @@ export struct LiveFlightLogDrawer {
           Column() {
             // 卡片容器
             Column() {
-              // 卡片头部深色背景 (模仿 Where's My Plane 蓝天背景)
-              Column() {
-                Row() {
-                  Text("航班动态")
-                    .fontSize(18)
-                    .fontWeight(FontWeight.Bold)
-                    .fontColor('#FFFFFF')
-                  Blank()
-                  Text("PRO")
-                    .fontSize(10)
-                    .fontWeight(FontWeight.Bold)
-                    .fontColor('#FFFFFF')
-                    .backgroundColor('#8B5CF6')
-                    .padding({ left: 6, right: 6, top: 3, bottom: 3 })
-                    .borderRadius(4)
-                }.width('100%').padding({ left: 16, right: 16, top: 16 })
-                
-                Text(this.getCardSubtitle())
-                  .fontSize(13)
-                  .fontColor('rgba(255,255,255,0.85)')
-                  .margin({ top: 4, left: 16 })
-                  
-                // 飞机形象展示
-                Image($r('app.media.b737_800_flat_3'))
-                  .width('80%')
-                  .aspectRatio(2.07)
-                  .alignSelf(ItemAlign.Center)
-                  .objectFit(ImageFit.Contain)
-                  .margin({ top: 16, bottom: 8 })
-                  .translate({ x: this.planeOffsetX, y: this.planeOffsetY })
-                  .rotate({ angle: this.planeRotation })
-                  
-                Row() {
-                  // 1. 左侧状态标签 (固定 height: 24vp 保证各种状态/Emoji下高度绝对严丝合缝)
+              // 卡片头部天气氛围背景容器 (严格保持原本紧凑高度，绝不拉伸撑高)
+              Stack({ alignContent: Alignment.TopStart }) {
+                // 1. 中层天气动态雨雪 Canvas 粒子层 (绝对定位覆盖，绝不撑大父级容器)
+                if (this.currentWeatherType !== 'clear') {
+                  Canvas(this.weatherCardContext)
+                    .width('100%')
+                    .height('100%')
+                    .position({ x: 0, y: 0 })
+                    .backgroundColor(Color.Transparent)
+                    .hitTestBehavior(HitTestMode.None)
+                    .onAreaChange((_oldArea, newArea) => {
+                      const w = Number(newArea.width);
+                      const h = Number(newArea.height);
+                      if (w > 0 && h > 0) {
+                        this.cardCanvasWidth = w;
+                        this.cardCanvasHeight = h;
+                        this.initCardWeatherParticles();
+                      }
+                    })
+                }
+
+                // 2. 上层内容：标题、动态飞机、状态标签
+                Column() {
                   Row() {
-                    Text(this.badgeText)
-                      .fontSize(12)
+                    Text("航班动态")
+                      .fontSize(18)
                       .fontWeight(FontWeight.Bold)
                       .fontColor('#FFFFFF')
-                      .opacity(this.badgeOpacity)
-                  }
-                  .height(24)
-                  .padding({ left: 8, right: 8 })
-                  .justifyContent(FlexAlign.Center)
-                  .alignItems(VerticalAlign.Center)
-                  .backgroundColor(this.badgeColor)
-                  .borderRadius(4)
-                  .scale({ x: this.badgeScale, y: this.badgeScale })
-                  .animation({ duration: 260, curve: Curve.FastOutSlowIn })
-
-                  Blank()
+                    Blank()
+                    Text("PRO")
+                      .fontSize(10)
+                      .fontWeight(FontWeight.Bold)
+                      .fontColor('#FFFFFF')
+                      .backgroundColor('#8B5CF6')
+                      .padding({ left: 6, right: 6, top: 3, bottom: 3 })
+                      .borderRadius(4)
+                  }.width('100%').padding({ left: 16, right: 16, top: 16 })
+                  
+                  Text(this.getCardSubtitle())
+                    .fontSize(13)
+                    .fontColor('rgba(255,255,255,0.85)')
+                    .margin({ top: 4, left: 16 })
+                    
+                  // 飞机形象展示
+                  Image($r('app.media.b737_800_flat_3'))
+                    .width('82%')
+                    .aspectRatio(2.07)
+                    .alignSelf(ItemAlign.Center)
+                    .objectFit(ImageFit.Contain)
+                    .margin({ top: 12, bottom: 16 })
+                    .translate({ x: this.planeOffsetX, y: this.planeOffsetY })
+                    .rotate({ angle: this.planeRotation })
                 }
                 .width('100%')
-                .height(24)
-                .alignItems(VerticalAlign.Center)
-                .padding({ left: 16, right: 16 })
-                .margin({ bottom: 12 })
+                .alignItems(HorizontalAlign.Start)
               }
               .width('100%')
+              .height(180)
               .linearGradient({
                 direction: GradientDirection.Bottom,
-                colors: [
-                  ['#5A99E5', 0.0],
-                  ['#74A9ED', 0.45],
-                  ['#FFFFFF', 0.85],
-                  ['#FFFFFF', 1.0]
-                ]
+                colors: this.getCardGradientColors()
               })
-              .alignItems(HorizontalAlign.Start)
+              .animation({ duration: 400, curve: Curve.EaseInOut })
+              .borderRadius({ topLeft: 16, topRight: 16 })
+              .clip(true)
               
 
               // 底部白底时间轴列表 (自下而上: 过去 -> 未来)

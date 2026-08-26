@@ -189,9 +189,9 @@ export struct PassportStatsView {
     Stack({ alignContent: Alignment.Bottom }) {
       Scroll() {
         Column({ space: 24 }) {
-          // 1. Header: Passport + Icons
+          // 1. Header: Data Stats + Icons
           Row() {
-            Text("飞行护照")
+            Text("飞行数据")
               .fontSize(34)
               .fontWeight(FontWeight.Bold)
               .fontColor("#000000")

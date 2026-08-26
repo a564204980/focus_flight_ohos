@@ -802,6 +802,12 @@ export struct FlightPassportFullReport {
     } // Closes build()'s Stack
     .width("100%")
     .height("100%")
+    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+    .hitTestBehavior(HitTestMode.Default)
+    .onClick(() => {
+      // 绝对兜底：阻止全屏报告页面的任何点击穿透到地球
+    })
+    .gesture(PanGesture().onActionUpdate(() => {}))
   } // Closes build()
 
   getGradientColor(index: number, total: number): string {

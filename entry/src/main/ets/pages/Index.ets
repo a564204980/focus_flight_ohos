@@ -2,6 +2,7 @@ import { IndexDialogsOverlay } from '../components/IndexDialogsOverlay';
 import { IndexFlightOverlays } from '../components/IndexFlightOverlays';
 import { IndexHangarHudLayer } from '../components/IndexHangarHudLayer';
 import { FloatingCapsuleNavBar } from '../components/FloatingCapsuleNavBar';
+import { PreFlightBoardingPassOverlay } from '../components/PreFlightBoardingPassOverlay';
 import { IndexController } from '../controllers/IndexController';
 import { FlightViewModel } from '../viewmodels/FlightViewModel';
 import { common } from '@kit.AbilityKit';
@@ -32,6 +33,7 @@ import { PassportStatsView } from '../components/PassportStatsView';
 import { DistractionReportView } from '../components/DistractionReportView';
 import { LiveFlightLogDrawer } from '../components/LiveFlightLogDrawer';
 import { FlightPassportFullReport } from '../components/FlightPassportFullReport';
+import { ImmersiveWeatherOverlay } from '../components/ImmersiveWeatherOverlay';
 import {
   LatLngPoint,
   interpolateLatLng
@@ -76,6 +78,7 @@ struct Index {
   @StorageLink('isSettingsSheetVisible') isSettingsSheetVisible: boolean = false;
   @StorageLink('isFlightAlertsSheetVisible') isFlightAlertsSheetVisible: boolean = false;
   @StorageLink('isThemeSelectSheetVisible') isThemeSelectSheetVisible: boolean = false;
+  @StorageLink('isBookFlightSheetVisible') isBookFlightSheetVisible: boolean = false;
   @StorageLink('isProPaywallVisible') isProPaywallVisible: boolean = false;
 
   aboutToAppear() {
@@ -242,6 +245,17 @@ struct Index {
               .hitTestBehavior(HitTestMode.None)
               .zIndex(150)
           }
+
+          // ⛈️ 沉浸式禅意天气系统 (天色渐暗 -> 细雨 -> 暴雨 -> 惊雷 -> 平滑放晴，随地图坐标实时平移)
+          ImmersiveWeatherOverlay({
+            weatherType: this.vm.currentWeatherType,
+            planeScreenOffsetX: this.vm.planeScreenOffsetX,
+            planeScreenOffsetY: this.vm.planeScreenOffsetY
+          })
+            .width('100%')
+            .height('100%')
+            .hitTestBehavior(HitTestMode.None)
+            .zIndex(155)
         }
       }
       .width('100%')
@@ -263,16 +277,33 @@ struct Index {
         onSeatSelectedInIndex: (seatId: string, tagId?: string, durationMinutes?: number): void => { this.controller.onSeatSelectedInIndex(seatId, tagId, durationMinutes); },
         onTractorClick: (): void => { this.controller.onTractorClick(); },
         enterCabinSelectionFromHangar: (): void => { this.controller.enterCabinSelectionFromHangar(); },
-        onFuelTruckClick: (): void => { this.controller.onFuelTruckClick(); }
+        onFuelTruckClick: (): void => { this.controller.onFuelTruckClick(); },
+        triggerPreFlightPosterCeremony: (isPreviewOnly?: boolean): void => { this.controller.triggerPreFlightPosterCeremony(isPreviewOnly); }
       })
       IndexFlightOverlays({ 
         vm: this.vm,
         toggleMapTypeMode: (): void => { this.controller.toggleMapTypeMode(); },
         toggleCameraFollowMode: (): void => { this.controller.toggleCameraFollowMode(); },
+        toggleWeatherMode: (): void => { this.controller.toggleWeatherMode(); },
         returnFromMapToHangar: (isAborted?: boolean): void => { this.controller.returnFromMapToHangar(isAborted); },
         returnFromCabinToHangar: (): void => { this.controller.returnFromCabinToHangar(); },
         triggerHapticFeedback: (): void => { this.controller.triggerHapticFeedback(); }
       })
+
+      // 终极停机坪按钮屏蔽层 (Global Event Blocking Layer)
+      // 当打开任何全屏弹窗或抽屉时，这层透明膜会拦截所有漏网的点击与滑动，彻底禁用底层的停机坪按钮与地球交互
+      if (this.isFullReportVisible || this.isStatsSheetVisible || this.isSettingsSheetVisible || 
+          this.isFlightAlertsSheetVisible || this.isThemeSelectSheetVisible || this.isProPaywallVisible ||
+          this.vm.isDistractionReportVisible || this.vm.isAbortDialogVisible || this.vm.isArrivalBoardingPassVisible) {
+        Row()
+          .width('100%')
+          .height('100%')
+          .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+          .hitTestBehavior(HitTestMode.Block)
+          .onClick(() => {})
+          .gesture(PanGesture().onActionUpdate(() => {}))
+      }
+
       IndexDialogsOverlay({ 
         vm: this.vm,
         triggerHapticFeedback: (): void => { this.controller.triggerHapticFeedback(); },
@@ -283,7 +314,7 @@ struct Index {
         returnFromMapToHangar: (isAborted?: boolean): void => { this.controller.returnFromMapToHangar(isAborted); }
       })
 
-      // 🌟 全局常驻底部导航栏 (在首页平铺，在常规抽屉变胶囊，在全屏弹窗/飞行中彻底隐藏)
+      // 🌟 全局常驻底部导航栏 (在首页平铺，在常规抽屉变胶囊，在全屏弹窗/飞行中/预订弹窗中彻底隐藏)
       if (!this.vm.isFlightInProgress &&
           !this.vm.isFullFocusMode &&
           !this.vm.isMapBackgroundVisible &&
@@ -291,6 +322,8 @@ struct Index {
           !this.isFullReportVisible &&
           !this.isProPaywallVisible &&
           !this.isFlightAlertsSheetVisible &&
+          !this.isThemeSelectSheetVisible &&
+          !this.isBookFlightSheetVisible &&
           !this.vm.isDistractionReportVisible &&
           !this.vm.isLiveLogVisible &&
           !this.vm.isTrailSettingsVisible &&
@@ -310,6 +343,29 @@ struct Index {
         .hitTestBehavior(HitTestMode.Transparent)
         .transition(TransitionEffect.OPACITY.animation({ duration: 200, curve: Curve.FastOutSlowIn }))
         .zIndex(600)
+      }
+
+      // 🎫 电影级起飞仪式过场：页面缓缓变暗 + 拟物机票从顶部物理掉落 + 盖章准予起飞
+      if (this.vm.isPreFlightBoardingPassVisible) {
+        PreFlightBoardingPassOverlay({
+          isVisible: this.vm.isPreFlightBoardingPassVisible,
+          isPreviewOnly: this.vm.isPreFlightPosterPreviewOnly,
+          originAirport: findAirportByCode('CTU'),
+          destAirport: AppStorage.get<Airport>('selectedDestinationAirport') || findAirportByCode('PEK'),
+          durationMinutes: this.vm.selectedFocusDurationMinutes,
+          focusTagTitle: this.vm.currentFocusTagTitle,
+          seatId: '01A',
+          onClose: () => {
+            this.vm.isPreFlightBoardingPassVisible = false;
+            this.vm.isPreFlightPosterPreviewOnly = false;
+          },
+          onFinish: () => {
+            this.vm.isPreFlightBoardingPassVisible = false;
+            this.vm.isPreFlightPosterPreviewOnly = false;
+            this.controller.startFlightAnimationDirectly();
+          }
+        })
+          .zIndex(950)
       }
     }
     .width('100%')

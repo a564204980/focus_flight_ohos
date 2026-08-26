@@ -39,7 +39,7 @@ export struct IndexDialogsOverlay {
   build() {
     Stack({ alignContent: Alignment.Center }) {
 
-    // 7. 专注飞行终止备降二次确认弹窗 (优雅航空沉浸式提示)
+    // 7. 专注飞行终止备降二次确认弹窗 (优雅航空沉浸式提�?
       if (this.vm.isAbortDialogVisible) {
         FlightAbortConfirmDialog({
           isVisible: this.vm.isAbortDialogVisible,
@@ -55,7 +55,7 @@ export struct IndexDialogsOverlay {
           .zIndex(290)
       }
 
-      // 7.5 🎫 专属【落地通关登机牌】华丽结算卡片 (Dribbble 顶级质感)
+      // 7.5 🎫 专属【落地通关登机牌】华丽结算卡�?(Dribbble 顶级质感)
       if (this.vm.isArrivalBoardingPassVisible) {
         ArrivalBoardingPassCard({
           isVisible: this.vm.isArrivalBoardingPassVisible,
@@ -73,7 +73,7 @@ export struct IndexDialogsOverlay {
           .zIndex(300)
       }
 
-      // 8. 飞行视觉个性化设置抽屉 (航线效果 + 巡航尾迹双 Tab 切换)
+      // 8. 飞行视觉个性化设置抽屉 (航线效果 + 巡航尾迹�?Tab 切换)
       if (this.vm.isTrailSettingsVisible) {
         FlightTrailSettingsOverlay({
           isVisible: this.vm.isTrailSettingsVisible,
@@ -132,7 +132,7 @@ export struct IndexDialogsOverlay {
             },
             onOpenFullReport: () => {
               this.isFullReportVisible = true;
-              // 关键：isStatsSheetVisible 保持为 true！下层护照抽屉不动、不收起！
+              // 关键：isStatsSheetVisible 保持�?true！下层护照抽屉不动、不收起�?
             },
             onOpenDistractionReport: (year: string) => {
               this.selectedDistractionYear = year || 'all';
@@ -171,7 +171,7 @@ export struct IndexDialogsOverlay {
             }
           })
 
-        // 抽屉卡片主体 (从屏幕最底部平滑滑入升起，停靠在屏幕下半部)
+        // 抽屉卡片主体 (从屏幕最底部平滑滑入升起，停靠在屏幕下半�?
         Column() {
           // 顶部小横条指示器
           Row() {
@@ -210,9 +210,9 @@ export struct IndexDialogsOverlay {
       .height('100%')
       .position({ x: 0, y: 0 })
       .hitTestBehavior(this.isThemeSelectSheetVisible ? HitTestMode.Default : HitTestMode.None)
-      .zIndex(510)
+      .zIndex(710)
 
-      // 9.3 预订航班计划底部抽屉 (FlightBookingSheet, zIndex 515)
+      // 9.3 预订航班计划底部抽屉 (FlightBookingSheet, zIndex 715)
       Stack({ alignContent: Alignment.Bottom }) {
         // 半透明黑色背景遮罩
         Rect()
@@ -264,9 +264,9 @@ export struct IndexDialogsOverlay {
       .height('100%')
       .position({ x: 0, y: 0 })
       .hitTestBehavior(this.isBookFlightSheetVisible ? HitTestMode.Default : HitTestMode.None)
-      .zIndex(515)
+      .zIndex(715)
 
-      // 9.5 飞行档案与设置中心底部抽屉面板 (Pilot Profile & Settings Drawer, zIndex 520)
+      // 9.5 飞行档案与设置中心底部抽屉面�?(Pilot Profile & Settings Drawer, zIndex 520)
       Stack({ alignContent: Alignment.Bottom }) {
         // 半透明黑色背景遮罩
         Rect()
@@ -284,7 +284,7 @@ export struct IndexDialogsOverlay {
 
         // 抽屉卡片主体
         Column() {
-          // 顶部小横条指示器 (与飞行护照抽屉一致)
+          // 顶部小横条指示器 (与飞行护照抽屉一�?
           Row() {
             Row()
               .width(36)
@@ -318,7 +318,7 @@ export struct IndexDialogsOverlay {
       .hitTestBehavior(this.isSettingsSheetVisible ? HitTestMode.Default : HitTestMode.None)
       .zIndex(520)
 
-      // 9.6 专属「我的专注提醒」全新独立抽屉面板 (FlightAlertsSettingsDrawer, zIndex 530)
+      // 9.6 专属「我的专注提醒」全新独立抽屉面�?(FlightAlertsSettingsDrawer, zIndex 530)
       Stack({ alignContent: Alignment.Bottom }) {
         // 半透明黑色背景遮罩
         Rect()
@@ -337,7 +337,7 @@ export struct IndexDialogsOverlay {
             e.stopPropagation();
           })
 
-        // 抽屉卡片主体 (从屏幕底部升起)
+        // 抽屉卡片主体 (从屏幕底部升�?
         Column() {
           // 顶部小横条指示器 (与各抽屉完全统一)
           Row() {
@@ -379,12 +379,12 @@ export struct IndexDialogsOverlay {
       .hitTestBehavior(this.isFlightAlertsSheetVisible ? HitTestMode.Default : HitTestMode.None)
       .zIndex(530)
 
-      // 10. 专注飞行日志全屏页面（提前常驻挂载 WebGL 3D 地球，0ms秒开无白屏，zIndex 900）
+      // 10. 专注飞行日志全屏页面（提前常驻挂�?WebGL 3D 地球�?ms秒开无白屏，zIndex 900�?
       FlightPassportFullReport({
         isVisible: this.isFullReportVisible,
         onClose: () => {
           this.isFullReportVisible = false;
-          // 关键：关闭全屏日志时，由于 isStatsSheetVisible 仍为 true，直接露出下方的护照抽屉！
+          // 关键：关闭全屏日志时，由�?isStatsSheetVisible 仍为 true，直接露出下方的护照抽屉�?
         }
       })
         .width('100%')
@@ -415,6 +415,7 @@ export struct IndexDialogsOverlay {
       if (this.vm.isLiveLogVisible) {
         LiveFlightLogDrawer({
           isTurbulent: this.vm.isTurbulenceAlertVisible,
+          currentWeatherType: this.vm.currentWeatherType,
           onClose: () => {
             this.vm.isLiveLogVisible = false;
           }
