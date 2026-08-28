@@ -1,6 +1,6 @@
 /**
  * HomeFocusPanel.ets
- * 首页底部专注沉浸面板 (Start Flight 暖珊瑚红按钮、行程信息与底部导航)
+ * 首页底部专注沉浸面板 (Start Flight 暖珊瑚红/高定暖阳流光主按钮、行程信息与底部导航)
  */
 
 import { router, promptAction } from '@kit.ArkUI';
@@ -20,6 +20,7 @@ export struct HomeFocusPanel {
   @StorageLink('isFullReportVisible') isFullReportVisible: boolean = false;
   @Prop isFlightInProgress: boolean = false;
   @Watch('onDestinationChange') @StorageLink('selectedDestinationAirport') selectedDestination?: Airport = undefined;
+  @StorageLink('userMemberTier') userMemberTier: string = 'free';
   @State routeDistanceKm: number = 0;
   
   onStatsSheetChange(): void {
@@ -58,58 +59,53 @@ export struct HomeFocusPanel {
     openAnimation: {
       duration: 360,
       curve: Curve.FastOutSlowIn,
-      onFinish: () => {}
-    },
-    closeAnimation: {
-      duration: 320,
-      curve: Curve.FastOutSlowIn,
-      onFinish: () => {}
+      playMode: PlayMode.Normal
     }
   });
 
-  aboutToAppear() {
-    this.calculateRouteDistance(this.selectedDestination);
-  }
-
-  onDestinationChange() {
-    this.calculateRouteDistance(this.selectedDestination);
-  }
-
-  private calculateRouteDistance(destAirport?: Airport) {
-    if (!destAirport) {
-      this.routeDistanceKm = 0;
-      return;
-    }
-    try {
-      const origin = findAirportByCode('CTU');
-      if (origin && destAirport.lat !== undefined && destAirport.lon !== undefined) {
-        const lat1 = Number(origin.lat);
-        const lon1 = Number(origin.lon);
-        const lat2 = Number(destAirport.lat);
-        const lon2 = Number(destAirport.lon);
-        if (!isNaN(lat1) && !isNaN(lon1) && !isNaN(lat2) && !isNaN(lon2)) {
-          const dist = getDistanceKm(lat1, lon1, lat2, lon2);
-          if (!isNaN(dist) && dist > 0) {
-            this.routeDistanceKm = dist;
-            return;
-          }
-        }
+  aboutToAppear(): void {
+    const cached = AppStorage.get<Airport>('selectedDestinationAirport');
+    if (cached) {
+      this.selectedDestination = cached;
+      this.calculateRouteDistance(cached);
+    } else {
+      const defaultDest = findAirportByCode('PEK');
+      if (defaultDest) {
+        this.selectedDestination = defaultDest;
+        this.calculateRouteDistance(defaultDest);
       }
-    } catch (e) {
-      // fallback
+    }
+  }
+
+  private onDestinationChange(): void {
+    if (this.selectedDestination) {
+      this.calculateRouteDistance(this.selectedDestination);
+    }
+  }
+
+  private calculateRouteDistance(dest: Airport): void {
+    const origin = findAirportByCode('CTU');
+    if (origin && dest) {
+      const oLat = Number(origin.lat);
+      const oLon = Number(origin.lon);
+      const dLat = Number(dest.lat);
+      const dLon = Number(dest.lon);
+      this.routeDistanceKm = getDistanceKm(oLat, oLon, dLat, dLon);
+      return;
     }
     this.routeDistanceKm = 0;
   }
 
   build() {
     Column() {
-      // 1. Start Flight 暖珊瑚红主按钮 (100% 居中大气独立大圆角胶囊)
+      // 1. Start Flight 主按钮 (经典纯粹暖珊瑚红，100% 契合温暖机坪氛围)
       Button() {
         Row({ space: 8 }) {
           Text(this.isFlightInProgress ? '飞行中...' : '开始飞行')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
             .fontColor('#FFFFFF')
+            .letterSpacing(1)
         }
       }
       .width('86%')
@@ -118,28 +114,10 @@ export struct HomeFocusPanel {
       .borderRadius(26)
       .shadow({ radius: 16, color: 'rgba(250, 107, 86, 0.35)', offsetY: 6 })
       .onClick(() => {
-        if (!this.selectedDestination) {
-          if (this.onShowTopToast) {
-            this.onShowTopToast('✈️ 请先选择您的飞行目的地');
-          } else {
-            try {
-              promptAction.showToast({
-                message: '✈️ 请先选择您的飞行目的地',
-                duration: 2000
-              });
-            } catch (e) { }
-          }
-          this.destinationDialogController.open();
-          return;
-        }
-        if (this.onStartFlight) {
-          AppStorage.setOrCreate('selectedDestinationAirport', this.selectedDestination);
-          AppStorage.setOrCreate('selectedDestinationCode', this.selectedDestination.code);
-          this.onStartFlight(this.timerMinutes, this.selectedDestination);
-        }
+        this.handleStartFlightClick();
       })
 
-      // 2. 次级轻量化航线指示器 (低调半透明温润胶囊，不与主按钮争夺焦点)
+      // 2. 次级轻量化航线指示器
       Row({ space: 6 }) {
         Text('成都')
           .fontSize(13)
@@ -175,9 +153,13 @@ export struct HomeFocusPanel {
       .height(34)
       .padding({ left: 14, right: 12, top: 6, bottom: 6 })
       .backgroundColor('rgba(255, 255, 255, 0.65)')
-      .border({ width: 1, color: this.selectedDestination ? 'rgba(0, 0, 0, 0.06)' : 'rgba(250, 107, 86, 0.22)', radius: 17 })
+      .border({
+        width: 1,
+        color: this.selectedDestination ? 'rgba(0, 0, 0, 0.06)' : 'rgba(250, 107, 86, 0.22)',
+        radius: 17
+      })
       .borderRadius(17)
-      .shadow({ radius: 6, color: 'rgba(0, 0, 0, 0.03)', offsetY: 2 })
+      .shadow({ radius: 6, color: 'rgba(0, 0, 0, 0.05)', offsetY: 2 })
       .margin({ top: 12, bottom: 18 })
       .onClick(() => {
         this.destinationDialogController.open();
@@ -195,5 +177,27 @@ export struct HomeFocusPanel {
         ['rgba(232, 225, 218, 1.0)', 1.0]
       ]
     })
+  }
+
+  private handleStartFlightClick(): void {
+    if (!this.selectedDestination) {
+      if (this.onShowTopToast) {
+        this.onShowTopToast('✈️ 请先选择您的飞行目的地');
+      } else {
+        try {
+          promptAction.showToast({
+            message: '✈️ 请先选择您的飞行目的地',
+            duration: 2000
+          });
+        } catch (e) { }
+      }
+      this.destinationDialogController.open();
+      return;
+    }
+    if (this.onStartFlight) {
+      AppStorage.setOrCreate('selectedDestinationAirport', this.selectedDestination);
+      AppStorage.setOrCreate('selectedDestinationCode', this.selectedDestination.code);
+      this.onStartFlight(this.timerMinutes, this.selectedDestination);
+    }
   }
 }

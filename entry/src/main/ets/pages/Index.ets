@@ -2,7 +2,7 @@ import { IndexDialogsOverlay } from '../components/IndexDialogsOverlay';
 import { IndexFlightOverlays } from '../components/IndexFlightOverlays';
 import { IndexHangarHudLayer } from '../components/IndexHangarHudLayer';
 import { FloatingCapsuleNavBar } from '../components/FloatingCapsuleNavBar';
-import { PreFlightBoardingPassOverlay } from '../components/PreFlightBoardingPassOverlay';
+import { PreFlightBoardingPassOverlay, MemberTierType } from '../components/PreFlightBoardingPassOverlay';
 import { IndexController } from '../controllers/IndexController';
 import { FlightViewModel } from '../viewmodels/FlightViewModel';
 import { common } from '@kit.AbilityKit';
@@ -355,6 +355,7 @@ struct Index {
           durationMinutes: this.vm.selectedFocusDurationMinutes,
           focusTagTitle: this.vm.currentFocusTagTitle,
           seatId: '01A',
+          initialMemberTier: (AppStorage.get<string>('userMemberTier') as MemberTierType) || 'lifetime',
           onClose: () => {
             this.vm.isPreFlightBoardingPassVisible = false;
             this.vm.isPreFlightPosterPreviewOnly = false;

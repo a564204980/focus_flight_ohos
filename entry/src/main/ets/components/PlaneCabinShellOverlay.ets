@@ -100,7 +100,6 @@ export struct PlaneCabinShellOverlay {
         .rotate({ angle: this.planeRotate })
         .translate({ x: this.planeX, y: this.planeY })
         .hitTestBehavior((this.isMapBackgroundVisible && !this.isCabinExposed) ? HitTestMode.None : HitTestMode.Transparent)
-
       // 2.5 全屏暗色遮罩：覆盖在放大的飞机之上，选座卡片之下
       if (this.isFullFocusMode) {
         Column()

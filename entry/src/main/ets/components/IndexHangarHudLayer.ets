@@ -2,8 +2,9 @@
 import { HomeFocusPanel } from './HomeFocusPanel';
 import { HeaderGreetingBar } from './HeaderGreetingBar';
 import { CyberThemeSelector, FlightBookingSignboard } from './CyberThemeSelector';
-import { GroundServiceVehiclesOverlay } from './GroundServiceVehiclesOverlay';
+import { GroundServiceVehiclesOverlay, FuelTruckHeadlightBeamOverlay } from './GroundServiceVehiclesOverlay';
 import { PlaneCabinShellOverlay } from './PlaneCabinShellOverlay';
+import { NightApronLightingOverlay, TaxiwayGroundLightsOverlay } from './NightApronLightingOverlay';
 import { FlightViewModel } from '../viewmodels/FlightViewModel';
 import { Airport, findAirportByCode } from '../models/AirportModel';
 import { FlightSessionStore } from '../services/FlightSessionStore';
@@ -13,6 +14,8 @@ export struct IndexHangarHudLayer {
   @ObjectLink vm: FlightViewModel;
   @StorageLink('selectedDestinationAirport') currentDestinationAirport: Airport | undefined = undefined;
   @StorageLink('currentThemeIndex') currentThemeIndex: number = 0;
+
+  @StorageLink('userMemberTier') userMemberTier: string = 'lifetime';
 
   showTopToast: (message: string, duration?: number) => void = () => {};
   onSeatSelectedInIndex: (seatId: string, tagId?: string, durationMinutes?: number) => void = () => {};
@@ -58,23 +61,45 @@ export struct IndexHangarHudLayer {
       // 2.5 停机坪机位地面标牌组 (刻度尺上方右侧：测试海报、航班预订、机位装扮)
       if (this.vm.isHudVisible && !this.vm.isFullFocusMode && !this.vm.isMapBackgroundVisible) {
         Column({ space: 6 }) {
-          // 🎫 测试机票海报与掉落过场按钮
-          Row({ space: 4 }) {
-            Text('🎫')
-              .fontSize(11)
-            Text('测试海报')
-              .fontSize(11)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#7C3AED')
+          // 🎫 测试机票海报与会员切换按钮组
+          Row({ space: 6 }) {
+            // 测试海报
+            Row({ space: 4 }) {
+              Text('🎫')
+                .fontSize(11)
+              Text('测试海报')
+                .fontSize(11)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#7C3AED')
+            }
+            .padding({ left: 8, right: 8, top: 3.5, bottom: 3.5 })
+            .backgroundColor('#F5F3FF')
+            .border({ width: 1, color: '#DDD6FE', radius: 12 })
+            .borderRadius(12)
+            .shadow({ radius: 6, color: 'rgba(124, 58, 237, 0.15)', offsetY: 2 })
+            .onClick(() => {
+              this.triggerPreFlightPosterCeremony(true);
+            })
+
+            // 👑 会员身份快速切换 (终生 / 标准)
+            Row({ space: 4 }) {
+              Text(this.userMemberTier === 'lifetime' ? '👑' : '✈️')
+                .fontSize(11)
+              Text(this.userMemberTier === 'lifetime' ? '终生会员' : '标准会员')
+                .fontSize(11)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.userMemberTier === 'lifetime' ? '#C026D3' : '#64748B')
+            }
+            .padding({ left: 8, right: 8, top: 3.5, bottom: 3.5 })
+            .backgroundColor(this.userMemberTier === 'lifetime' ? '#FDF4FF' : '#F1F5F9')
+            .border({ width: 1, color: this.userMemberTier === 'lifetime' ? '#F0ABFC' : '#CBD5E1', radius: 12 })
+            .borderRadius(12)
+            .shadow({ radius: 6, color: 'rgba(192, 38, 211, 0.15)', offsetY: 2 })
+            .onClick(() => {
+              this.userMemberTier = this.userMemberTier === 'lifetime' ? 'free' : 'lifetime';
+              this.showTopToast(this.userMemberTier === 'lifetime' ? '✨ 已切换为终生会员：开启全彩流光飞行按钮' : '已切换为标准会员：恢复暖珊瑚红按钮', 2000);
+            })
           }
-          .padding({ left: 8, right: 8, top: 3.5, bottom: 3.5 })
-          .backgroundColor('#F5F3FF')
-          .border({ width: 1, color: '#DDD6FE', radius: 12 })
-          .borderRadius(12)
-          .shadow({ radius: 6, color: 'rgba(124, 58, 237, 0.15)', offsetY: 2 })
-          .onClick(() => {
-            this.triggerPreFlightPosterCeremony(true);
-          })
 
           FlightBookingSignboard()
           CyberThemeSelector()
@@ -106,7 +131,24 @@ export struct IndexHangarHudLayer {
 
 
 
-      // 3. 地面勤务设备与阴影层
+      // 2.9 滑行道地坪内嵌蓝灯群 (贴地最低层级，被飞机/车辆/阴影自然遮挡)
+      TaxiwayGroundLightsOverlay({
+        isMapBackgroundVisible: this.vm.isMapBackgroundVisible
+      })
+
+      // ★ 夜间车头大灯光锥（独立图层）
+      // 层级：位于夜色背景之上、所有摆件实体之下
+      // 车灯光束不受全屏暗色蒙版影响（已移除），显示纯白亮光
+      // 飞机机身/车辆实体在其上方自然遮挡地面光斑
+      FuelTruckHeadlightBeamOverlay({
+        isFullFocusMode: this.vm.isFullFocusMode,
+        isMapBackgroundVisible: this.vm.isMapBackgroundVisible,
+        fuelTruckX: this.vm.fuelTruckX,
+        fuelTruckY: this.vm.fuelTruckY,
+        fuelTruckRotate: this.vm.fuelTruckRotate
+      })
+
+      // 3. 地面勤务摆件实体（加油车/牵引车/廊桥，各自内置 colorFilter 夜色，位于车灯光束之上）
       GroundServiceVehiclesOverlay({
         isFullFocusMode: this.vm.isFullFocusMode,
         isMapBackgroundVisible: this.vm.isMapBackgroundVisible,
@@ -119,7 +161,7 @@ export struct IndexHangarHudLayer {
       })
 
 
-      // 4. 飞机实体与剖开机舱图层
+      // 4. 飞机实体与剖开机舱图层 (在地面大灯光束上方，飞机机身、机翼与发动机完美遮挡地面光斑)
       PlaneCabinShellOverlay({
         isMapBackgroundVisible: this.vm.isMapBackgroundVisible,
         isCabinExposed: this.vm.isCabinExposed,
@@ -140,6 +182,15 @@ export struct IndexHangarHudLayer {
         }
       })
         .hitTestBehavior(HitTestMode.Transparent)
+
+      // 4.5 全场景夜幕滤镜与真实航行微光 (统领全景，将地面、所有车辆摆件与飞机统一融入夜色)
+      NightApronLightingOverlay({
+        isMapBackgroundVisible: this.vm.isMapBackgroundVisible,
+        planeX: this.vm.planeX,
+        planeY: this.vm.planeY,
+        planeScale: this.vm.planeScale,
+        planeRotate: this.vm.planeRotate
+      })
 
       // 5. 底部专注控制面板
       HomeFocusPanel({

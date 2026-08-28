@@ -25,7 +25,6 @@ export struct PilotProfileSettingsDrawer {
 
   @StorageLink('isProPaywallVisible') isProPaywallVisible: boolean = false;
   @State liveViewEnabled: boolean = true;
-  @State calendarSyncEnabled: boolean = false;
   @State flightUnit: string = '公里 (km/h, 米)';
   @State lockScreenEnabled: boolean = true;
 
@@ -73,11 +72,7 @@ export struct PilotProfileSettingsDrawer {
           this.buildSectionHeader('飞行提醒')
           this.buildAlertsGroup()
 
-          // 2.3 自动化
-          this.buildSectionHeader('自动化')
-          this.buildAutomationsGroup()
-
-          // 2.4 系统生态拓展
+          // 2.3 系统生态拓展
           this.buildSectionHeader('系统生态拓展')
           this.buildExtensionsGroup()
 
@@ -199,19 +194,7 @@ export struct PilotProfileSettingsDrawer {
     .width('100%')
   }
 
-  // 2. 自动化组 (AUTOMATIONS)
-  @Builder
-  private buildAutomationsGroup() {
-    Column() {
-      this.buildListRow($r('app.media.ic_set_calendar'), '#EF4444', '系统日历行程同步', () => {
-        this.calendarSyncEnabled = !this.calendarSyncEnabled;
-        this.showToast(this.calendarSyncEnabled ? '已开启系统日历同步' : '已关闭日历同步');
-      })
-    }
-    .width('100%')
-  }
-
-  // 3. 系统生态拓展组 (EXTENSIONS)
+  // 2. 系统生态拓展组 (EXTENSIONS)
   @Builder
   private buildExtensionsGroup() {
     Column() {

@@ -5,6 +5,7 @@ import { LocationService } from '../services/LocationService';
 import { Airport } from '../models/AirportModel';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { PassportShareModal } from './passport/PassportShareModal';
+import { FlightLogbookFullReport } from './passport/FlightLogbookFullReport';
 import {
   FlightRecordRepository,
   FlightStatsSummary,
@@ -46,6 +47,7 @@ export struct FlightPassportFullReport {
   onClose?: () => void;
   @Prop @Watch('onVisibleChanged') isVisible: boolean = false;
   @State isShareModalVisible: boolean = false;
+  @State isFlightHistoryDrawerVisible: boolean = false;
   @State earthAngle: number = 0;
   @State currentChartMode: string = 'week';
   @StorageProp('nearestAirport') nearestAirport: Airport | undefined = undefined;
@@ -82,6 +84,7 @@ export struct FlightPassportFullReport {
   @State animDistance: number = 0;
   @State animDestinations: number = 0;
   @State animStreak: number = 0;
+  @State animOnTimeRate: number = 0;
   @State animShortHaul: number = 0;
   @State animLongHaul: number = 0;
   @State animTotalTags: number = 0;
@@ -252,6 +255,7 @@ export struct FlightPassportFullReport {
     const startDistance = fromZero ? 0 : this.animDistance;
     const startDest = fromZero ? 0 : this.animDestinations;
     const startStreak = fromZero ? 0 : this.animStreak;
+    const startOnTimeRate = fromZero ? 0 : this.animOnTimeRate;
     const startShort = fromZero ? 0 : this.animShortHaul;
     const startLong = fromZero ? 0 : this.animLongHaul;
     const startTags = fromZero ? 0 : this.animTotalTags;
@@ -263,6 +267,8 @@ export struct FlightPassportFullReport {
     const targetDistance = targetStats.totalDistanceKm;
     const targetDest = targetStats.uniqueDestinationsCount;
     const targetStreak = targetStats.currentStreakDays;
+    const targetAll = targetFlights + (targetStats.abortedFlightsCount || 0);
+    const targetOnTimeRate = targetAll > 0 ? Math.round((targetFlights / targetAll) * 100) : 100;
     const targetShort = targetStats.shortHaulCount;
     const targetLong = targetStats.longHaulCount;
 
@@ -282,6 +288,7 @@ export struct FlightPassportFullReport {
       this.animDistance = Math.round(startDistance + (targetDistance - startDistance) * ease);
       this.animDestinations = Math.round(startDest + (targetDest - startDest) * ease);
       this.animStreak = Math.round(startStreak + (targetStreak - startStreak) * ease);
+      this.animOnTimeRate = Math.round(startOnTimeRate + (targetOnTimeRate - startOnTimeRate) * ease);
       this.animShortHaul = Math.round(startShort + (targetShort - startShort) * ease);
       this.animLongHaul = Math.round(startLong + (targetLong - startLong) * ease);
       this.animTotalTags = Math.round(startTags + (targetTags - startTags) * ease);
@@ -545,11 +552,35 @@ export struct FlightPassportFullReport {
             Row() {
               Column({ space: 4 }) {
                 Text("我的专注飞行记录").fontSize(18).fontWeight(FontWeight.Bold).fontColor("#FFFFFF").letterSpacing(1)
-                Text("Focus Flight · 终身专注里程碑").fontSize(10).fontColor("rgba(255,255,255,0.5)").fontWeight(FontWeight.Medium)
+                Text("Focus Flight Pro · 终身专注里程碑").fontSize(10).fontColor("rgba(255,255,255,0.5)").fontWeight(FontWeight.Medium)
               }.alignItems(HorizontalAlign.Start)
               
               Blank()
-            }.width("100%").padding({ left: 24, right: 24, top: 24, bottom: 24 }).alignItems(VerticalAlign.Top)
+
+              // 高端护照微光航行日志入口 (Glassmorphism & Subtle Purple Glow)
+              Row({ space: 4 }) {
+                Text("航行日志")
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor("#E0E7FF")
+                  .letterSpacing(0.5)
+
+                Image($r("sys.media.ohos_ic_public_arrow_right"))
+                  .width(11)
+                  .height(11)
+                  .fillColor("rgba(224, 231, 255, 0.7)")
+              }
+              .padding({ left: 12, right: 10, top: 6, bottom: 6 })
+              .linearGradient({ angle: 135, colors: [["rgba(99, 102, 241, 0.28)", 0], ["rgba(139, 92, 246, 0.15)", 1]] })
+              .borderRadius(14)
+              .border({ width: 1, color: "rgba(165, 180, 252, 0.3)" })
+              .shadow({ radius: 8, color: "rgba(99, 102, 241, 0.25)", offsetY: 2 })
+              .onClick(() => {
+                this.getUIContext().animateTo({ duration: 380, curve: Curve.FastOutSlowIn }, () => {
+                  this.isFlightHistoryDrawerVisible = true;
+                });
+              })
+            }.width("100%").padding({ left: 24, right: 24, top: 24, bottom: 20 }).alignItems(VerticalAlign.Center)
 
             // 数据网格
             Grid() {
@@ -581,6 +612,12 @@ export struct FlightPassportFullReport {
                 Column({ space: 4 }) {
                   Text("连续专注 (天)").fontSize(10).fontColor("rgba(255,255,255,0.5)").letterSpacing(1)
                   Text(this.animStreak.toString()).fontSize(28).fontWeight(FontWeight.Bold).fontColor("#FFFFFF")
+                }.alignItems(HorizontalAlign.Start).width("100%")
+              }
+              GridItem() {
+                Column({ space: 4 }) {
+                  Text("准点降落率").fontSize(10).fontColor("rgba(255,255,255,0.5)").letterSpacing(1)
+                  Text(`${this.animOnTimeRate}%`).fontSize(28).fontWeight(FontWeight.Bold).fontColor("#FFFFFF")
                 }.alignItems(HorizontalAlign.Start).width("100%")
               }
             }
@@ -798,6 +835,24 @@ export struct FlightPassportFullReport {
             this.isShareModalVisible = false;
           }
         })
+      }
+
+      // 机长航程日志全屏大屏 (从底部优雅平滑升起)
+      if (this.isFlightHistoryDrawerVisible) {
+        FlightLogbookFullReport({
+          isVisible: this.isFlightHistoryDrawerVisible,
+          initialYearTab: this.selectedTimeTab,
+          onClose: () => {
+            this.getUIContext().animateTo({ duration: 380, curve: Curve.FastOutSlowIn }, () => {
+              this.isFlightHistoryDrawerVisible = false;
+            });
+          }
+        })
+        .width("100%")
+        .height("100%")
+        .position({ x: 0, y: 0 })
+        .zIndex(150)
+        .transition(TransitionEffect.move(TransitionEdge.BOTTOM).animation({ duration: 380, curve: Curve.FastOutSlowIn }))
       }
     } // Closes build()'s Stack
     .width("100%")

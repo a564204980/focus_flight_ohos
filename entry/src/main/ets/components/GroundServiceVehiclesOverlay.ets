@@ -3,6 +3,19 @@
  * 停机坪地面勤务设备图层（包含加油车、牵引车、廊桥及其浓重地面阴影）
  */
 
+// 导出空的 FuelTruckHeadlightBeamOverlay 占位（夜间模式已移除）
+@Component
+export struct FuelTruckHeadlightBeamOverlay {
+  @Prop isFullFocusMode: boolean = false;
+  @Prop isMapBackgroundVisible: boolean = false;
+  @Prop fuelTruckX: number = -350;
+  @Prop fuelTruckY: number = 220;
+  @Prop fuelTruckRotate: number = 90;
+
+  build() {
+  }
+}
+
 @Component
 export struct GroundServiceVehiclesOverlay {
   @Prop isFullFocusMode: boolean = false;
@@ -55,7 +68,7 @@ export struct GroundServiceVehiclesOverlay {
         })
         .animation({ duration: 800, curve: Curve.EaseOut })
 
-      // 4. 地面勤务车辆（加油车实体）
+      // 4. 加油车实体
       Image($r('app.media.jiayouche'))
         .width(110)
         .height(110)
@@ -74,7 +87,7 @@ export struct GroundServiceVehiclesOverlay {
           }
         })
 
-      // 5. 地面勤务车辆（牵引车实体）
+      // 5. 牵引车实体
       Image($r('app.media.qiangyingche'))
         .width(90)
         .height(90)
