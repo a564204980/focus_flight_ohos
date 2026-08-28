@@ -15,11 +15,13 @@
 
 import { CloseButton } from '../CloseButton';
 import {
+  FlightRecordDateFilter,
   FlightRecordItem,
   FlightRecordRepository
 } from '../../database/FlightRecordRepository';
 import { FlightRecordDetailModal } from './FlightRecordDetailModal';
 import { FlightBoardingPassCard } from './FlightBoardingPassCard';
+import { FlightDatePickerModal } from './FlightDatePickerModal';
 
 export interface HeatmapDayCell {
   dateStr: string;
@@ -38,6 +40,12 @@ export interface HeatmapWeekColumn {
   monthLabel: string;
 }
 
+export interface HeatmapCellPositionInfo {
+  x: number;
+  y: number;
+  cell: HeatmapDayCell;
+}
+
 /**
  * 热力图单页 Canvas 渲染组件
  * 将原来 ~364 个独立 Row 节点（含 shadow/scale/border 三元运算）压缩为一个 Canvas 节点
@@ -50,9 +58,8 @@ struct HeatmapCanvasPage {
   @Prop todayStr: string = '';
   onSelectDate?: (cell: HeatmapDayCell) => void;
 
-  private ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D(
-    new RenderingContextSettings(true)
-  );
+  private settings: RenderingContextSettings = new RenderingContextSettings(true);
+  private ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
 
   // 布局常量（与父组件 padding 对齐）
   private static readonly CELL = 13;    // 格子尺寸 vp
@@ -69,78 +76,84 @@ struct HeatmapCanvasPage {
     '#38BDF8'                     // Level 4
   ];
 
-  /**
-   * selectedDateStr / pageData 变化时触发 Canvas 重绘
-   * Canvas 不参与 ArkTS 响应式树，必须通过 @Watch 手动触发
-   */
+  @State canvasWidth: number = 0;
+  @State selectedCellInfo: HeatmapCellPositionInfo | null = null;
+  @State pressedCellInfo: HeatmapCellPositionInfo | null = null;
+
   onSelectionChanged(): void {
-    this.drawPage();
+    this.updateSelectedCellInfo();
   }
 
   aboutToAppear(): void {
-    // 数据就绪后由 onReady 触发绘制
+    // 数据就绪后由 onReady / onAreaChange 触发绘制
+  }
+
+  private getColSpacing(): number {
+    const colCount = this.pageData.length;
+    return colCount > 1 ? (this.canvasWidth - HeatmapCanvasPage.CELL - 6) / (colCount - 1) : 0;
+  }
+
+  private updateSelectedCellInfo(): void {
+    if (this.canvasWidth === 0 || !this.pageData || this.pageData.length === 0) {
+      this.selectedCellInfo = null;
+      return;
+    }
+    const colSpacing = this.getColSpacing();
+    for (let wi = 0; wi < this.pageData.length; wi++) {
+      const week = this.pageData[wi];
+      if (!week || !week.cells) continue;
+      for (let di = 0; di < week.cells.length; di++) {
+        const cell = week.cells[di];
+        if (cell.dateStr === this.selectedDateStr) {
+          const info: HeatmapCellPositionInfo = {
+            x: 3 + wi * colSpacing,
+            y: 3 + di * HeatmapCanvasPage.ROW_H,
+            cell: cell
+          };
+          this.selectedCellInfo = info;
+          return;
+        }
+      }
+    }
+    this.selectedCellInfo = null;
   }
 
   /**
-   * 全量绘制整页热力图矩阵
-   * 时间复杂度 O(N) Canvas draw calls，远快于 1092 个节点的 layout/measure
+   * 全量绘制整页热力图矩阵的静态底图
    */
   drawPage(): void {
     const ctx = this.ctx;
-    if (!ctx || !this.pageData || this.pageData.length === 0) {
+    if (!ctx || this.canvasWidth === 0 || !this.pageData || this.pageData.length === 0) {
       return;
     }
 
     const cell = HeatmapCanvasPage.CELL;
     const rowH = HeatmapCanvasPage.ROW_H;
-    const canvasW = this.ctx.width;
-    const padX = 3; // 左右预留发光溢出空间
-    const padY = 3; // 上下预留发光溢出空间
+    const canvasW = this.canvasWidth;
+    const padX = 3;
+    const padY = 3;
 
-    // Canvas 负责 118vp 高度的区域
     ctx.clearRect(0, 0, canvasW, 118);
 
     const colCount = this.pageData.length;
-    if (colCount === 0) {
-      return;
-    }
-
-    // 列间距（扣除左右 padding 后计算）
-    const colSpacing = colCount > 1 ? (canvasW - cell - padX * 2) / (colCount - 1) : 0;
-    
-    // 延迟绘制选中态（两遍渲染，确保选中效果始终在最顶层 Z-Order）
-    let selectedColX: number = 0;
-    let selectedCellY: number = 0;
-    let selectedCellObj: HeatmapDayCell | null = null;
+    const colSpacing = this.getColSpacing();
 
     for (let wi = 0; wi < colCount; wi++) {
       const week = this.pageData[wi];
-      if (!week || !week.cells) {
-        continue;
-      }
+      if (!week || !week.cells) continue;
       const colX = padX + wi * colSpacing;
 
       for (let di = 0; di < week.cells.length; di++) {
         const cell_obj = week.cells[di];
         const cellY = padY + di * rowH;
-        const isSelected = this.selectedDateStr === cell_obj.dateStr;
-        const isToday = cell_obj.isToday;
 
-        if (isSelected) {
-          // 保存下来，第一遍先不画
-          selectedColX = colX;
-          selectedCellY = cellY;
-          selectedCellObj = cell_obj;
-          continue;
-        }
-
-        // 第一遍：绘制所有非选中的格子
+        // 底层仅负责绘制静态色块
         ctx.fillStyle = HeatmapCanvasPage.COLORS[Math.min(cell_obj.level, 4)];
         ctx.beginPath();
         ctx.roundRect(colX, cellY, cell, cell, 3);
         ctx.fill();
 
-        if (isToday) {
+        if (cell_obj.isToday) {
           ctx.strokeStyle = '#818CF8';
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -149,62 +162,23 @@ struct HeatmapCanvasPage {
         }
       }
     }
-
-    // 第二遍：专门在最顶层绘制选中的格子，绝不被右侧和下方的格子覆盖
-    if (selectedCellObj) {
-      const colX = selectedColX;
-      const cellY = selectedCellY;
-      const cell_obj = selectedCellObj;
-      
-      const scale = 1.22;
-      const sc = cell * scale;
-      const ox = colX - (sc - cell) / 2;
-      const oy = cellY - (sc - cell) / 2;
-
-      ctx.save();
-      // 使用真实的 Canvas 阴影替代之前生硬的底块，恢复“发光”效果
-      ctx.shadowColor = 'rgba(99, 102, 241, 0.45)';
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 2;
-
-      ctx.fillStyle = HeatmapCanvasPage.COLORS[Math.min(cell_obj.level, 4)];
-      ctx.beginPath();
-      ctx.roundRect(ox, oy, sc, sc, 3);
-      ctx.fill();
-      ctx.restore();
-
-      // 白色描边（无阴影）
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.roundRect(ox, oy, sc, sc, 3);
-      ctx.stroke();
-    }
   }
 
   /**
-   * 通过触点坐标反算命中的热力格
+   * 通过触点坐标反算命中的热力格并返回精确坐标
    */
-  private hitTestCell(touchX: number, touchY: number): HeatmapDayCell | undefined {
-    if (!this.pageData || this.pageData.length === 0) {
-      return undefined;
-    }
+  private hitTestCellInfo(touchX: number, touchY: number): HeatmapCellPositionInfo | null {
+    if (!this.pageData || this.canvasWidth === 0) return null;
 
     const cell = HeatmapCanvasPage.CELL;
     const rowH = HeatmapCanvasPage.ROW_H;
-    const canvasW = this.ctx.width;
+    const colCount = this.pageData.length;
+    const colSpacing = this.getColSpacing();
     const padX = 3;
     const padY = 3;
-    
-    const colCount = this.pageData.length;
-    const colSpacing = colCount > 1 ? (canvasW - cell - padX * 2) / (colCount - 1) : 0;
 
-    if (touchY < 0 || touchY > 118) {
-      return undefined;
-    }
-    
-    // 扣除 padding
+    if (touchY < 0 || touchY > 118) return null;
+
     const adjX = touchX - padX;
     const adjY = touchY - padY;
 
@@ -218,49 +192,107 @@ struct HeatmapCanvasPage {
         bestCol = wi;
       }
     }
-    if (bestCol < 0 || bestDist > cell) {
-      return undefined;
-    }
+    if (bestCol < 0 || bestDist > cell) return null;
 
     const dayIdx = Math.floor(adjY / rowH);
     const week = this.pageData[bestCol];
-    if (!week || !week.cells || dayIdx >= week.cells.length) {
-      return undefined;
-    }
-    return week.cells[dayIdx];
+    if (!week || !week.cells || dayIdx >= week.cells.length) return null;
+    
+    const result: HeatmapCellPositionInfo = {
+      x: padX + bestCol * colSpacing,
+      y: padY + dayIdx * rowH,
+      cell: week.cells[dayIdx]
+    };
+    return result;
   }
 
   build() {
     Column({ space: 0 }) {
-      // 格子区域 Canvas（高度 118vp，四周各预留 3vp 缓冲避免光晕被切）
-      Canvas(this.ctx)
-        .width('100%')
-        .height(118)
-        .backgroundColor(Color.Transparent)
-        .onReady(() => {
-          this.drawPage();
-        })
-        .onTouch((event: TouchEvent) => {
-          if (event.type === TouchType.Up) {
-            const touch = event.changedTouches[0];
-            const cell = this.hitTestCell(touch.x, touch.y);
-            if (cell && this.onSelectDate) {
-              this.onSelectDate(cell);
+      Stack({ alignContent: Alignment.TopStart }) {
+        // 1. 底层：Canvas 仅负责渲染静态方块
+        Canvas(this.ctx)
+          .width('100%')
+          .height(118)
+          .backgroundColor(Color.Transparent)
+          .onReady(() => {
+            if (this.canvasWidth > 0) this.drawPage();
+          })
+          .onAreaChange((oldVal, newVal) => {
+            if (newVal.width !== oldVal.width) {
+              this.canvasWidth = newVal.width as number;
+              this.updateSelectedCellInfo();
+              this.drawPage();
             }
-          }
-        })
+          })
+          .onTouch((event: TouchEvent) => {
+            if (event.type === TouchType.Down) {
+              const touch = event.touches[0];
+              this.pressedCellInfo = this.hitTestCellInfo(touch.x, touch.y);
+            } else if (event.type === TouchType.Up) {
+              if (this.pressedCellInfo && this.onSelectDate) {
+                this.onSelectDate(this.pressedCellInfo.cell);
+              }
+              this.pressedCellInfo = null;
+            } else if (event.type === TouchType.Cancel) {
+              this.pressedCellInfo = null;
+            }
+          })
+
+        // 2. 动画层：当前选中的格子 (悬浮高光框)
+        if (this.selectedCellInfo) {
+          Row()
+            .width(HeatmapCanvasPage.CELL)
+            .height(HeatmapCanvasPage.CELL)
+            .backgroundColor(HeatmapCanvasPage.COLORS[Math.min(this.selectedCellInfo.cell.level, 4)])
+            .borderRadius(3)
+            .border({ width: 1.5, color: '#FFFFFF' })
+            .shadow({
+              radius: 6,
+              color: 'rgba(99, 102, 241, 0.45)',
+              offsetX: 0,
+              offsetY: 2
+            })
+            .scale({ x: 1.22, y: 1.22 })
+            .position({ x: this.selectedCellInfo.x, y: this.selectedCellInfo.y })
+            .hitTestBehavior(HitTestMode.None)
+            .animation({
+              duration: 250,
+              curve: Curve.Friction
+            })
+        }
+
+        // 3. 动画层：手指按下反馈层
+        if (this.pressedCellInfo) {
+          Row()
+            .width(HeatmapCanvasPage.CELL)
+            .height(HeatmapCanvasPage.CELL)
+            .backgroundColor('#000000')
+            .opacity(0.3)
+            .borderRadius(3)
+            .position({ x: this.pressedCellInfo.x, y: this.pressedCellInfo.y })
+            .hitTestBehavior(HitTestMode.None)
+        }
+      }
+      .width('100%')
+      .height(118)
+      .clip(false)
 
       // 月份刻度行
       Row() {
         ForEach(this.pageData, (week: HeatmapWeekColumn) => {
-          Text(week.monthLabel || '')
-            .fontSize(9.5)
-            .fontColor(week.monthLabel ? 'rgba(255, 255, 255, 0.4)' : 'transparent')
-            .layoutWeight(1)
-            .textAlign(TextAlign.Start)
+          Row() {
+            Text(week.monthLabel || '')
+              .fontSize(9.5)
+              .fontColor(week.monthLabel ? 'rgba(255, 255, 255, 0.4)' : 'transparent')
+              .maxLines(1)
+          }
+          .layoutWeight(1)
+          .clip(false)
+          .justifyContent(FlexAlign.Start)
         }, (week: HeatmapWeekColumn) => week.weekKey + '_lbl')
       }
       .width('100%')
+      .clip(false)
       .height(16)
       .justifyContent(FlexAlign.SpaceBetween)
       .alignItems(VerticalAlign.Center)
@@ -378,89 +410,54 @@ struct FlightHeatmapView {
  * 极致优化：所有条件分支改用 .visibility() 控制，节点树结构始终固定，
  * 保证 @Reusable 复用池结构命中，彻底消除滑动时的树重建卡顿
  */
-@Reusable
 @Component
 struct FlightTimelineNode {
   @Prop isTop: boolean = false;
   @Prop isBottom: boolean = false;
   @Prop isCompleted: boolean = false;
 
-  aboutToReuse(params: Record<string, Object>): void {
-    if (params.isTop !== undefined) {
-      this.isTop = params.isTop as boolean;
-    }
-    if (params.isBottom !== undefined) {
-      this.isBottom = params.isBottom as boolean;
-    }
-    if (params.isCompleted !== undefined) {
-      this.isCompleted = params.isCompleted as boolean;
-    }
-  }
-
   build() {
-    Column() {
-      // 1. 顶部降落导向箭头（visibility 控制，节点树结构恒定）
+    Stack({ alignContent: Alignment.Top }) {
+      // 1. 顶部降落箭头 (仅 top 显示)
       Image($r('app.media.ic_arrow_up'))
-        .width(15)
-        .height(15)
-        .fillColor('rgba(255, 255, 255, 0.35)')
-        .visibility(this.isTop ? Visibility.Visible : Visibility.None)
+        .width(16).height(16).fillColor('rgba(255, 255, 255, 0.35)')
+        .position({ x: 8, y: 0 })
+        .opacity(this.isTop ? 1 : 0)
+        .syncLoad(true)
 
-      // 2. 顶端浅色过渡线 / 非顶端承接实线（始终存在，仅切换样式）
-      Row()
-        .width(this.isTop ? 1.5 : 3)
-        .height(this.isTop ? 6 : 16)
-        .backgroundColor(this.isTop ? 'rgba(255, 255, 255, 0.18)' : '#4B5563')
-        .borderRadius(this.isTop ? 0 : 1.5)
+      // 2. 顶部线段
+      // 如果是首项，从箭头下方 16 画到 40；否则从顶部 0 画到 40
+      Row().width(2).height(this.isTop ? 24 : 40).backgroundColor('#4B5563').borderRadius(1)
+        .position({ x: 15, y: this.isTop ? 16 : 0 })
 
-      // 3. 巡航小飞机
+      // 3. 核心节点：小飞机 (绝对居中于 104 高度的卡片)
+      // Y = 44 (加上 8 的半径中心点刚好是 52，即 104 的中点)
       Image($r('app.media.ic_plane_topview'))
-        .width(15)
-        .height(15)
-        .fillColor(this.isCompleted ? 'rgba(255, 255, 255, 0.85)' : '#F59E0B')
+        .width(16).height(16)
+        .fillColor(this.isCompleted ? '#10B981' : '#9CA3AF') // 失败迫降恢复为低调灰色
+        .position({ x: 8, y: 44 })
+        .syncLoad(true)
 
-      // 4. 粗导轨实线（上段）
-      Row()
-        .width(3)
-        .height(12)
-        .backgroundColor('#4B5563')
-        .borderRadius(1.5)
+      // 4. 底部线段
+      // 如果是底项，从 64 画到 82 (高度 18)；否则从 64 画到底部 104 (高度 40)
+      Row().width(2).height(this.isBottom ? 18 : 40).backgroundColor('#4B5563').borderRadius(1)
+        .position({ x: 15, y: 64 })
 
-      // 5. 登机小圆点
-      Circle({ width: 6, height: 6 })
-        .fill('#4B5563')
-
-      // 6. 粗导轨实线（下段）
-      Row()
-        .width(3)
-        .height(12)
-        .backgroundColor('#4B5563')
-        .borderRadius(1.5)
-
-      // 7. 底部同心圆徽章（始终存在，visibility 控制显隐）
+      // 5. 终点徽章 (起点圆点)
       Stack({ alignContent: Alignment.Center }) {
         Circle({ width: 16, height: 16 })
-          .fill(this.isCompleted ? '#ECFDF5' : 'rgba(245, 158, 11, 0.15)')
-          .stroke(this.isCompleted ? '#10B981' : '#F59E0B')
-          .strokeWidth(2)
+          .fill(this.isCompleted ? '#ECFDF5' : 'rgba(156, 163, 175, 0.15)')
+          .stroke(this.isCompleted ? '#10B981' : '#9CA3AF').strokeWidth(2)
         Circle({ width: 6, height: 6 })
-          .fill(this.isCompleted ? '#10B981' : '#F59E0B')
+          .fill(this.isCompleted ? '#10B981' : '#9CA3AF')
       }
-      .visibility(this.isBottom ? Visibility.Visible : Visibility.None)
-
-      // 8. 向下延伸贯通实线（始终存在，visibility 控制）
-      Row()
-        .width(3)
-        .height(16)
-        .backgroundColor('#4B5563')
-        .borderRadius(1.5)
-        .visibility(this.isBottom ? Visibility.None : Visibility.Visible)
+      .position({ x: 8, y: 82 })
+      .opacity(this.isBottom ? 1 : 0)
     }
     .width(32)
     .height(104)
-    .alignItems(HorizontalAlign.Center)
-    .justifyContent(FlexAlign.SpaceBetween)
-    .margin({ right: 8, left: 4 })
+    .margin({ right: 8, left: 0 })
+    .renderGroup(true) // 强制离屏渲染纹理，彻底杜绝转场期间 SVG 的 fillColor 混合闪烁 Bug
   }
 }
 
@@ -512,7 +509,49 @@ struct FlightLogbookListItemWrapper {
       .layoutWeight(1)
     }
     .width('100%')
-    .padding({ left: 16, right: 16 })
+    .padding({ left: 5.5, right: 20 })
+    .alignItems(VerticalAlign.Top)
+  }
+}
+
+/**
+ * 航行日志骨架屏项 (带呼吸动画)
+ * 用于在错峰渲染期间 (200ms) 填补视觉空白，提供丝滑的加载过渡
+ */
+@Component
+struct FlightLogbookSkeletonItem {
+  @Prop isTop: boolean = false;
+  @Prop isBottom: boolean = false;
+
+  build() {
+    Row() {
+      // 骨架：左侧时间轴 (仅保留上下实线，极简占位)
+      Stack({ alignContent: Alignment.Top }) {
+        // 隐形预加载节点：强制引擎在等待数据的 200ms 内提前解析并缓存 SVG
+        Image($r('app.media.ic_plane_topview')).width(1).height(1).opacity(0.01).syncLoad(true)
+        Image($r('app.media.ic_arrow_up')).width(1).height(1).opacity(0.01).syncLoad(true)
+
+        // 顶端实线 (如果是首项，从16画到40；否则从0画到40)
+        Row().width(2).height(this.isTop ? 24 : 40).backgroundColor('#374151').borderRadius(1)
+          .position({ x: 15, y: this.isTop ? 16 : 0 })
+          
+        // 底端实线 (如果是底项，从64画到82；否则从64画到底部104)
+        Row().width(2).height(this.isBottom ? 18 : 40).backgroundColor('#374151').borderRadius(1)
+          .position({ x: 15, y: 64 })
+      }
+      .width(32)
+      .height(104)
+      .margin({ right: 8, left: 0 })
+
+      // 骨架：右侧卡片主体
+      Row()
+        .layoutWeight(1)
+        .height(104)
+        .backgroundColor('rgba(255, 255, 255, 0.04)')
+        .borderRadius(10)
+    }
+    .width('100%')
+    .padding({ left: 5.5, right: 20 })
     .alignItems(VerticalAlign.Top)
   }
 }
@@ -546,6 +585,9 @@ export struct FlightLogbookFullReport {
   // 详情弹窗
   @State private selectedRecord: FlightRecordItem | undefined = undefined;
   @State private isDetailModalVisible: boolean = false;
+  
+  // 日历弹窗
+  @State private isDatePickerVisible: boolean = false;
 
   aboutToAppear(): void {
     const today = new Date();
@@ -741,9 +783,6 @@ export struct FlightLogbookFullReport {
         day: this.selectedDay
       }, 1, 50);
 
-      this.dayRecords = paged.records;
-      this.dayTotalFlights = paged.records.length;
-
       let minSum = 0;
       let completedCount = 0;
       for (let i = 0; i < paged.records.length; i++) {
@@ -752,11 +791,18 @@ export struct FlightLogbookFullReport {
           completedCount++;
         }
       }
+      const newRate = paged.records.length > 0 ? Math.round((completedCount / paged.records.length) * 100) : 100;
+
+      // 提前将数据更新到内存（此时真实列表尚未挂载，因此不会触发 ListItem 乱序插入动画）
+      this.dayRecords = paged.records;
+      this.dayTotalFlights = paged.records.length;
       this.dayTotalMinutes = minSum;
-      this.dayOnTimeRate = paged.records.length > 0 ? Math.round((completedCount / paged.records.length) * 100) : 100;
+      this.dayOnTimeRate = newRate;
+
+      // 瞬间切换状态，移除所有隐式动画以达到 Instant Swap
+      this.isLoading = false;
     } catch (e) {
       // ignore
-    } finally {
       this.isLoading = false;
     }
   }
@@ -764,25 +810,47 @@ export struct FlightLogbookFullReport {
   /**
    * 点击切换选中的热力图日期
    */
-  private async selectHeatmapCell(cell: HeatmapDayCell): Promise<void> {
+  private selectHeatmapCell(cell: HeatmapDayCell): void {
     if (!cell || !cell.dateStr) {
       return;
     }
     if (this.selectedDateStr === cell.dateStr) {
       return;
     }
+    
+    // 1. 立即更新状态，触发高光框的平滑飞行滑动动画
     this.selectedDateStr = cell.dateStr;
     this.curYear = cell.year;
     this.curMonth = cell.month;
     this.selectedDay = cell.day;
 
-    await this.loadDayRecords();
+    // 2. 极速响应优化：如果该日期明确没有数据 (level === 0)
+    // 直接瞬间切到空状态，跳过骨架屏和 200ms 的错峰等待，带来“零延迟”的畅快体感
+    if (cell.level === 0) {
+      this.dayRecords = [];
+      this.dayTotalFlights = 0;
+      this.dayTotalMinutes = 0;
+      this.dayOnTimeRate = 100;
+      this.isLoading = false;
+      return;
+    }
+
+    // 3. 有数据的日期：标记加载中，渲染极简骨架屏
+    this.isLoading = true;
+
+    // 4. 核心性能优化：错峰渲染 (Perception Optimization)
+    // 列表的 `FlightBoardingPassCard` 包含数百个 DOM 节点，如果跟随点击同步查询并重建，
+    // 将会严重阻塞 UI 主线程，导致高光滑动动画掉帧、点击有“卡顿感”。
+    // 延迟 200ms 执行加载，把主线程算力全部让给 250ms 的高光滑动动画，确保极致流畅！
+    setTimeout(() => {
+      this.loadDayRecords();
+    }, 200);
   }
 
   /**
    * 快速回到今天
    */
-  private async goToToday(): Promise<void> {
+  private goToToday(): void {
     const today = new Date();
     this.curYear = today.getFullYear();
     this.curMonth = today.getMonth() + 1;
@@ -790,6 +858,8 @@ export struct FlightLogbookFullReport {
     const mStr = this.curMonth.toString().padStart(2, '0');
     const dStr = this.selectedDay.toString().padStart(2, '0');
     this.selectedDateStr = `${this.curYear}-${mStr}-${dStr}`;
+
+    this.isLoading = true;
 
     setTimeout(() => {
       if (this.heatmapPages.length > 0) {
@@ -803,45 +873,61 @@ export struct FlightLogbookFullReport {
         this.swiperController.changeIndex(targetPage, true);
       }
     }, 100);
-    await this.loadDayRecords();
+
+    setTimeout(() => {
+      this.loadDayRecords();
+    }, 200);
   }
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
       Column() {
-        // 1. 顶栏 (固定，不参与滚动)
-        Row() {
-          CloseButton({
-            circleColor: 'rgba(255, 255, 255, 0.1)',
-            iconColor: '#FFFFFF',
-            buttonSize: 32,
-            onClickAction: () => {
-              if (this.onClose) {
-                this.onClose();
+        // 1. 顶栏 (固定，不参与滚动，Stack 保证标题绝对居中)
+        Stack({ alignContent: Alignment.Center }) {
+          
+          // 左侧返回按钮
+          Row() {
+            CloseButton({
+              circleColor: 'rgba(255, 255, 255, 0.1)',
+              iconColor: '#FFFFFF',
+              buttonSize: 32,
+              onClickAction: () => {
+                if (this.onClose) {
+                  this.onClose();
+                }
               }
-            }
-          })
+            })
+          }
+          .width('100%')
+          .justifyContent(FlexAlign.Start)
 
+          // 居中标题
           Text('航行日志')
-            .fontSize(20)
+            .fontSize(18)
             .fontWeight(FontWeight.Bold)
             .fontColor('#FFFFFF')
-            .layoutWeight(1)
-            .textAlign(TextAlign.Center)
 
+          // 右侧日历回到今日按钮
           Row() {
-            Text('今日')
-              .fontSize(12)
-              .fontWeight(FontWeight.Medium)
-              .fontColor('#E0E7FF')
+            Row() {
+              Image($r('app.media.ic_set_calendar'))
+                .width(16)
+                .height(16)
+                .fillColor('#E0E7FF')
+            }
+            .width(32)
+            .height(32)
+            .justifyContent(FlexAlign.Center)
+            .alignItems(VerticalAlign.Center)
+            .backgroundColor('rgba(255, 255, 255, 0.12)')
+            .borderRadius(16)
+            .border({ width: 1, color: 'rgba(255, 255, 255, 0.2)' })
+            .onClick(() => {
+              this.isDatePickerVisible = true;
+            })
           }
-          .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-          .backgroundColor('rgba(255, 255, 255, 0.12)')
-          .borderRadius(12)
-          .border({ width: 1, color: 'rgba(255, 255, 255, 0.2)' })
-          .onClick(() => {
-            this.goToToday();
-          })
+          .width('100%')
+          .justifyContent(FlexAlign.End)
         }
         .width('100%')
         .padding({ left: 20, right: 20, top: 48, bottom: 12 })
@@ -858,67 +944,131 @@ export struct FlightLogbookFullReport {
           }
         })
 
-        // 3. 主内容区：独立纵向 List (仅时间轴滚动，滑动性能与响应极致纯粹)
-        List({ space: 14 }) {
-
-          // 2.2 无记录空状态
-          if (!this.isLoading && this.dayRecords.length === 0) {
-            ListItem() {
-              Column({ space: 14 }) {
-                Text('🛫')
-                  .fontSize(44)
-                  .margin({ top: 48 })
-
-                Text('今日航班待起飞')
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor('#FFFFFF')
-
-                Text('该日暂无专注飞行记录，前往机舱选择目的地开启新航程吧')
-                  .fontSize(12)
-                  .fontColor('rgba(255, 255, 255, 0.5)')
-                  .textAlign(TextAlign.Center)
-                  .padding({ left: 32, right: 32 })
-              }
-              .width('100%')
-              .alignItems(HorizontalAlign.Center)
-              .padding({ bottom: 80 })
-            }
-          }
-
-          // 4.2 垂直时间轴节点流 (@Reusable 复用池加速)
-          ForEach(this.dayRecords, (record: FlightRecordItem, idx: number) => {
-            ListItem() {
-              FlightLogbookListItemWrapper({
-                record: record,
-                isTop: idx === 0,
-                isBottom: idx === this.dayRecords.length - 1,
-                isCompleted: record.status === 'completed',
-                onCardClick: (rec: FlightRecordItem) => {
-                  this.selectedRecord = rec;
-                  this.isDetailModalVisible = true;
+        // 3. 主内容区：Stack 分层独立列表 (彻底杜绝骨架和真实数据在一个流里互相挤压发生位移跳变)
+        Stack({ alignContent: Alignment.Top }) {
+          
+          // 3.1 骨架屏专用列表 (绝对浮层在上方，安全卸载退场)
+          if (this.isLoading) {
+            List({ space: 14 }) {
+              ForEach([0, 1, 2], (item: number, index: number) => {
+                ListItem() {
+                  FlightLogbookSkeletonItem({
+                    isTop: index === 0,
+                    isBottom: index === 2
+                  })
                 }
-              })
+              }, (item: number) => item.toString())
             }
-          }, (record: FlightRecordItem) => record.id)
-
-          // 列表底座间距
-          ListItem() {
-            Row().height(40)
+            .width('100%')
+            .height('100%')
+            .scrollBar(BarState.Off)
+            .zIndex(2)
           }
+
+          // 3.2 真实数据与空状态专用列表 (退出时原地淡出，进入时滑入)
+          if (!this.isLoading) {
+            List({ space: 14 }) {
+              
+              // 3.2.1 空状态
+              if (this.dayRecords.length === 0) {
+                ListItem() {
+                  Column({ space: 16 }) {
+                    // 雷达图隐喻
+                    Stack({ alignContent: Alignment.Center }) {
+                      // 世界地图暗纹背景
+                      Image($r('app.media.bg_real_world_silhouette'))
+                        .width(240).height(160)
+                        .opacity(0.12)
+                        .objectFit(ImageFit.Contain)
+
+                      // 虚线雷达扫描圈
+                      Circle({ width: 120, height: 120 })
+                        .fill('transparent')
+                        .stroke('rgba(255, 255, 255, 0.08)')
+                        .strokeWidth(1)
+                        .strokeDashArray([4, 6])
+                        
+                      Circle({ width: 60, height: 60 })
+                        .fill('transparent')
+                        .stroke('rgba(255, 255, 255, 0.05)')
+                        .strokeWidth(1)
+                        .strokeDashArray([4, 6])
+
+                      // 停机坪上黯淡的小飞机
+                      Image($r('app.media.ic_plane_topview'))
+                        .width(28).height(28)
+                        .fillColor('rgba(255, 255, 255, 0.15)')
+                    }
+                    .width('100%')
+                    .height(180)
+                    .margin({ top: 32 })
+
+                    Text('塔台暂未收到起飞申请')
+                      .fontSize(15)
+                      .fontWeight(FontWeight.Medium)
+                      .fontColor('rgba(255, 255, 255, 0.7)')
+                      .letterSpacing(1)
+
+                    Text('雷达屏幕空空如也\n前往机舱设定目的地，开启一段全新专注之旅吧')
+                      .fontSize(12)
+                      .fontColor('rgba(255, 255, 255, 0.35)')
+                      .textAlign(TextAlign.Center)
+                      .lineHeight(20)
+                      .padding({ left: 40, right: 40 })
+                  }
+                  .width('100%')
+                  .alignItems(HorizontalAlign.Center)
+                  .padding({ bottom: 80 })
+                }
+              } 
+              // 3.2.2 垂直时间轴真实节点流
+              else {
+                ForEach(this.dayRecords, (record: FlightRecordItem, idx: number) => {
+                  ListItem() {
+                    FlightLogbookListItemWrapper({
+                      record: record,
+                      isTop: idx === 0,
+                      isBottom: idx === this.dayRecords.length - 1,
+                      isCompleted: record.status === 'completed',
+                      onCardClick: (rec: FlightRecordItem) => {
+                        this.selectedRecord = rec;
+                        this.isDetailModalVisible = true;
+                      }
+                    })
+                  }
+                  // [核心修复]：覆盖 ArkUI 默认的 ListItem 插入滑动动画。
+                  // 设置 opacity: 1 意味着插入时没有任何视觉位移，只跟随外层 List 的 transition。
+                  // 这彻底解决了“圆点从顶部一下子滑到底部”的灵异现象！
+                  .transition({ type: TransitionType.All, opacity: 1 })
+                }, (record: FlightRecordItem) => record.id)
+              }
+
+              // 列表底座间距
+              ListItem() {
+                Row().height(40)
+              }
+            }
+            .width('100%')
+            .height('100%')
+            .scrollBar(BarState.Off)
+            .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
+            .friction(0.65) // 舒适稳重的物理阻尼感，跟手顺滑且自然减速
+            .cachedCount(4) // 预加载离屏列表项，消除滑动中途加载掉帧
+            .zIndex(1)
+          }
+
         }
         .width('100%')
         .layoutWeight(1)
         .padding({ left: 0, right: 0, top: 4 })
         .backgroundColor('transparent')
-        .scrollBar(BarState.Off)
-        .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
-        .friction(0.65) // 舒适稳重的物理阻尼感，跟手顺滑且自然减速
-        .cachedCount(4)  // 预加载离屏列表项，消除滑动中途加载掉帧
       }
       .width('100%')
       .height('100%')
       .linearGradient({ angle: 180, colors: [['#262223', 0], ['#1A1718', 1]] })
+      // 日历/详情弹窗打开时，将底层内容从渲染树摘除，避免每帧 overdraw 181 个节点导致的卡顿
+      .visibility(this.isDatePickerVisible || this.isDetailModalVisible ? Visibility.Hidden : Visibility.Visible)
+
 
       // 5. 单次航班复盘登机牌弹窗
       if (this.isDetailModalVisible && this.selectedRecord) {
@@ -929,6 +1079,61 @@ export struct FlightLogbookFullReport {
             this.isDetailModalVisible = false;
           }
         })
+      }
+
+      // 6. 日历筛选弹窗
+      if (this.isDatePickerVisible) {
+        Stack() {
+          // 蒙版
+          Row()
+            .width('100%')
+            .height('100%')
+            .backgroundColor('rgba(0, 0, 0, 0.4)')
+            .onClick(() => {
+              this.isDatePickerVisible = false;
+            })
+            
+          FlightDatePickerModal({
+            isVisible: this.isDatePickerVisible,
+            currentFilter: { type: 'day', year: this.curYear, month: this.curMonth, day: this.selectedDay },
+            availableYears: [2026, 2025, 2024],
+            onClose: () => {
+              this.isDatePickerVisible = false;
+            },
+            onApplyFilter: (filter: FlightRecordDateFilter) => {
+              this.isDatePickerVisible = false;
+              if (filter.type === 'day' && filter.year && filter.month && filter.day) {
+                this.curYear = filter.year;
+                this.curMonth = filter.month;
+                this.selectedDay = filter.day;
+                const mStr = this.curMonth.toString().padStart(2, '0');
+                const dStr = this.selectedDay.toString().padStart(2, '0');
+                this.selectedDateStr = `${this.curYear}-${mStr}-${dStr}`;
+                
+                this.isLoading = true;
+                setTimeout(() => {
+                  if (this.heatmapPages.length > 0) {
+                    let targetPage = 0;
+                    if (this.curMonth >= 5 && this.curMonth <= 8) {
+                      targetPage = 1;
+                    }
+                    if (this.curMonth >= 9 && this.curMonth <= 12) {
+                      targetPage = 2;
+                    }
+                    this.swiperController.changeIndex(targetPage, true);
+                  }
+                }, 100);
+
+                setTimeout(() => {
+                  this.loadDayRecords();
+                }, 200);
+              }
+            }
+          })
+        }
+        .width('100%')
+        .height('100%')
+        .zIndex(10)
       }
     }
     .width('100%')
