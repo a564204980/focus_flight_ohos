@@ -6,151 +6,75 @@
   <title>Focus Flight Map</title>
   <link rel="stylesheet" href="css/maplibre-gl.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    html, body, #map {
-      width: 100%;
-      height: 100%;
-      background-color: #050b14;
-      overflow: hidden;
-    }
-    /* 标注点脉冲光环与样式 */
-    .marker-origin, .marker-dest {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      position: relative;
-      cursor: pointer;
-    }
-    .marker-origin {
-      background: #0ea5e9;
-      box-shadow: 0 0 16px #0ea5e9;
-    }
-    .marker-dest {
-      background: #10b981;
-      box-shadow: 0 0 16px #10b981;
-    }
-    .marker-pulse {
-      position: absolute;
-      top: -10px;
-      left: -10px;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      animation: pulse 2s infinite ease-out;
-      pointer-events: none;
-    }
-    .marker-origin .marker-pulse {
-      border: 2px solid #0ea5e9;
-    }
-    .marker-dest .marker-pulse {
-      border: 2px solid #10b981;
-    }
-    @keyframes pulse {
-      0% { transform: scale(0.4); opacity: 1; }
-      100% { transform: scale(1.6); opacity: 0; }
-    }
-    .city-label {
-      position: absolute;
-      top: 26px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(10, 15, 26, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #f8fafc;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: bold;
-      white-space: nowrap;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    html, body, #map { width: 100%; height: 100%; background-color: #e4e5e6; overflow: hidden; }
+    .marker-origin, .marker-dest { width: 22px; height: 22px; border-radius: 50%; position: relative; cursor: pointer; }
+    .marker-origin { background: #0284c7; box-shadow: 0 0 12px rgba(2,132,199,0.5); }
+    .marker-dest { background: #059669; box-shadow: 0 0 12px rgba(5,150,105,0.5); }
+    .marker-pulse { position: absolute; top: -10px; left: -10px; width: 42px; height: 42px; border-radius: 50%; animation: pulse 2s infinite ease-out; pointer-events: none; }
+    .marker-origin .marker-pulse { border: 2px solid #0284c7; }
+    .marker-dest .marker-pulse { border: 2px solid #059669; }
+    @keyframes pulse { 0% { transform: scale(0.4); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+    .city-label { position: absolute; top: 26px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 0, 0, 0.1); color: #1e293b; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; white-space: nowrap; backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
   </style>
   <script src="js/maplibre-gl.js"></script>
 </head>
 <body>
   <div id="map"></div>
-
   <script>
-    // 初始化全屏暗黑花瓣风 / OpenFreeMap 高清矢量地图
+    const mapStyle = {
+      version: 8,
+      sources: {
+        'esri-light': {
+          type: 'raster',
+          tiles: [
+            'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+          ],
+          tileSize: 256,
+          attribution: 'Esri'
+        }
+      },
+      layers: [
+        {
+          id: 'esri-light-layer',
+          type: 'raster',
+          source: 'esri-light',
+          minzoom: 0,
+          maxzoom: 16
+        }
+      ]
+    };
+
     const map = new maplibregl.Map({
       container: 'map',
-      style: {
-        version: 8,
-        sources: {
-          'dark-tiles': {
-            type: 'raster',
-            tiles: [
-              'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-              'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-              'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-            ],
-            tileSize: 256,
-            attribution: 'Petal / CartoDB'
-          }
-        },
-        layers: [
-          {
-            id: 'dark-layer',
-            type: 'raster',
-            source: 'dark-tiles',
-            minzoom: 0,
-            maxzoom: 19
-          }
-        ]
-      },
+      style: mapStyle,
       center: [116.4074, 39.9042],
       zoom: 3.5,
       attributionControl: false
     });
 
-    let routeLineObj = null;
-
-    // 绘制航线与设置标注点
     function initRoute(originLat, originLon, originCity, originCode, destLat, destLon, destCity, destCode) {
       if (!map) return;
-
       const originCoord = [parseFloat(originLon), parseFloat(originLat)];
       const destCoord = [parseFloat(destLon), parseFloat(destLat)];
-
-      // 1. 创建起点 El
       const elOrigin = document.createElement('div');
       elOrigin.className = 'marker-origin';
-      elOrigin.innerHTML = `<div class="marker-pulse"></div><div class="city-label">🛫 ${originCity} (${originCode})</div>`;
+      elOrigin.innerHTML = '<div class="marker-pulse"></div><div class="city-label">🛫 ' + originCity + ' (' + originCode + ')</div>';
       new maplibregl.Marker({ element: elOrigin }).setLngLat(originCoord).addTo(map);
-
-      // 2. 创建终点 El
       const elDest = document.createElement('div');
       elDest.className = 'marker-dest';
-      elDest.innerHTML = `<div class="marker-pulse"></div><div class="city-label">🛬 ${destCity} (${destCode})</div>`;
+      elDest.innerHTML = '<div class="marker-pulse"></div><div class="city-label">🛬 ' + destCity + ' (' + destCode + ')</div>';
       new maplibregl.Marker({ element: elDest }).setLngLat(destCoord).addTo(map);
-
-      // 3. 计算缩放边界 Bounds 包含两点
       const bounds = new maplibregl.LngLatBounds();
       bounds.extend(originCoord);
       bounds.extend(destCoord);
       map.fitBounds(bounds, { padding: 90, maxZoom: 8, duration: 1500 });
-
-      // 4. 添加弧形飞行 Polyline 航线图层
-      map.on('load', () => {
-        addRouteLayer(originCoord, destCoord);
-      });
-
-      if (map.isStyleLoaded()) {
-        addRouteLayer(originCoord, destCoord);
-      }
+      map.on('load', () => addRouteLayer(originCoord, destCoord));
+      if (map.isStyleLoaded()) addRouteLayer(originCoord, destCoord);
     }
 
     function addRouteLayer(start, end) {
       if (map.getSource('flight-route')) return;
-
-      // 生成弧线点列表
       const numPoints = 100;
       const arcPoints = [];
       for (let i = 0; i <= numPoints; i++) {
@@ -159,49 +83,18 @@
         const lat = start[1] + (end[1] - start[1]) * t + Math.sin(t * Math.PI) * 4.5;
         arcPoints.push([lng, lat]);
       }
-
-      map.addSource('flight-route', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: arcPoints
-          }
-        }
-      });
-
-      // 航线发光底线
+      map.addSource('flight-route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: arcPoints } } });
       map.addLayer({
-        id: 'flight-route-glow',
-        type: 'line',
-        source: 'flight-route',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-color': '#0ea5e9',
-          'line-width': 8,
-          'line-opacity': 0.35
-        }
+        id: 'flight-route-glow', type: 'line', source: 'flight-route', layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': '#0284c7', 'line-width': 8, 'line-opacity': 0.25 }
       });
-
-      // 航线璀璨核心线
       map.addLayer({
-        id: 'flight-route-core',
-        type: 'line',
-        source: 'flight-route',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-color': '#38bdf8',
-          'line-width': 3.5,
-          'line-opacity': 0.95
-        }
+        id: 'flight-route-core', type: 'line', source: 'flight-route', layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': '#0369a1', 'line-width': 3.5, 'line-opacity': 0.9 }
       });
     }
 
-    // 全局供 ArkTS 调用的接口
-    window.setFlightRoute = function(oLat, oLon, oCity, oCode, dLat, dLon, dCity, dCode) {
-      initRoute(oLat, oLon, oCity, oCode, dLat, dLon, dCity, dCode);
-    };
+    window.setFlightRoute = initRoute;
   </script>
 </body>
 </html>

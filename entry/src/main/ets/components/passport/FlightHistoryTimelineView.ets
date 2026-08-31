@@ -15,7 +15,6 @@
 
 import { FlightRecordItem, FlightRecordRepository } from '../../database/FlightRecordRepository';
 import { findAirportByCode } from '../../models/AirportModel';
-import { FlightRecordDetailModal } from './FlightRecordDetailModal';
 
 interface DayGroupItem {
   dateKey: string;
@@ -37,8 +36,6 @@ export struct FlightHistoryTimelineView {
   @State private totalFlightsCount: number = 0;
   @State private totalMinutesSum: number = 0;
   @State private isLoading: boolean = true;
-  @State private selectedRecord: FlightRecordItem | undefined = undefined;
-  @State private isDetailModalVisible: boolean = false;
 
   aboutToAppear(): void {
     this.loadRecords();
@@ -49,7 +46,9 @@ export struct FlightHistoryTimelineView {
   }
 
   private async loadRecords(): Promise<void> {
-    this.isLoading = true;
+    this.getUIContext().animateTo({ duration: 250, curve: Curve.EaseInOut }, () => {
+      this.isLoading = true;
+    });
     try {
       await FlightRecordRepository.seed2025MockDataIfEmpty();
       const records = await FlightRecordRepository.getAllFlightRecords(this.yearFilter > 0 ? this.yearFilter : undefined);
@@ -102,11 +101,13 @@ export struct FlightHistoryTimelineView {
         });
       });
 
-      this.dayGroups = groups;
     } catch (e) {
       // ignore
     } finally {
-      this.isLoading = false;
+      this.getUIContext().animateTo({ duration: 400, curve: Curve.FastOutSlowIn }, () => {
+        this.dayGroups = groups;
+        this.isLoading = false;
+      });
     }
   }
 
@@ -197,10 +198,6 @@ export struct FlightHistoryTimelineView {
     .backgroundColor('#FFFFFF')
     .borderRadius(16)
     .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.04)', offsetY: 2 })
-    .onClick(() => {
-      this.selectedRecord = record;
-      this.isDetailModalVisible = true;
-    })
   }
 
   build() {
@@ -332,16 +329,6 @@ export struct FlightHistoryTimelineView {
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.Spring)
 
-      // 4. 单次航班复盘详情弹窗
-      if (this.isDetailModalVisible && this.selectedRecord) {
-        FlightRecordDetailModal({
-          isVisible: this.isDetailModalVisible,
-          record: this.selectedRecord,
-          onClose: () => {
-            this.isDetailModalVisible = false;
-          }
-        })
-      }
     }
     .width('100%')
     .height('100%')

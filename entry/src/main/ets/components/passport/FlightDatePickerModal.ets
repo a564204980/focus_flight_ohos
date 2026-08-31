@@ -36,13 +36,13 @@ export struct FlightDatePickerModal {
   @State private selectedDay: number = 26; // 1-31
   @State private selectedMonthOnly: number = 8;
   @State private selectedYearOnly: number = 2026;
-  @State private modalOffsetY: number = 600;
+  @State private modalOffsetY: number = 1200;
 
   @State private maskOpacity: number = 0;
 
   aboutToAppear(): void {
     this.initFromFilter();
-    this.modalOffsetY = 600;
+    this.modalOffsetY = 1200;
     this.maskOpacity = 0;
     setTimeout(() => {
       this.getUIContext()?.animateTo({ duration: 320, curve: Curve.FastOutSlowIn }, () => {
@@ -60,7 +60,7 @@ export struct FlightDatePickerModal {
         this.maskOpacity = 1;
       });
     } else {
-      this.modalOffsetY = 600;
+      this.modalOffsetY = 1200;
       this.maskOpacity = 0;
     }
   }
@@ -85,7 +85,7 @@ export struct FlightDatePickerModal {
 
   private handleClose(): void {
     this.getUIContext()?.animateTo({ duration: 260, curve: Curve.EaseInOut }, () => {
-      this.modalOffsetY = 600;
+      this.modalOffsetY = 1200;
       this.maskOpacity = 0;
     });
     setTimeout(() => {
@@ -128,67 +128,83 @@ export struct FlightDatePickerModal {
           this.handleClose();
         })
 
-      // 2. 弹窗面板主体 (深色夜空质感)
-      Column({ space: 16 }) {
-        // 弹窗头部 (严格对齐参考图结构，但配色用暗色)
-        Row() {
-          Text('选择时间')
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#FFFFFF')
+      // 2. 弹窗面板主体 (加入航图暗纹背景)
+      Stack({ alignContent: Alignment.Top }) {
+        // 2.1 底层航图暗纹
+        Image($r('app.media.bg_real_world_silhouette'))
+          .width('140%')
+          .opacity(0.04)
+          .objectFit(ImageFit.Contain)
+          .offset({ y: -100 })
+          .hitTestBehavior(HitTestMode.None)
+          .animation({ duration: 1000, curve: Curve.LinearOutSlowIn }) // 随页面呼吸
 
-          Blank()
+        // 2.2 核心内容
+        Column({ space: 16 }) {
+          // A. 弹窗头部
+          Row() {
+            Text('选择时间')
+              .fontSize(20)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#FFFFFF')
 
-          Row({ space: 12 }) {
-            // 返回今日按钮
-            Row() {
-              Text('今')
-                .fontSize(14)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#FFFFFF')
-            }
-            .width(36)
-            .height(36)
-            .justifyContent(FlexAlign.Center)
-            .backgroundColor('rgba(255, 255, 255, 0.1)')
-            .borderRadius(18)
-            .onClick(() => {
-              const now = new Date();
-              this.curYear = now.getFullYear();
-              this.curMonth = now.getMonth() + 1;
-              this.selectedDay = now.getDate();
-            })
+            Blank()
 
-            CloseButton({
-              circleColor: 'rgba(255, 255, 255, 0.1)',
-              iconColor: '#FFFFFF',
-              buttonSize: 36,
-              onClickAction: () => {
-                this.handleClose();
+            Row({ space: 12 }) {
+              // 返回今日按钮
+              Row() {
+                Text('今')
+                  .fontSize(14)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#FFFFFF')
               }
-            })
+              .width(36)
+              .height(36)
+              .justifyContent(FlexAlign.Center)
+              .backgroundColor('rgba(255, 255, 255, 0.1)')
+              .borderRadius(18)
+              .onClick(() => {
+                const now = new Date();
+                this.curYear = now.getFullYear();
+                this.curMonth = now.getMonth() + 1;
+                this.selectedDay = now.getDate();
+                this.applyCurrentSelection();
+              })
+
+              CloseButton({
+                circleColor: 'rgba(255, 255, 255, 0.1)',
+                iconColor: '#FFFFFF',
+                buttonSize: 36,
+                onClickAction: () => {
+                  this.handleClose();
+                }
+              })
+            }
           }
+          .width('100%')
+          .padding({ left: 24, right: 24, top: 24 })
+
+          // B. 核心内容：无限滚动日历
+          FlightCalendarView({
+            curYear: $curYear,
+            curMonth: $curMonth,
+            selectedDay: $selectedDay,
+            onDateSelected: () => {
+              this.applyCurrentSelection();
+            }
+          })
+          .width('100%')
+          .layoutWeight(1)
         }
         .width('100%')
-        .padding({ left: 24, right: 24, top: 24 })
-
-        // 3. 核心内容：无限滚动日历
-        FlightCalendarView({
-          curYear: $curYear,
-          curMonth: $curMonth,
-          selectedDay: $selectedDay,
-          onDateSelected: () => {
-            this.applyCurrentSelection();
-          }
-        })
-        .width('100%')
-        .layoutWeight(1)
+        .height('100%')
       }
       .width('100%')
-      .height('92%') // 高度拉满
-      .backgroundColor('#1A1718')
+      .height('92%')
       .borderRadius({ topLeft: 32, topRight: 32 })
       .border({ width: 1, color: 'rgba(255, 255, 255, 0.12)' })
+      .backgroundColor('#161324')
+      .clip(true)
       .offset({ y: this.modalOffsetY })
     }
     .width('100%')
@@ -196,3 +212,4 @@ export struct FlightDatePickerModal {
     .hitTestBehavior(this.isVisible ? HitTestMode.Default : HitTestMode.None)
   }
 }
+

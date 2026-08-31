@@ -19,7 +19,6 @@ import {
   FlightRecordItem,
   FlightRecordRepository
 } from '../../database/FlightRecordRepository';
-import { FlightRecordDetailModal } from './FlightRecordDetailModal';
 import { FlightBoardingPassCard } from './FlightBoardingPassCard';
 import { FlightDatePickerModal } from './FlightDatePickerModal';
 
@@ -32,6 +31,12 @@ export interface HeatmapDayCell {
   minutes: number;
   level: number;     // 0-4
   isToday: boolean;
+  isPaddingDay?: boolean;
+}
+
+export interface HeatmapPeriod {
+  startM: number;
+  endM: number;
 }
 
 export interface HeatmapWeekColumn {
@@ -53,9 +58,10 @@ export interface HeatmapCellPositionInfo {
  */
 @Component
 struct HeatmapCanvasPage {
-  @Prop @Watch('onSelectionChanged') pageData: HeatmapWeekColumn[] = [];
+  @Prop @Watch('onPageDataChanged') pageData: HeatmapWeekColumn[] = [];
   @Prop @Watch('onSelectionChanged') selectedDateStr: string = '';
   @Prop todayStr: string = '';
+  @Prop dataVersion: number = 0;
   onSelectDate?: (cell: HeatmapDayCell) => void;
 
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
@@ -78,7 +84,11 @@ struct HeatmapCanvasPage {
 
   @State canvasWidth: number = 0;
   @State selectedCellInfo: HeatmapCellPositionInfo | null = null;
-  @State pressedCellInfo: HeatmapCellPositionInfo | null = null;
+
+  onPageDataChanged(): void {
+    this.updateSelectedCellInfo();
+    this.drawPage();
+  }
 
   onSelectionChanged(): void {
     this.updateSelectedCellInfo();
@@ -148,12 +158,16 @@ struct HeatmapCanvasPage {
         const cellY = padY + di * rowH;
 
         // 底层仅负责绘制静态色块
-        ctx.fillStyle = HeatmapCanvasPage.COLORS[Math.min(cell_obj.level, 4)];
+        if (cell_obj.isPaddingDay) {
+          ctx.fillStyle = '#181B1D';
+        } else {
+          ctx.fillStyle = HeatmapCanvasPage.COLORS[Math.min(cell_obj.level, 4)];
+        }
         ctx.beginPath();
         ctx.roundRect(colX, cellY, cell, cell, 3);
         ctx.fill();
 
-        if (cell_obj.isToday) {
+        if (cell_obj.isToday && !cell_obj.isPaddingDay) {
           ctx.strokeStyle = '#818CF8';
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -224,17 +238,10 @@ struct HeatmapCanvasPage {
               this.drawPage();
             }
           })
-          .onTouch((event: TouchEvent) => {
-            if (event.type === TouchType.Down) {
-              const touch = event.touches[0];
-              this.pressedCellInfo = this.hitTestCellInfo(touch.x, touch.y);
-            } else if (event.type === TouchType.Up) {
-              if (this.pressedCellInfo && this.onSelectDate) {
-                this.onSelectDate(this.pressedCellInfo.cell);
-              }
-              this.pressedCellInfo = null;
-            } else if (event.type === TouchType.Cancel) {
-              this.pressedCellInfo = null;
+          .onClick((event: ClickEvent) => {
+            const hit = this.hitTestCellInfo(event.x, event.y);
+            if (hit && this.onSelectDate) {
+              this.onSelectDate(hit.cell);
             }
           })
 
@@ -260,18 +267,6 @@ struct HeatmapCanvasPage {
               curve: Curve.Friction
             })
         }
-
-        // 3. 动画层：手指按下反馈层
-        if (this.pressedCellInfo) {
-          Row()
-            .width(HeatmapCanvasPage.CELL)
-            .height(HeatmapCanvasPage.CELL)
-            .backgroundColor('#000000')
-            .opacity(0.3)
-            .borderRadius(3)
-            .position({ x: this.pressedCellInfo.x, y: this.pressedCellInfo.y })
-            .hitTestBehavior(HitTestMode.None)
-        }
       }
       .width('100%')
       .height(118)
@@ -281,10 +276,13 @@ struct HeatmapCanvasPage {
       Row() {
         ForEach(this.pageData, (week: HeatmapWeekColumn) => {
           Row() {
-            Text(week.monthLabel || '')
-              .fontSize(9.5)
-              .fontColor(week.monthLabel ? 'rgba(255, 255, 255, 0.4)' : 'transparent')
-              .maxLines(1)
+            if (week.monthLabel) {
+              Text(week.monthLabel)
+                .fontSize(9.5)
+                .fontColor('rgba(255, 255, 255, 0.4)')
+                .maxLines(1)
+                .width(36)
+            }
           }
           .layoutWeight(1)
           .clip(false)
@@ -311,6 +309,7 @@ struct FlightHeatmapView {
   @Prop curYear: number = 2026;
   @Prop selectedDateStr: string = '';
   @Link heatmapPages: HeatmapWeekColumn[][];
+  @Prop dataVersion: number = 0;
   swiperController: SwiperController = new SwiperController();
   onSelectDate?: (cell: HeatmapDayCell) => void;
 
@@ -368,7 +367,7 @@ struct FlightHeatmapView {
             .width(8).height(8).borderRadius(1.5)
             .backgroundColor('#38BDF8')
 
-          Text('多')
+          Text('多（时间）')
             .fontSize(9.5)
             .fontColor('rgba(255, 255, 255, 0.4)')
         }
@@ -390,7 +389,7 @@ struct FlightHeatmapView {
               }
             }
           })
-        }, (page: HeatmapWeekColumn[], idx: number) => idx.toString())
+        }, (page: HeatmapWeekColumn[], idx: number) => this.dataVersion.toString() + '_' + idx.toString())
       }
       .width('100%')
       .height(134)
@@ -582,9 +581,6 @@ export struct FlightLogbookFullReport {
   @State private dayOnTimeRate: number = 100;
   @State private isLoading: boolean = true;
 
-  // 详情弹窗
-  @State private selectedRecord: FlightRecordItem | undefined = undefined;
-  @State private isDetailModalVisible: boolean = false;
   
   // 日历弹窗
   @State private isDatePickerVisible: boolean = false;
@@ -606,6 +602,8 @@ export struct FlightLogbookFullReport {
     }
   }
 
+  @State private dataVersion: number = 0;
+
   private async initData(): Promise<void> {
     this.isLoading = true;
     try {
@@ -620,7 +618,7 @@ export struct FlightLogbookFullReport {
   }
 
   /**
-   * 刷新当前自然年（1月1日 - 12月31日，包括整年所有天数与未来月份）的全年热力图数据矩阵
+   * 刷新当前自然年（按 4 个月精准分段：1-4月、5-8月、9-12月，确保各分段所有自然日完整呈现在对应页中）
    */
   private async refreshHeatmapData(): Promise<void> {
     const today = new Date();
@@ -631,123 +629,109 @@ export struct FlightLogbookFullReport {
 
     const targetYear = this.curYear || todayYear;
 
-    // 1. 当年 1 月 1 日对齐到周一
     const jan1 = new Date(targetYear, 0, 1, 0, 0, 0, 0);
-    const jan1Day = jan1.getDay();
-    const daysFromMonday = (jan1Day === 0 ? 6 : jan1Day - 1);
-    const startMonday = new Date(jan1.getTime() - daysFromMonday * 86400000);
-    startMonday.setHours(0, 0, 0, 0);
-
-    // 2. 当年 12 月 31 日对齐到周日
     const dec31 = new Date(targetYear, 11, 31, 23, 59, 59, 999);
-    const dec31Day = dec31.getDay();
-    const daysToSunday = (dec31Day === 0 ? 0 : 7 - dec31Day);
-    const endSunday = new Date(dec31.getTime() + daysToSunday * 86400000);
-    endSunday.setHours(23, 59, 59, 999);
-
-    // 计算总周数 (通常为 52 或 53 周)
-    const totalDays = Math.round((endSunday.getTime() - startMonday.getTime()) / 86400000);
-    const totalWeeks = Math.ceil(totalDays / 7);
 
     // 获取数据库中全年的专注统计
     const statsMap = await FlightRecordRepository.getDailyFocusStatsMap(jan1.getTime(), dec31.getTime());
     this.dailyFocusMap = statsMap;
 
-    const weeks: HeatmapDayCell[][] = [];
-    let currentDayTime = startMonday.getTime();
+    // 3 个精准分段：[1-4月], [5-8月], [9-12月]
+    const periods: HeatmapPeriod[] = [
+      { startM: 1, endM: 4 },
+      { startM: 5, endM: 8 },
+      { startM: 9, endM: 12 }
+    ];
 
-    for (let w = 0; w < totalWeeks; w++) {
-      const colDays: HeatmapDayCell[] = [];
-      for (let d = 0; d < 7; d++) {
-        const dObj = new Date(currentDayTime);
-        const y = dObj.getFullYear();
-        const m = dObj.getMonth() + 1;
-        const dt = dObj.getDate();
-        const dateKey = `${y}-${m.toString().padStart(2, '0')}-${dt.toString().padStart(2, '0')}`;
-
-        const isCurrentYearDay = (y === targetYear);
-        const minutes = isCurrentYearDay ? (statsMap[dateKey] || 0) : 0;
-        const level = isCurrentYearDay ? this.getHeatmapLevel(minutes) : 0;
-        const isTd = dateKey === todayStr;
-
-        colDays.push({
-          dateStr: dateKey,
-          year: y,
-          month: m,
-          day: dt,
-          dayOfWeek: dObj.getDay(),
-          minutes: minutes,
-          level: level,
-          isToday: isTd
-        });
-
-        currentDayTime += 86400000;
-      }
-      weeks.push(colDays);
-    }
-
-    // 精确按 4 个月分页 (1-4月, 5-8月, 9-12月)
-    const rawPages: HeatmapDayCell[][][] = [[], [], []];
-    for (let w = 0; w < weeks.length; w++) {
-      let week = weeks[w];
-      if (!week || week.length === 0) {
-        continue;
-      }
-
-      let m = week[3]?.month || 1; // 默认防空
-
-      // 修正跨年首尾周的归属问题
-      if (w === 0 && m === 12) {
-        m = 1;
-      }
-      if (w === weeks.length - 1 && m === 1) {
-        m = 12;
-      }
-
-      if (m >= 1 && m <= 4) {
-        rawPages[0].push(week);
-      } else if (m >= 5 && m <= 8) {
-        rawPages[1].push(week);
-      } else {
-        rawPages[2].push(week);
-      }
-    }
-
-    // 补齐各页长度，并精确预计算每一周的 monthLabel (O(1) 读取)
-    const maxLen = Math.max(rawPages[0].length, rawPages[1].length, rawPages[2].length);
     const pages: HeatmapWeekColumn[][] = [[], [], []];
 
-    let lastMonth = -1;
-    for (let p = 0; p < 3; p++) {
-      const pageList: HeatmapWeekColumn[] = [];
-      for (let i = 0; i < maxLen; i++) {
-        const weekCells = rawPages[p][i] || [];
-        let label = '';
-        if (weekCells.length > 0) {
-          const curM = weekCells[3]?.month;
-          if (curM !== undefined && curM !== lastMonth) {
-            label = `${curM}月`;
-            lastMonth = curM;
+    for (let p = 0; p < periods.length; p++) {
+      const startMonth = periods[p].startM;
+      const endMonth = periods[p].endM;
+
+      // 分段首日（如 5月1日）对齐到周一
+      const pStartDate = new Date(targetYear, startMonth - 1, 1, 0, 0, 0, 0);
+      const pStartDay = pStartDate.getDay();
+      const daysFromMonday = (pStartDay === 0 ? 6 : pStartDay - 1);
+      const pStartMonday = new Date(pStartDate.getTime() - daysFromMonday * 86400000);
+      pStartMonday.setHours(0, 0, 0, 0);
+
+      // 分段末日（如 8月31日）对齐到周日
+      const pEndDate = new Date(targetYear, endMonth, 0, 23, 59, 59, 999);
+      const pEndDay = pEndDate.getDay();
+      const daysToSunday = (pEndDay === 0 ? 0 : 7 - pEndDay);
+      const pEndSunday = new Date(pEndDate.getTime() + daysToSunday * 86400000);
+      pEndSunday.setHours(23, 59, 59, 999);
+
+      const totalDays = Math.round((pEndSunday.getTime() - pStartMonday.getTime()) / 86400000);
+      const totalWeeks = Math.ceil(totalDays / 7);
+
+      let currentDayTime = pStartMonday.getTime();
+      const pageCols: HeatmapWeekColumn[] = [];
+      const labeledMonths = new Set<number>();
+
+      for (let w = 0; w < totalWeeks; w++) {
+        const colDays: HeatmapDayCell[] = [];
+        let colLabel = '';
+
+        for (let d = 0; d < 7; d++) {
+          const dObj = new Date(currentDayTime);
+          const y = dObj.getFullYear();
+          const m = dObj.getMonth() + 1;
+          const dt = dObj.getDate();
+          const dateKey = `${y}-${m.toString().padStart(2, '0')}-${dt.toString().padStart(2, '0')}`;
+
+          const isCurrentYearDay = (y === targetYear);
+          const isCurrentPeriodMonth = (m >= startMonth && m <= endMonth);
+          const isPadding = !isCurrentPeriodMonth;
+          const minutes = (isCurrentYearDay && isCurrentPeriodMonth) ? (statsMap[dateKey] || 0) : 0;
+          const level = (isCurrentYearDay && isCurrentPeriodMonth) ? this.getHeatmapLevel(minutes) : 0;
+          const isTd = dateKey === todayStr;
+
+          // 标注该分段内的月份标签 (在包含各月1号的周或分段首周打标)
+          if (isCurrentPeriodMonth && !labeledMonths.has(m)) {
+            if (dt === 1 || w === 0 || dt <= 7) {
+              colLabel = `${m}月`;
+              labeledMonths.add(m);
+            }
           }
+
+          colDays.push({
+            dateStr: dateKey,
+            year: y,
+            month: m,
+            day: dt,
+            dayOfWeek: dObj.getDay(),
+            minutes: minutes,
+            level: level,
+            isToday: isTd,
+            isPaddingDay: isPadding
+          });
+
+          currentDayTime += 86400000;
         }
-        pageList.push({
-          weekKey: `p${p}_w${i}`,
-          cells: weekCells,
-          monthLabel: label
+
+        pageCols.push({
+          weekKey: `p${p}_w${w}`,
+          cells: colDays,
+          monthLabel: colLabel
         });
       }
-      pages[p] = pageList;
+
+      pages[p] = pageCols;
     }
+
     this.heatmapPages = pages;
+    this.dataVersion++;
 
     setTimeout(() => {
       if (this.heatmapPages.length > 0) {
-        const todayMonth = new Date().getMonth() + 1;
+        const targetM = this.curMonth || (new Date().getMonth() + 1);
         let targetPage = 0;
-        if (todayMonth >= 5 && todayMonth <= 8) {
+        if (targetM >= 5 && targetM <= 8) {
           targetPage = 1;
         }
-        if (todayMonth >= 9 && todayMonth <= 12) {
+        if (targetM >= 9 && targetM <= 12) {
           targetPage = 2;
         }
         this.swiperController.changeIndex(targetPage, true);
@@ -808,7 +792,7 @@ export struct FlightLogbookFullReport {
   }
 
   /**
-   * 点击切换选中的热力图日期
+   * 点击切换选中的热力图日期（支持跨段暗色格智能翻页联动）
    */
   private selectHeatmapCell(cell: HeatmapDayCell): void {
     if (!cell || !cell.dateStr) {
@@ -817,6 +801,15 @@ export struct FlightLogbookFullReport {
     if (this.selectedDateStr === cell.dateStr) {
       return;
     }
+
+    // 智能翻页联动：若点击的日期属于上一页或下一页，自动平滑翻页到对应分段
+    let targetPage = 0;
+    if (cell.month >= 5 && cell.month <= 8) {
+      targetPage = 1;
+    } else if (cell.month >= 9 && cell.month <= 12) {
+      targetPage = 2;
+    }
+    this.swiperController.changeIndex(targetPage, true);
     
     // 1. 立即更新状态，触发高光框的平滑飞行滑动动画
     this.selectedDateStr = cell.dateStr;
@@ -836,7 +829,9 @@ export struct FlightLogbookFullReport {
     }
 
     // 3. 有数据的日期：标记加载中，渲染极简骨架屏
-    this.isLoading = true;
+    this.getUIContext().animateTo({ duration: 250, curve: Curve.EaseInOut }, () => {
+      this.isLoading = true;
+    });
 
     // 4. 核心性能优化：错峰渲染 (Perception Optimization)
     // 列表的 `FlightBoardingPassCard` 包含数百个 DOM 节点，如果跟随点击同步查询并重建，
@@ -859,7 +854,9 @@ export struct FlightLogbookFullReport {
     const dStr = this.selectedDay.toString().padStart(2, '0');
     this.selectedDateStr = `${this.curYear}-${mStr}-${dStr}`;
 
-    this.isLoading = true;
+    this.getUIContext().animateTo({ duration: 250, curve: Curve.EaseInOut }, () => {
+      this.isLoading = true;
+    });
 
     setTimeout(() => {
       if (this.heatmapPages.length > 0) {
@@ -877,6 +874,55 @@ export struct FlightLogbookFullReport {
     setTimeout(() => {
       this.loadDayRecords();
     }, 200);
+  }
+
+  private getSelectedDateDisplay(): string {
+    if (!this.selectedDateStr) {
+      return '';
+    }
+    const parts = this.selectedDateStr.split('-');
+    if (parts.length === 3) {
+      const m = parseInt(parts[1], 10);
+      const d = parseInt(parts[2], 10);
+      return `${m}月${d}日`;
+    }
+    return `${this.curMonth}月${this.selectedDay}日`;
+  }
+
+  private getSelectedWeekdayDisplay(): string {
+    if (!this.selectedDateStr) {
+      return '';
+    }
+    const parts = this.selectedDateStr.split('-');
+    if (parts.length === 3) {
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const d = parseInt(parts[2], 10);
+      const date = new Date(y, m, d);
+      const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      return days[date.getDay()];
+    }
+    return '';
+  }
+
+  private isSelectedDateToday(): boolean {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+    return this.selectedDateStr === todayStr;
+  }
+
+  private formatDayDuration(mins: number): string {
+    if (!mins || mins <= 0) {
+      return '0分钟';
+    }
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (h > 0 && m > 0) {
+      return `${h}小时 ${m}分钟`;
+    } else if (h > 0) {
+      return `${h}小时`;
+    }
+    return `${m}分钟`;
   }
 
   build() {
@@ -900,6 +946,7 @@ export struct FlightLogbookFullReport {
           }
           .width('100%')
           .justifyContent(FlexAlign.Start)
+          .hitTestBehavior(HitTestMode.Transparent) // 关键：允许点击穿透其透明部分，防止兄弟节点遮挡
 
           // 居中标题
           Text('航行日志')
@@ -928,6 +975,7 @@ export struct FlightLogbookFullReport {
           }
           .width('100%')
           .justifyContent(FlexAlign.End)
+          .hitTestBehavior(HitTestMode.Transparent) // 关键：防止此层遮挡左侧的关闭按钮
         }
         .width('100%')
         .padding({ left: 20, right: 20, top: 48, bottom: 12 })
@@ -936,6 +984,7 @@ export struct FlightLogbookFullReport {
         // 2. 航迹热力图 (独立轻量组件，支持横向分段轮播，不随下方时间轴上下滚动)
         FlightHeatmapView({
           curYear: this.curYear,
+          dataVersion: this.dataVersion,
           selectedDateStr: this.selectedDateStr,
           heatmapPages: $heatmapPages,
           swiperController: this.swiperController,
@@ -943,6 +992,65 @@ export struct FlightLogbookFullReport {
             this.selectHeatmapCell(cell);
           }
         })
+
+        // 2.5 当日飞行概览栏 (日期 + 星期 + 今日徽章 + 当日飞行统计)
+        Row() {
+          // 左侧：日期与星期（含今日徽章）
+          Row({ space: 8 }) {
+            Text(this.getSelectedDateDisplay())
+              .fontSize(15)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#FFFFFF')
+
+            Text(this.getSelectedWeekdayDisplay())
+              .fontSize(12)
+              .fontColor('rgba(255, 255, 255, 0.45)')
+
+            if (this.isSelectedDateToday()) {
+              Text('今日')
+                .fontSize(10)
+                .fontWeight(FontWeight.Medium)
+                .fontColor('#818CF8')
+                .backgroundColor('rgba(99, 102, 241, 0.15)')
+                .padding({ left: 6, right: 6, top: 1.5, bottom: 1.5 })
+                .borderRadius(4)
+                .border({ width: 0.5, color: 'rgba(99, 102, 241, 0.3)' })
+            }
+          }
+          .alignItems(VerticalAlign.Center)
+
+          Blank()
+
+          // 右侧：当日起降次数与专注总时长
+          Row({ space: 6 }) {
+            if (this.dayTotalFlights > 0) {
+              Row({ space: 3.5 }) {
+                Image($r('app.media.ic_plane_topview'))
+                  .width(12)
+                  .height(12)
+                  .fillColor('rgba(255, 255, 255, 0.45)')
+                Text(`${this.dayTotalFlights}架次`)
+                  .fontSize(11.5)
+                  .fontColor('rgba(255, 255, 255, 0.65)')
+              }
+
+              Text('·')
+                .fontSize(11.5)
+                .fontColor('rgba(255, 255, 255, 0.25)')
+
+              Text(this.formatDayDuration(this.dayTotalMinutes))
+                .fontSize(11.5)
+                .fontColor('rgba(255, 255, 255, 0.65)')
+            } else {
+              Text('暂无航程')
+                .fontSize(11.5)
+                .fontColor('rgba(255, 255, 255, 0.3)')
+            }
+          }
+          .alignItems(VerticalAlign.Center)
+        }
+        .width('100%')
+        .padding({ left: 20, right: 20, top: 6, bottom: 8 })
 
         // 3. 主内容区：Stack 分层独立列表 (彻底杜绝骨架和真实数据在一个流里互相挤压发生位移跳变)
         Stack({ alignContent: Alignment.Top }) {
@@ -1003,18 +1111,12 @@ export struct FlightLogbookFullReport {
                     .height(180)
                     .margin({ top: 32 })
 
-                    Text('塔台暂未收到起飞申请')
-                      .fontSize(15)
-                      .fontWeight(FontWeight.Medium)
-                      .fontColor('rgba(255, 255, 255, 0.7)')
-                      .letterSpacing(1)
-
-                    Text('雷达屏幕空空如也\n前往机舱设定目的地，开启一段全新专注之旅吧')
-                      .fontSize(12)
-                      .fontColor('rgba(255, 255, 255, 0.35)')
+                    Text('暂无航行记录，开启一段专注飞行吧')
+                      .fontSize(13.5)
+                      .fontColor('rgba(255, 255, 255, 0.45)')
                       .textAlign(TextAlign.Center)
-                      .lineHeight(20)
-                      .padding({ left: 40, right: 40 })
+                      .letterSpacing(0.5)
+                      .margin({ top: 8 })
                   }
                   .width('100%')
                   .alignItems(HorizontalAlign.Center)
@@ -1029,17 +1131,10 @@ export struct FlightLogbookFullReport {
                       record: record,
                       isTop: idx === 0,
                       isBottom: idx === this.dayRecords.length - 1,
-                      isCompleted: record.status === 'completed',
-                      onCardClick: (rec: FlightRecordItem) => {
-                        this.selectedRecord = rec;
-                        this.isDetailModalVisible = true;
-                      }
+                      isCompleted: record.status === 'completed'
                     })
                   }
-                  // [核心修复]：覆盖 ArkUI 默认的 ListItem 插入滑动动画。
-                  // 设置 opacity: 1 意味着插入时没有任何视觉位移，只跟随外层 List 的 transition。
-                  // 这彻底解决了“圆点从顶部一下子滑到底部”的灵异现象！
-                  .transition({ type: TransitionType.All, opacity: 1 })
+                  .transition({ type: TransitionType.Insert, opacity: 0, translate: { y: 20 } })
                 }, (record: FlightRecordItem) => record.id)
               }
 
@@ -1066,73 +1161,53 @@ export struct FlightLogbookFullReport {
       .width('100%')
       .height('100%')
       .linearGradient({ angle: 180, colors: [['#262223', 0], ['#1A1718', 1]] })
-      // 日历/详情弹窗打开时，将底层内容从渲染树摘除，避免每帧 overdraw 181 个节点导致的卡顿
-      .visibility(this.isDatePickerVisible || this.isDetailModalVisible ? Visibility.Hidden : Visibility.Visible)
+      .renderGroup(this.isDatePickerVisible)
 
-
-      // 5. 单次航班复盘登机牌弹窗
-      if (this.isDetailModalVisible && this.selectedRecord) {
-        FlightRecordDetailModal({
-          isVisible: this.isDetailModalVisible,
-          record: this.selectedRecord,
-          onClose: () => {
-            this.isDetailModalVisible = false;
-          }
-        })
-      }
 
       // 6. 日历筛选弹窗
       if (this.isDatePickerVisible) {
-        Stack() {
-          // 蒙版
-          Row()
-            .width('100%')
-            .height('100%')
-            .backgroundColor('rgba(0, 0, 0, 0.4)')
-            .onClick(() => {
-              this.isDatePickerVisible = false;
-            })
-            
-          FlightDatePickerModal({
-            isVisible: this.isDatePickerVisible,
-            currentFilter: { type: 'day', year: this.curYear, month: this.curMonth, day: this.selectedDay },
-            availableYears: [2026, 2025, 2024],
-            onClose: () => {
-              this.isDatePickerVisible = false;
-            },
-            onApplyFilter: (filter: FlightRecordDateFilter) => {
-              this.isDatePickerVisible = false;
-              if (filter.type === 'day' && filter.year && filter.month && filter.day) {
-                this.curYear = filter.year;
-                this.curMonth = filter.month;
-                this.selectedDay = filter.day;
-                const mStr = this.curMonth.toString().padStart(2, '0');
-                const dStr = this.selectedDay.toString().padStart(2, '0');
-                this.selectedDateStr = `${this.curYear}-${mStr}-${dStr}`;
-                
-                this.isLoading = true;
-                setTimeout(() => {
-                  if (this.heatmapPages.length > 0) {
-                    let targetPage = 0;
-                    if (this.curMonth >= 5 && this.curMonth <= 8) {
-                      targetPage = 1;
-                    }
-                    if (this.curMonth >= 9 && this.curMonth <= 12) {
-                      targetPage = 2;
-                    }
-                    this.swiperController.changeIndex(targetPage, true);
-                  }
-                }, 100);
-
-                setTimeout(() => {
-                  this.loadDayRecords();
-                }, 200);
+        FlightDatePickerModal({
+          isVisible: this.isDatePickerVisible,
+          currentFilter: { type: 'day', year: this.curYear, month: this.curMonth, day: this.selectedDay },
+          availableYears: [2026, 2025, 2024],
+          onClose: () => {
+            this.isDatePickerVisible = false;
+          },
+          onApplyFilter: async (filter: FlightRecordDateFilter) => {
+            if (filter.type === 'day' && filter.year && filter.month && filter.day) {
+              const yearChanged = this.curYear !== filter.year;
+              this.curYear = filter.year;
+              this.curMonth = filter.month;
+              this.selectedDay = filter.day;
+              const mStr = this.curMonth.toString().padStart(2, '0');
+              const dStr = this.selectedDay.toString().padStart(2, '0');
+              this.selectedDateStr = `${this.curYear}-${mStr}-${dStr}`;
+              
+              this.isLoading = true;
+              
+              if (yearChanged) {
+                await this.refreshHeatmapData();
               }
+
+              setTimeout(() => {
+                if (this.heatmapPages.length > 0) {
+                  let targetPage = 0;
+                  if (this.curMonth >= 5 && this.curMonth <= 8) {
+                    targetPage = 1;
+                  }
+                  if (this.curMonth >= 9 && this.curMonth <= 12) {
+                    targetPage = 2;
+                  }
+                  this.swiperController.changeIndex(targetPage, true);
+                }
+              }, 100);
+
+              setTimeout(() => {
+                this.loadDayRecords();
+              }, 200);
             }
-          })
-        }
-        .width('100%')
-        .height('100%')
+          }
+        })
         .zIndex(10)
       }
     }

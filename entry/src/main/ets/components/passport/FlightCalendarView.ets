@@ -104,6 +104,12 @@ struct MonthItemView {
     const selStr = this.selectedDateStr;
     const prefix = `${this.monthItem.year}-${this.monthItem.month}-`;
 
+    // 提升至循环外：默认日期数字绘制状态（避免在 42 个循环中反复解析字体与重置对齐）
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'normal 400 16vp sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+
     for (let rIdx = 0; rIdx < rows.length; rIdx++) {
       const row = rows[rIdx];
       for (let cIdx = 0; cIdx < row.length; cIdx++) {
@@ -116,22 +122,24 @@ struct MonthItemView {
         const cy = rIdx * cellH + cellH / 2;
         const isSelected = selStr === prefix + d;
 
-        // 选中态：先绘制白色实心圆背景
         if (isSelected) {
+          // 选中态：先绘制白色实心圆背景
           ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
           ctx.arc(cx, cy, 17, 0, Math.PI * 2);
           ctx.fill();
-        }
 
-        // 绘制日期数字
-        ctx.fillStyle = isSelected ? '#1A1718' : 'rgba(255,255,255,0.9)';
-        ctx.font = isSelected
-          ? 'normal 500 16vp sans-serif'
-          : 'normal 400 16vp sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(d.toString(), cx, cy);
+          // 选中日期文字
+          ctx.fillStyle = '#1A1718';
+          ctx.font = 'normal 500 16vp sans-serif';
+          ctx.fillText(d.toString(), cx, cy);
+
+          // 还原常规绘制状态
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.font = 'normal 400 16vp sans-serif';
+        } else {
+          ctx.fillText(d.toString(), cx, cy);
+        }
       }
     }
   }
@@ -143,10 +151,10 @@ struct MonthItemView {
         .fontSize(15)
         .fontWeight(FontWeight.Medium)
         .fontColor('#FFFFFF')
-        .margin({ top: 24, bottom: 24 })
+        .height(24) // 固化文字高度
+        .margin({ top: 24, bottom: 24 }) // 总计占用 24+24+24 = 72vp
 
       // 单个 Canvas 绘制整个 6×7 日期网格
-      // 节点数：1（替代原 Grid+42 GridItem+42 Stack+42 Circle+42 Text = ~170 节点）
       Canvas(this.ctx)
         .width('100%')
         .height(288) // 6行 × 48vp
@@ -171,6 +179,7 @@ struct MonthItemView {
         })
     }
     .width('100%')
+    .height(360) // 精准固化高度，令 List 启动 O(1) 的超高速虚拟布局，彻底消除滑动 Layout 重新测量开销
     .padding({ left: 16, right: 16 })
   }
 }
@@ -297,7 +306,7 @@ export struct FlightCalendarView {
       .scrollBar(BarState.Off)
       .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
       .friction(0.65)
-      .cachedCount(2)
+      .cachedCount(4)
     }
     .width('100%')
     .height('100%')
