@@ -94,7 +94,7 @@ export class FlightSessionService {
               position: getCtuRunwayStart(),
               icon: this.ctrl.getPlaneMarkerIconResource(),
               anchorU: 0.5,
-              anchorV: 0.5,
+              anchorV: 0.438,
               flat: true,
               rotation: 202.5,
               zIndex: 2000,

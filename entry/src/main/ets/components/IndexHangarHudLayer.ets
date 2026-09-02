@@ -61,45 +61,8 @@ export struct IndexHangarHudLayer {
       // 2.5 停机坪机位地面标牌组 (刻度尺上方右侧：测试海报、航班预订、机位装扮)
       if (this.vm.isHudVisible && !this.vm.isFullFocusMode && !this.vm.isMapBackgroundVisible) {
         Column({ space: 6 }) {
-          // 🎫 测试机票海报与会员切换按钮组
-          Row({ space: 6 }) {
-            // 测试海报
-            Row({ space: 4 }) {
-              Text('🎫')
-                .fontSize(11)
-              Text('测试海报')
-                .fontSize(11)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#7C3AED')
-            }
-            .padding({ left: 8, right: 8, top: 3.5, bottom: 3.5 })
-            .backgroundColor('#F5F3FF')
-            .border({ width: 1, color: '#DDD6FE', radius: 12 })
-            .borderRadius(12)
-            .shadow({ radius: 6, color: 'rgba(124, 58, 237, 0.15)', offsetY: 2 })
-            .onClick(() => {
-              this.triggerPreFlightPosterCeremony(true);
-            })
-
-            // 👑 会员身份快速切换 (终生 / 标准)
-            Row({ space: 4 }) {
-              Text(this.userMemberTier === 'lifetime' ? '👑' : '✈️')
-                .fontSize(11)
-              Text(this.userMemberTier === 'lifetime' ? '终生会员' : '标准会员')
-                .fontSize(11)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(this.userMemberTier === 'lifetime' ? '#C026D3' : '#64748B')
-            }
-            .padding({ left: 8, right: 8, top: 3.5, bottom: 3.5 })
-            .backgroundColor(this.userMemberTier === 'lifetime' ? '#FDF4FF' : '#F1F5F9')
-            .border({ width: 1, color: this.userMemberTier === 'lifetime' ? '#F0ABFC' : '#CBD5E1', radius: 12 })
-            .borderRadius(12)
-            .shadow({ radius: 6, color: 'rgba(192, 38, 211, 0.15)', offsetY: 2 })
-            .onClick(() => {
-              this.userMemberTier = this.userMemberTier === 'lifetime' ? 'free' : 'lifetime';
-              this.showTopToast(this.userMemberTier === 'lifetime' ? '✨ 已切换为终生会员：开启全彩流光飞行按钮' : '已切换为标准会员：恢复暖珊瑚红按钮', 2000);
-            })
-          }
+          // 🎫 测试机票海报与会员切换按钮组 (已按用户需求隐藏)
+          // Row({ space: 6 }) { ... }
 
           FlightBookingSignboard()
           CyberThemeSelector()
@@ -198,34 +161,43 @@ export struct IndexHangarHudLayer {
         onShowTopToast: (msg: string) => {
           this.showTopToast(msg);
         },
-        onStartFlight: (minutes?: number, dest?: Airport) => {
+        onStartFlight: (minutes?: number, dest?: Airport, isRoaming?: boolean) => {
+          this.vm.isRoamingMode = !!isRoaming;
           if (minutes && minutes > 0) {
             this.vm.selectedFocusDurationMinutes = minutes;
+          } else if (isRoaming) {
+            this.vm.selectedFocusDurationMinutes = 0; // 漫游模式无上限
           }
           if (dest) {
             this.currentDestinationAirport = dest;
           }
-          const destCode = dest ? dest.code : 'PEK';
-          const destApt = dest || findAirportByCode('PEK');
-          AppStorage.setOrCreate('selectedDestinationAirport', destApt);
+          
+          const destCode = isRoaming ? 'ROAM' : (dest ? dest.code : 'PEK');
+          if (!isRoaming && dest) {
+            AppStorage.setOrCreate('selectedDestinationAirport', dest);
+          }
           AppStorage.setOrCreate('selectedDestinationCode', destCode);
+
+          const activeTagTitle = AppStorage.get<string>('currentFocusTagTitle') || this.vm.currentFocusTagTitle || '深度学习';
+          this.vm.currentFocusTagTitle = activeTagTitle;
 
           // 存储当前飞行会话并进入地图巡航就位
           FlightSessionStore.saveSession({
             isFlightActive: true,
-            flightNo: 'FF-337',
+            flightNo: isRoaming ? 'FF-ROAM' : 'FF-337',
             seatId: '01A',
-            taskTitle: this.vm.currentFocusTagTitle || '深度工作',
+            taskTitle: activeTagTitle,
             durationMin: this.vm.selectedFocusDurationMinutes,
             originCode: 'CTU',
             destCode: destCode,
             startTimeMs: Date.now(),
             checkInTimeMs: Date.now(),
+            isRoamingMode: isRoaming,
             events: [{
               id: 'start_' + Date.now(),
               type: 'gate_departure',
               timestampMs: Date.now(),
-              note: '设备锁定，航线开始'
+              note: isRoaming ? '漫游模式启动，自由探索航线' : '设备锁定，航线开始'
             }]
           });
 

@@ -40,6 +40,7 @@ export struct PreFlightBoardingPassOverlay {
   @Prop focusTagTitle: string = '深度工作';
   @Prop seatId: string = '01A';
   @Prop initialMemberTier: MemberTierType = 'free'; // 初始会员等级
+  @Prop isRoamingMode: boolean = false; // ☁️ 是否为漫游自由探索模式
   onFinish?: () => void;
   onClose?: () => void;
 
@@ -336,18 +337,21 @@ export struct PreFlightBoardingPassOverlay {
     const day = d.getDate().toString().padStart(2, '0');
     const mon = months[d.getMonth()];
     const yr = d.getFullYear().toString().slice(-2);
-    const dest = (this.destAirport?.code || 'PEK').toUpperCase();
+    const dest = this.isRoamingMode ? 'ROAM' : ((this.destAirport?.code || 'PEK').toUpperCase());
     const prefix = `ISSUED${day}${mon}${yr}${dest}`;
-    const suffix = `FOCUSFLIGHT.PRO`;
+    const suffix = this.isRoamingMode ? `FOCUSFLIGHT.ROAM` : `FOCUSFLIGHT.PRO`;
     const targetLen = 48;
     const middleCount = Math.max(2, targetLen - prefix.length - suffix.length);
     return prefix + '<'.repeat(middleCount) + suffix;
   }
 
   /**
-   * 获取目的地城市中文大名 (动态读取当前选中机场城市名)
+   * 获取目的地城市中文大名 (动态读取当前选中机场城市名或漫游文案)
    */
   private getDestCityNameChinese(): string {
+    if (this.isRoamingMode) {
+      return '环球漫游';
+    }
     const dest = this.destAirport || findAirportByCode('PEK') || { city: '北京', code: 'PEK' };
     return dest.city || '北京';
   }
@@ -510,7 +514,7 @@ export struct PreFlightBoardingPassOverlay {
               .padding({ left: 6, right: 6 })
               .alignItems(VerticalAlign.Center)
 
-              Text(this.destAirport?.code || 'PEK')
+              Text(this.isRoamingMode ? '∞ ROAM' : (this.destAirport?.code || 'PEK'))
                 .fontSize(20)
                 .fontWeight(FontWeight.Bolder)
                 .fontColor('rgba(255, 255, 255, 0.88)')
@@ -578,7 +582,7 @@ export struct PreFlightBoardingPassOverlay {
                     .fontWeight(FontWeight.Medium)
                     .fontColor('rgba(255, 255, 255, 0.52)')
 
-                  Text(`${this.durationMinutes} 分钟`)
+                  Text(this.isRoamingMode ? '自由心流 (∞)' : `${this.durationMinutes} 分钟`)
                     .fontSize(12.5)
                     .fontWeight(FontWeight.Bold)
                     .fontColor('rgba(255, 255, 255, 0.88)')
@@ -610,7 +614,7 @@ export struct PreFlightBoardingPassOverlay {
                     .fontWeight(FontWeight.Medium)
                     .fontColor('rgba(255, 255, 255, 0.52)')
 
-                  Text(this.getLandingTimeString())
+                  Text(this.isRoamingMode ? '随心降落' : this.getLandingTimeString())
                     .fontSize(12.5)
                     .fontWeight(FontWeight.Bold)
                     .fontColor('rgba(255, 255, 255, 0.88)')

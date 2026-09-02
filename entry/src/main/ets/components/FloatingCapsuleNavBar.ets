@@ -25,8 +25,13 @@ export struct FloatingCapsuleNavBar {
   @StorageLink('isSettingsSheetVisible') isSettingsSheetVisible: boolean = false;
   @StorageLink('isThemeSelectSheetVisible') isThemeSelectSheetVisible: boolean = false;
   @StorageLink('isBookFlightSheetVisible') isBookFlightSheetVisible: boolean = false;
+  @StorageLink('userMemberTier') userMemberTier: string = 'standard';
   @Prop isFlightInProgress: boolean = false;
   @Prop isFullFocusMode: boolean = false;
+
+  private getThemeAccentColor(): string {
+    return this.userMemberTier === 'lifetime' ? '#9B84EC' : '#FA6B56';
+  }
 
   private isDrawerOpen(): boolean {
     return this.isStatsSheetVisible || this.isSettingsSheetVisible;
@@ -86,7 +91,7 @@ export struct FloatingCapsuleNavBar {
           .animation({ duration: 250, curve: Curve.FastOutSlowIn })
 
         Circle({ width: 5, height: 5 })
-          .fill('#FA6B56')
+          .fill(this.getThemeAccentColor())
           .opacity(this.getActiveTab() === 0 ? 1 : 0)
           .animation({ duration: 250, curve: Curve.FastOutSlowIn })
       }
@@ -107,7 +112,7 @@ export struct FloatingCapsuleNavBar {
           .animation({ duration: 250, curve: Curve.FastOutSlowIn })
 
         Circle({ width: 5, height: 5 })
-          .fill('#FA6B56')
+          .fill(this.getThemeAccentColor())
           .opacity(this.getActiveTab() === 1 ? 1 : 0)
           .animation({ duration: 250, curve: Curve.FastOutSlowIn })
       }
@@ -128,7 +133,7 @@ export struct FloatingCapsuleNavBar {
           .animation({ duration: 250, curve: Curve.FastOutSlowIn })
 
         Circle({ width: 5, height: 5 })
-          .fill('#FA6B56')
+          .fill(this.getThemeAccentColor())
           .opacity(this.getActiveTab() === 2 ? 1 : 0)
           .animation({ duration: 250, curve: Curve.FastOutSlowIn })
       }

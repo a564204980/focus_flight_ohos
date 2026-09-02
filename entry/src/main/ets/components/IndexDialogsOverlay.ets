@@ -200,7 +200,7 @@ export struct IndexDialogsOverlay {
         }
         .width('100%')
         .height('43%')
-        .backgroundColor('#fff7f4')
+        .backgroundColor('#FFFFFF')
         .borderRadius({ topLeft: 24, topRight: 24 })
         .shadow({ radius: 25, color: 'rgba(0,0,0,0.25)', offsetY: -6 })
         .position({ x: 0, y: this.isThemeSelectSheetVisible ? '57%' : '120%' })

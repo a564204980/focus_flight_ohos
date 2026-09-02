@@ -31,7 +31,10 @@ export class FlightViewModel {
   selectedFocusDurationMinutes: number = 15; // 用户选定的专注飞行时长 (默认15分钟);
   remainingTimeString: string = '15:00';     // 专注倒计时剩余时间文本;
   remainingDistanceKm: number = 0;           // 剩余飞行里程 (公里);
+  currentFocusTagId: string = 'study';       // 当前专注标签ID;
   currentFocusTagTitle: string = '深度学习';  // 当前专注类型/任务名称;
+  currentFocusTagIcon: string = '📚';        // 当前专注图标;
+  currentFocusTagColor: string = '#F06553';   // 当前专注主题色;
   isAbortDialogVisible: boolean = false; // 飞行终止备降二次确认弹窗显隐;
   isTrailSettingsVisible: boolean = false; // 视觉个性化设置抽屉显隐;
   isCameraFollowLocked: boolean = true; // 飞行跟随锁定状态 (true: 自动跟拍居中, false: 用户自由拖拽地图);
@@ -56,6 +59,7 @@ export class FlightViewModel {
   isLiveLogVisible: boolean = false; // 实时飞行日志抽屉状态;
   isPreFlightBoardingPassVisible: boolean = false; // ✈️ 拟物电影级起飞登机牌掉落过场状态;
   isPreFlightPosterPreviewOnly: boolean = false; // 🧪 是否仅为测试预览模式 (不触发起飞);
+  isRoamingMode: boolean = false; // ☁️ 记录是否为正向计时的漫游探索模式
   currentWeatherType: 'clear' | 'thunderstorm' | 'snow' = 'clear'; // 当前俯视与机舱沉浸天气状态
   isTopToastVisible: boolean = false;
   topToastMessage: string = '';

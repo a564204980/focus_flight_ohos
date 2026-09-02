@@ -46,6 +46,7 @@ export class PlaneSkinItem {
 export struct ThemeSelectSheetContent {
   @StorageLink('currentThemeIndex') currentThemeIndex: number = 0;
   @StorageLink('selectedPlaneSkinIndex') selectedPlaneSkinIndex: number = 0;
+  @StorageLink('userMemberTier') userMemberTier: string = 'standard';
   onThemeSelected?: (index: number) => void;
   onSkinSelected?: (index: number) => void;
   onClose?: () => void;
@@ -53,6 +54,14 @@ export struct ThemeSelectSheetContent {
   @State activeTab: number = 0; // 0: 停机坪主题, 1: 飞机皮肤
   @State tempThemeIndex: number = 0;
   @State tempPlaneSkinIndex: number = 0;
+
+  private getThemeAccentColor(): string {
+    return this.userMemberTier === 'lifetime' ? '#9B84EC' : '#FA6B56';
+  }
+
+  private getThemeShadowColor(): string {
+    return this.userMemberTier === 'lifetime' ? 'rgba(155, 132, 236, 0.32)' : 'rgba(250, 107, 86, 0.28)';
+  }
 
   private readonly themes: ThemeItem[] = [
     new ThemeItem('默认', $r('app.media.bg_1')),
@@ -79,24 +88,24 @@ export struct ThemeSelectSheetContent {
 
   build() {
     Column() {
-      // 1. 顶部 Segmented 分段切换药丸与通用关闭按钮 (1:1 对标 PassportStatsView 滑动高亮胶囊动效)
+      // 1. 顶部 Segmented 分段切换药丸与通用关闭按钮 (Apple 级实体物理内嵌分段控制器)
       Row() {
         Stack({ alignContent: Alignment.Start }) {
-          // 底槽背景
+          // 底槽背景 (纯净浅灰内嵌质感)
           Row()
-            .width(168)
-            .height(32)
-            .backgroundColor('rgba(0, 0, 0, 0.05)')
-            .borderRadius(16)
+            .width(178)
+            .height(36)
+            .backgroundColor('#F1F5F9')
+            .borderRadius(18)
 
-          // 平滑滑动的白色高亮胶囊 (完全与槽体等高居中)
+          // 平滑滑动的立体白色高亮胶囊 (比底槽微内缩 2.5vp，物理悬浮阴影)
           Row()
-            .width(84)
-            .height(32)
+            .width(85)
+            .height(30)
             .backgroundColor('#FFFFFF')
-            .borderRadius(16)
-            .shadow({ radius: 4, color: 'rgba(0, 0, 0, 0.06)', offsetY: 1 })
-            .offset({ x: this.activeTab * 84 })
+            .borderRadius(15)
+            .shadow({ radius: 8, color: 'rgba(15, 23, 42, 0.10)', offsetY: 2 })
+            .offset({ x: 3 + this.activeTab * 87 })
             .animation({ duration: 300, curve: Curve.FastOutSlowIn })
 
           // 选项文字层
@@ -104,10 +113,10 @@ export struct ThemeSelectSheetContent {
             Text('停机坪主题')
               .fontSize(13)
               .fontWeight(this.activeTab === 0 ? FontWeight.Bold : FontWeight.Medium)
-              .fontColor(this.activeTab === 0 ? '#000000' : '#94A3B8')
+              .fontColor(this.activeTab === 0 ? '#0F172A' : '#64748B')
               .textAlign(TextAlign.Center)
-              .width(84)
-              .height(32)
+              .width(88)
+              .height(36)
               .onClick(() => {
                 if (this.activeTab !== 0) {
                   this.getUIContext()?.animateTo({ duration: 300, curve: Curve.FastOutSlowIn }, () => {
@@ -119,10 +128,10 @@ export struct ThemeSelectSheetContent {
             Text('飞机皮肤')
               .fontSize(13)
               .fontWeight(this.activeTab === 1 ? FontWeight.Bold : FontWeight.Medium)
-              .fontColor(this.activeTab === 1 ? '#000000' : '#94A3B8')
+              .fontColor(this.activeTab === 1 ? '#0F172A' : '#64748B')
               .textAlign(TextAlign.Center)
-              .width(84)
-              .height(32)
+              .width(88)
+              .height(36)
               .onClick(() => {
                 if (this.activeTab !== 1) {
                   this.getUIContext()?.animateTo({ duration: 300, curve: Curve.FastOutSlowIn }, () => {
@@ -174,7 +183,7 @@ export struct ThemeSelectSheetContent {
                   .height(24)
                   .justifyContent(FlexAlign.Center)
                   .alignItems(VerticalAlign.Center)
-                  .backgroundColor('#F06553')
+                  .backgroundColor(this.getThemeAccentColor())
                   .borderRadius(12)
                   .margin(8)
                   .border({ width: 2, color: '#FFFFFF' })
@@ -186,7 +195,7 @@ export struct ThemeSelectSheetContent {
                   .animation({ duration: 250, curve: Curve.FastOutSlowIn })
                 }
                 .border(this.tempThemeIndex === index ? 
-                  { width: 2.5, color: '#F06553', radius: 16 } : 
+                  { width: 2.5, color: this.getThemeAccentColor(), radius: 16 } : 
                   { width: 1.5, color: '#EAE1D8', radius: 16 })
                 .padding(2)
                 .scale({
@@ -194,14 +203,14 @@ export struct ThemeSelectSheetContent {
                   y: this.tempThemeIndex === index ? 1.05 : 0.96
                 })
                 .shadow(this.tempThemeIndex === index ? 
-                  { radius: 14, color: 'rgba(240, 101, 83, 0.28)', offsetY: 5 } : 
+                  { radius: 14, color: this.getThemeShadowColor(), offsetY: 5 } : 
                   { radius: 5, color: 'rgba(0, 0, 0, 0.04)', offsetY: 2 })
                 .animation({ duration: 280, curve: Curve.FastOutSlowIn })
 
                 Text(theme.name)
                   .fontSize(13)
                   .fontWeight(this.tempThemeIndex === index ? FontWeight.Bold : FontWeight.Medium)
-                  .fontColor(this.tempThemeIndex === index ? '#F06553' : '#334155')
+                  .fontColor(this.tempThemeIndex === index ? this.getThemeAccentColor() : '#334155')
                   .margin({ top: 10 })
                   .animation({ duration: 250, curve: Curve.FastOutSlowIn })
               }
@@ -248,7 +257,7 @@ export struct ThemeSelectSheetContent {
                   .height(24)
                   .justifyContent(FlexAlign.Center)
                   .alignItems(VerticalAlign.Center)
-                  .backgroundColor('#F06553')
+                  .backgroundColor(this.getThemeAccentColor())
                   .borderRadius(12)
                   .margin(8)
                   .border({ width: 2, color: '#FFFFFF' })
@@ -260,7 +269,7 @@ export struct ThemeSelectSheetContent {
                   .animation({ duration: 250, curve: Curve.FastOutSlowIn })
                 }
                 .border(this.tempPlaneSkinIndex === index ? 
-                  { width: 2.5, color: '#F06553', radius: 16 } : 
+                  { width: 2.5, color: this.getThemeAccentColor(), radius: 16 } : 
                   { width: 1.5, color: '#EAE1D8', radius: 16 })
                 .padding(2)
                 .scale({
@@ -268,14 +277,14 @@ export struct ThemeSelectSheetContent {
                   y: this.tempPlaneSkinIndex === index ? 1.05 : 0.96
                 })
                 .shadow(this.tempPlaneSkinIndex === index ? 
-                  { radius: 14, color: 'rgba(240, 101, 83, 0.28)', offsetY: 5 } : 
+                  { radius: 14, color: this.getThemeShadowColor(), offsetY: 5 } : 
                   { radius: 5, color: 'rgba(0, 0, 0, 0.04)', offsetY: 2 })
                 .animation({ duration: 280, curve: Curve.FastOutSlowIn })
 
                 Text(skin.name)
                   .fontSize(13)
                   .fontWeight(this.tempPlaneSkinIndex === index ? FontWeight.Bold : FontWeight.Medium)
-                  .fontColor(this.tempPlaneSkinIndex === index ? '#F06553' : '#334155')
+                  .fontColor(this.tempPlaneSkinIndex === index ? this.getThemeAccentColor() : '#334155')
                   .margin({ top: 10 })
                   .animation({ duration: 250, curve: Curve.FastOutSlowIn })
               }
@@ -304,34 +313,60 @@ export struct ThemeSelectSheetContent {
       .curve(Curve.FastOutSlowIn)
       .width('100%')
 
-      // 3. 底部应用按钮
+      // 3. 底部应用按钮 (动态流光渐变 / 暖珊瑚红)
       Row() {
-        Button(this.activeTab === 0 ? '应用停机坪主题' : '应用飞机皮肤')
-          .width('100%')
-          .height(48)
-          .backgroundColor('#F06553')
-          .fontColor(Color.White)
-          .fontSize(16)
-          .fontWeight(FontWeight.Bold)
-          .borderRadius(24)
-          .shadow({ radius: 12, color: 'rgba(240, 101, 83, 0.35)', offsetY: 4 })
-          .onClick(() => {
-            if (this.activeTab === 0) {
-              if (this.onThemeSelected) {
-                this.onThemeSelected(this.tempThemeIndex);
+        Row() {
+          Text(this.activeTab === 0 ? '应用停机坪主题' : '应用飞机皮肤')
+            .fontColor(Color.White)
+            .fontSize(16)
+            .fontWeight(FontWeight.Bold)
+        }
+        .width('100%')
+        .height(48)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
+        .backgroundColor(this.userMemberTier === 'lifetime' ? '#00000000' : '#FA6B56')
+        .linearGradient(
+          this.userMemberTier === 'lifetime'
+            ? {
+                angle: 135,
+                colors: [
+                  ['#F875C8', 0.0],
+                  ['#9B84EC', 0.50],
+                  ['#51DFD5', 1.0]
+                ]
               }
-              this.currentThemeIndex = this.tempThemeIndex;
+            : {
+                angle: 180,
+                colors: [
+                  ['#FC7561', 0.0],
+                  ['#F6604B', 1.0]
+                ]
+              }
+        )
+        .borderRadius(24)
+        .shadow({
+          radius: 12,
+          color: this.userMemberTier === 'lifetime' ? 'rgba(155, 132, 236, 0.35)' : 'rgba(250, 107, 86, 0.35)',
+          offsetY: 4
+        })
+        .onClick(() => {
+          if (this.activeTab === 0) {
+            if (this.onThemeSelected) {
+              this.onThemeSelected(this.tempThemeIndex);
+            }
+            this.currentThemeIndex = this.tempThemeIndex;
+          } else {
+            if (this.onSkinSelected) {
+              this.onSkinSelected(this.tempPlaneSkinIndex);
             } else {
-              if (this.onSkinSelected) {
-                this.onSkinSelected(this.tempPlaneSkinIndex);
-              } else {
-                this.selectedPlaneSkinIndex = this.tempPlaneSkinIndex;
-              }
+              this.selectedPlaneSkinIndex = this.tempPlaneSkinIndex;
             }
-            if (this.onClose) {
-              this.onClose();
-            }
-          })
+          }
+          if (this.onClose) {
+            this.onClose();
+          }
+        })
       }
       .width('100%')
       .padding({ left: 24, right: 24, top: 12, bottom: 20 })
@@ -403,6 +438,7 @@ export struct CyberThemeSelector {
 @Component
 export struct FlightBookingSignboard {
   @StorageLink('isBookFlightSheetVisible') isBookFlightSheetVisible: boolean = false;
+  @StorageLink('userMemberTier') userMemberTier: string = 'standard';
   @State isPressed: boolean = false;
 
   build() {
@@ -435,12 +471,12 @@ export struct FlightBookingSignboard {
       .width(3)
       .height(18)
 
-      // 3. 机票副联 (Stub Tail)：航空专属珊瑚红 FLT 标签
+      // 3. 机票副联 (Stub Tail)：航空专属 FLT 标签 (动态主题色)
       Row() {
         Text('FLT')
           .fontSize(9)
           .fontWeight(FontWeight.Bolder)
-          .fontColor('#FA6B56')
+          .fontColor(this.userMemberTier === 'lifetime' ? '#9B84EC' : '#FA6B56')
       }
       .padding({ left: 4, right: 6, top: 3, bottom: 3 })
     }

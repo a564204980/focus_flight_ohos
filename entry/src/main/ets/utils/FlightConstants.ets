@@ -1,4 +1,4 @@
-﻿import { ctuAirportConfig } from '../models/airports/ctu';
+import { ctuAirportConfig } from '../models/airports/ctu';
 import { pekAirportConfig } from '../models/airports/pek';
 import { LatLngPoint } from '../utils/GeodesicUtils';
 

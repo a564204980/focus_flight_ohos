@@ -315,10 +315,10 @@ export struct FlightBookingSheet {
                 .fontSize(12)
                 .fontColor('#94A3B8')
 
-              Text(this.selectedDestination ? `${this.selectedDestination.city} (${this.selectedDestination.code})` : '北京首都 (PEK)')
+              Text(this.selectedDestination ? `${this.selectedDestination.city} (${this.selectedDestination.code})` : '选择目的地')
                 .fontSize(13)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#FA6B56')
+                .fontColor(this.selectedDestination ? '#FA6B56' : '#94A3B8')
             }
             .width('100%')
             .padding({ left: 12, right: 12, top: 10, bottom: 10 })

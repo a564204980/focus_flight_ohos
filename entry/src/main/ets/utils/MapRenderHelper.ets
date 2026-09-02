@@ -16,6 +16,7 @@ import {
   LatLngPoint,
   interpolateLatLng
 } from './GeodesicUtils';
+import { ProceduralFlightEngine } from './ProceduralFlightEngine';
 
 export interface RouteStyleConfig {
   id: string;
@@ -218,13 +219,16 @@ export class MapRenderHelper {
   /**
    * ✈️ 绘制稳固前方预告未飞航线（前方待解锁实心导引线）
    */
-  public static async drawUnflownPreviewRoute(controller: map.MapComponentController, destAirport?: Airport): Promise<void> {
-    const allPoints = MapRenderHelper.getFullFlightPathPoints(destAirport);
+  public static async drawUnflownPreviewRoute(controller: map.MapComponentController, destAirport?: Airport, isRoaming?: boolean): Promise<void> {
+    const allPoints = MapRenderHelper.getFullFlightPathPoints(destAirport, isRoaming);
     if (!allPoints || allPoints.length < 2) return;
+
+    // 漫游模式下展示前瞻约 600 个点 (约 45~60 分钟视界)，固定航线展示全程
+    const previewPoints = isRoaming ? allPoints.slice(0, Math.min(600, allPoints.length)) : allPoints;
 
     // 1. 半透明天蓝外光晕
     await controller.addPolyline({
-      points: allPoints,
+      points: previewPoints,
       width: 8,
       color: 0x2238BDF8,
       zIndex: 800
@@ -232,7 +236,7 @@ export class MapRenderHelper {
 
     // 2. 稳固待解锁实心导引线
     await controller.addPolyline({
-      points: allPoints,
+      points: previewPoints,
       width: 3,
       color: 0x44CBD5E1,
       zIndex: 801
@@ -599,7 +603,7 @@ export class MapRenderHelper {
   /**
    * ✈️ 一键完整加载跑道、滑行道与加粗预告航线
    */
-  public static async setupRunwaysAndRoutes(controller: map.MapComponentController, destAirport?: Airport): Promise<void> {
+  public static async setupRunwaysAndRoutes(controller: map.MapComponentController, destAirport?: Airport, isRoaming?: boolean): Promise<void> {
     const customRunwayPolygons = getCustomRunwaysForAirport('CTU');
     if (customRunwayPolygons) {
       for (const corners of customRunwayPolygons) {
@@ -614,8 +618,8 @@ export class MapRenderHelper {
       }
     }
 
-    // 绘制目标目的地机场的精修跑道 (如南充 NAO、北京 PEK 等)
-    if (destAirport && destAirport.code && destAirport.code !== 'CTU') {
+    // 绘制目标目的地机场的精修跑道 (漫游模式下不绘制单一终点机场跑道)
+    if (!isRoaming && destAirport && destAirport.code && destAirport.code !== 'CTU' && destAirport.code !== 'ROAM') {
       const destRunwayPolygons = getCustomRunwaysForAirport(destAirport.code);
       if (destRunwayPolygons) {
         for (const corners of destRunwayPolygons) {
@@ -630,14 +634,28 @@ export class MapRenderHelper {
       }
     }
 
-    await MapRenderHelper.drawUnflownPreviewRoute(controller, destAirport);
+    await MapRenderHelper.drawUnflownPreviewRoute(controller, destAirport, isRoaming);
   }
 
+  private static cachedRoamingPoints: mapCommon.LatLng[] | undefined = undefined;
+  private static lastRoamingSeedTime: number = 0;
+
   /**
-   * ✈️ 获取完整的全程三阶段飞行航线点集（离场滑跑 -> 离场爬升弧 -> 高空巡航 -> 进近降落）
+   * ✈️ 获取完整的全程飞行航线点集（普通航班为三阶段点集，漫游模式为动态程序化大圆航迹）
    * @param destAirport 目标目的地机场 (如未提供，则自动从 AppStorage 读取或默认使用北京首都 PEK)
+   * @param isRoaming 是否为漫游自由探索模式
    */
-  public static getFullFlightPathPoints(destAirport?: Airport): mapCommon.LatLng[] {
+  public static getFullFlightPathPoints(destAirport?: Airport, isRoaming?: boolean): mapCommon.LatLng[] {
+    // 🌟 若处于漫游模式，直接调用动态程序化航迹生成引擎！
+    if (isRoaming || (destAirport && destAirport.code === 'ROAM')) {
+      const now = Date.now();
+      if (!MapRenderHelper.cachedRoamingPoints || (now - MapRenderHelper.lastRoamingSeedTime > 300000)) {
+        MapRenderHelper.lastRoamingSeedTime = now;
+        MapRenderHelper.cachedRoamingPoints = ProceduralFlightEngine.generateRoamingTrajectory(43200, (now % 10000));
+      }
+      return MapRenderHelper.cachedRoamingPoints;
+    }
+
     const ctuStart = getCtuRunwayStart();
     const ctuEnd = getCtuRunwayEnd();
 

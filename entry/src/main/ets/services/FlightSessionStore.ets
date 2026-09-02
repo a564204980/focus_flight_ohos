@@ -31,6 +31,7 @@ export interface FlightSessionData {
   startTimeMs: number;
   checkInTimeMs?: number;     // 🎫 用户办理值机/选定目的地的时间
   isWindowViewMode?: boolean; // 🪟 记录用户是否处于舷窗视角模式
+  isRoamingMode?: boolean;    // ☁️ 记录是否为正向计时的漫游探索模式
   events?: FlightEvent[];     // 飞行日志事件流
 }
 

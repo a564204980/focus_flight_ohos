@@ -758,6 +758,19 @@ export class IndexController {
       this.lastTraversedPointIndex = initIntIdx;
     }
 
+    // 🎬 起飞 flyback：记录当前相机状态，平滑过渡到 heading-up 视角，消除第一帧 moveCamera 瞬移角度跳变
+    if (resumeElapsedMs === 0 && this.huaweiMapController) {
+      try {
+        const currentCam = this.huaweiMapController.getCameraPosition();
+        this.flybackStartLat = currentCam?.target?.latitude ?? getCtuRunwayStart().latitude;
+        this.flybackStartLon = currentCam?.target?.longitude ?? getCtuRunwayStart().longitude;
+        this.flybackStartZoom = currentCam?.zoom ?? 17.2;
+        this.flybackStartBearing = currentCam?.bearing ?? CTU_RUNWAY_BEARING;
+        this.flybackStartTime = Date.now();
+        this.isCameraFlyingBack = true;
+      } catch (e) { }
+    }
+
     let firstTickFired = (resumeElapsedMs > 0);
     this.flightDisplaySync = displaySync.create();
     this.flightDisplaySync.on('frame', () => {
@@ -919,8 +932,9 @@ export class IndexController {
       const displayPoints = this.rainbowTraversedPoints.slice();
       displayPoints.push(interpPos);
 
-      // 🌈 航线光带实时更新 (两两饱满重叠，绝对零间隙)
-      if (this.rainbowPolylines.length > 0) {
+      // 🌈 航线光带降频节流更新（每 4 帧更新一次 = 15 FPS）
+      // 起飞段点密度极高，若每帧都调用 6 次 poly.setPoints() C++ 跨桥，会严重阻塞 JS 线程
+      if (this.rainbowPolylines.length > 0 && (this.flightTickFrameCount % 4 === 0)) {
         const currentCam = this.huaweiMapController?.getCameraPosition();
         const realZoom = (currentCam && currentCam.zoom) ? currentCam.zoom : (this.vm.isCameraFollowLocked ? cinematicZoom : this.currentZoomLevel);
         const parallelStripes = MapRenderHelper.generateParallelRainbowStripes(displayPoints, realZoom, this.selectedRouteStyle);

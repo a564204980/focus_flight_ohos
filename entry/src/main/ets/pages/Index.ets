@@ -356,6 +356,7 @@ struct Index {
           focusTagTitle: this.vm.currentFocusTagTitle,
           seatId: '01A',
           initialMemberTier: (AppStorage.get<string>('userMemberTier') as MemberTierType) || 'lifetime',
+          isRoamingMode: this.vm.isRoamingMode,
           onClose: () => {
             this.vm.isPreFlightBoardingPassVisible = false;
             this.vm.isPreFlightPosterPreviewOnly = false;

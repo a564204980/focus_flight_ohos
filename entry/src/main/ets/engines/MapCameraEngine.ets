@@ -62,7 +62,7 @@ export class MapCameraEngine {
         position: pos,
         icon: targetIcon,
         anchorU: 0.5,
-        anchorV: 0.5,
+        anchorV: 0.438,
         flat: true,
         rotation: rot,
         zIndex: 2000,
@@ -156,8 +156,8 @@ export class MapCameraEngine {
         const now = Date.now();
         const elapsed = now - this.ctrl.flybackStartTime;
         const rawProgress = Math.min(1.0, elapsed / this.ctrl.FLYBACK_DURATION_MS);
-        // 采用极致平滑的 Cubic EaseOut 阻尼缓动
-        const ease = 1.0 - Math.pow(1.0 - rawProgress, 3);
+        // 采用极致平滑的 Sine EaseInOut 阻尼缓动
+        const ease = -(Math.cos(Math.PI * rawProgress) - 1) / 2;
 
         const targetPos = this.ctrl.currentPlaneGeoPos || getCtuRunwayStart();
         const targetZoom = 17.2;
